@@ -1,4 +1,4 @@
-// Rested v0.1.0-alpha
+// Part of Rested Web Framework
 // www.restedwf.com
 // © 2020 Thomas Sebastian Berge
 
@@ -16,59 +16,124 @@ import 'restedscript.dart';
 import 'responses.dart';
 import 'parser.dart';
 import 'restedsettings.dart';
-import 'restedcookie.dart';
+import 'restedsession.dart';
+import 'mimetypes.dart';
 
 Responses error_responses = new Responses();
-RestedSettings rsettings = null;
+Mimetypes mimetypes = new Mimetypes();
+
+class CookieCollection {
+  List<Cookie> cookies = null;
+
+  CookieCollection(this.cookies);
+
+  void add(Cookie newcookie) {
+    cookies.add(newcookie);
+  }
+
+  List<Cookie> get(String name) {
+    List<Cookie> returnlist = new List();
+    for (Cookie cookie in cookies) {
+      if (cookie.name == name) {
+        returnlist.add(cookie);
+      }
+    }
+    return returnlist;
+  }
+
+  Cookie getFirst(String name) {
+    for (Cookie cookie in cookies) {
+      if (cookie.name == name) {
+        return cookie;
+      }
+    }
+    return null;
+  }
+
+  bool containsKey(String name) {
+    bool containskey = false;
+    for (Cookie cookie in cookies) {
+      if (cookie.name == name) {
+        containskey = true;
+      }
+    }
+    return containskey;
+  }
+}
 
 class RestedRequest {
+  //  Request actions too be performed
+  String responseType = ""; // redirect/html/json/file
+  String responseResource = ""; // /some/resource  /path/to/somefile.jpg   <html>somedata</html>
+  //
   HttpRequest request;
   String method;
   String path;
   String access_token;
   Map body = new Map();
-  List<HttpHeaders> response_headers = new List();
-  RestedCookie cookie = null;
+  //RestedSession session = null;
+  CookieCollection cookies = null;
+  RestedSettings rsettings;
+  Map<String, dynamic> session = new Map();
+  //bool deleteSessionCookie = false;
+  //List<String> removeCookie = new List();
 
   // rscript variables are stored per request
   RestedScriptArguments rscript_args = new RestedScriptArguments();
   RestedScript rscript = new RestedScript();
+
+  String toString() {
+    Map<String, dynamic> restedrequest = new Map();
+    Map<String, dynamic> httprequest = new Map();
+    httprequest['cookies'] = request.cookies.toString();
+    httprequest['headers'] = request.headers.toString();
+    httprequest['certificate'] = request.certificate.toString();
+    httprequest['connectionInfo'] = request.connectionInfo.toString();
+    httprequest['contentLength'] = request.contentLength.toString();
+    restedrequest['method'] = method.toString();
+    restedrequest['path'] = path.toString();
+    restedrequest['access_token'] = access_token.toString();
+    restedrequest['body'] = body.toString();
+    restedrequest['HttpRequest'] = httprequest;
+    return restedrequest.toString();
+  }
 
   void setBody(Map bodymap) {
     body = bodymap;
     console.debug("Content: " + body.toString());
   }
 
-  // USED FOR TESTING, DELETE WHEN NOT NEEDED
-  String getSetting() {
-    return rsettings.cookies_enabled.toString();
+  void createCookie(String name, String value,
+      {String domain = "", String path = "/", int maxAge = null}) {
+    Cookie newcookie = new Cookie(name, value);
+    if (domain != "") {
+      newcookie.domain = domain;
+    }
+    if (path != "") {
+      newcookie.path = path;
+    }
+    if (maxAge != null) {
+      newcookie.maxAge = maxAge;
+    }
+    request.response.cookies.add(newcookie);
   }
 
-  /*
-  void createCookie() {
-    cookie = new RestedCookie(request.cookies);
-    request.cookies.add(cookie.create());
+  void addCookie(Cookie newcookie) {
+    request.response.cookies.add(newcookie);
   }
 
-  */
-  void clearCookie() {
-    request.response.cookies.clear();
-    request.response.cookies.add(cookie.remove());
-  }
-
-  void saveCookie() {
-    //request.cookies.add(cookie.create());
-    //List<Cookie> cookies = new List();
-    Cookie newcookie =
-        cookie.create(rsettings.cookies_key, rsettings.cookies_max_age);
-    //request.cookies = cookies;
+  void removeCookie(String name) {
+    Cookie newcookie = new Cookie(name, "");
+    newcookie.path = "/";
+    newcookie.maxAge = 0;
+    request.response.cookies.add(newcookie);
   }
 
   RestedRequest(HttpRequest this.request, RestedSettings server_settings) {
     rsettings = server_settings;
-
+    
     if (rsettings.cookies_enabled) {
-      cookie = new RestedCookie(rsettings.cookies_key, request.cookies);
+      cookies = new CookieCollection(request.cookies);
     }
 
     // By splitting by hostname the full request path will reside in temp[1] while the protocol will reside in temp[0]
@@ -101,81 +166,46 @@ class RestedRequest {
     }
   }
 
-  void redirect(String resource) {
-    saveCookie();
-    request.response.redirect(Uri.http(request.requestedUri.host, resource));
+  void response({
+      String type = "text", 
+      String data = "", 
+      File file = null, 
+      bool stream = false
+      }) {
+
+    // Headers
+    request.response.headers.contentType = mimetypes.getContentType(type);
+    request.response.statusCode = HttpStatus.ok;
+
+    if(stream) {
+      request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
+    }
+
+    // Writing data and closing
+    if(stream) {
+      Future f = file.readAsBytes();
+      request.response.addStream(f.asStream()).whenComplete(() {
+        request.response.close();
+      });
+    } else {
+      if(data != ""){
+        request.response.write(data);
+      }
+      request.response.close();
+    }
   }
 
-  ContentType getContentType(String fileExtension) {
-    switch (fileExtension) {
-      case "html":
-        {
-          request.response.headers.contentType =
-              new ContentType("text", "html", charset: "utf-8");
-        }
-        break;
-      case "css":
-        {
-          request.response.headers.contentType =
-              new ContentType("text", "css", charset: "utf-8");
-        }
-        break;
-      case "txt":
-        {
-          request.response.headers.contentType =
-              new ContentType("text", "text", charset: "utf-8");
-        }
-        break;
-      case "ico":
-        {
-          request.response.headers.contentType =
-              new ContentType("image", "vnd.microsoft.icon");
-        }
-        break;
-      case "mp4":
-        {
-          request.response.headers.contentType =
-              new ContentType("video", "mp4");
-        }
-        break;
-      case "mkv":
-        {
-          request.response.headers.contentType =
-              new ContentType("video", "mkv");
-        }
-        break;
-      case "mov":
-        {
-          request.response.headers.contentType =
-              new ContentType("video", "mov");
-        }
-        break;
-      case "m4v":
-        {
-          request.response.headers.contentType =
-              new ContentType("video", "m4v");
-        }
-        break;
-      case "jpg":
-        {
-          request.response.headers.contentType =
-              new ContentType("image", "jpeg");
-        }
-        break;
-      case "png":
-        {
-          request.response.headers.contentType =
-              new ContentType("image", "png");
-        }
-        break;
-     }
-   }
+  void redirect(String resource) {
+    request.response.redirect(Uri.http(request.requestedUri.host, resource));
+  }
 
   void fileResponse(String path) async {
     bool isBinary = true;
     String fileExtension = path.split('.')[1];
-    request.response.headers.contentType = getContentType(fileExtension);
-    if(fileExtension == 'html' || fileExtension == 'css' || fileExtension == 'txt') {
+    request.response.headers.contentType = mimetypes.getContentType(fileExtension);
+    if (fileExtension == 'html' ||
+        fileExtension == 'css' ||
+        fileExtension == 'txt') {
       isBinary = false;
     }
 
@@ -189,14 +219,23 @@ class RestedRequest {
       } else if (isBinary) {
         var file = new File(path);
         var rangeheadervalue = request.headers.value(HttpHeaders.rangeHeader);
-        if (rangeheadervalue != null && true == false) { // true == false to avoid this ¤%"#&¤/( rangerequest garbage for now
+        if (rangeheadervalue != null && true == false) {
+          // true == false to avoid this ¤%"#&¤/( rangerequest garbage for now
           //if(true){
           print("------- rangeHeader=" + rangeheadervalue.toString());
-          Map<String,int> ranges = getRanges(rangeheadervalue.substring(6), file.lengthSync());
+          Map<String, int> ranges =
+              getRanges(rangeheadervalue.substring(6), file.lengthSync());
           request.response.statusCode = HttpStatus.partialContent;
           request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
           request.response.headers.contentType = ContentType.parse("video/mp4");
-          request.response.headers.set("Content-Range", "bytes " + ranges["bytesFrom"].toString() + "-" + ranges["bytesTo"].toString() + "/" + ranges["bytesTotal"].toString());
+          request.response.headers.set(
+              "Content-Range",
+              "bytes " +
+                  ranges["bytesFrom"].toString() +
+                  "-" +
+                  ranges["bytesTo"].toString() +
+                  "/" +
+                  ranges["bytesTotal"].toString());
           print("bytesFrom=" + ranges["bytesFrom"].toString());
           print("bytesTo=" + ranges["bytesTo"].toString());
           //RandomAccessFile raf= file.openSync(mode: FileMode.read);
@@ -207,16 +246,16 @@ class RestedRequest {
           //Future f = raf.read((ranges["bytesTo"] - ranges["bytesFrom"]));
           //request.response.addStream(raf.asStream()).whenComplete(() {
           //  request.response.close();
-   //       });          
+          //       });
           //Stream<List<int>> stream = file.openRead(ranges["bytesFrom"], ranges["bytesTo"]);
           //var bytestream = ByteStream.fromBytes(stream);
           //await request.response.addStream(file.openRead(ranges["bytesFrom"], ranges["bytesTo"]));
           //await request.response.addStream(stream);
           //request.response.addStream(stream).whenComplete(() {
-//            request.response.close();
-  //        });
+          //            request.response.close();
+          //        });
           //request.response.close();
-          
+
           // If request does not contain range header
         } else {
           request.response.statusCode = HttpStatus.ok;
@@ -235,8 +274,8 @@ class RestedRequest {
     }
   }
 
-  Map<String,int> getRanges(String rangeheader, int fileLength) {
-    Map<String,int> values = new Map();
+  Map<String, int> getRanges(String rangeheader, int fileLength) {
+    Map<String, int> values = new Map();
     List<String> ranges = rangeheader.split(',');
     if (ranges.length > 1) {
       console.error("Multi-range request not supported!");
@@ -253,38 +292,17 @@ class RestedRequest {
     }
   }
 
-  void textResponse(String text) {
-    request.response.headers.contentType =
-        new ContentType("text", "plain", charset: "utf-8");
-    saveCookie();
-    request.response.write(text);
-    request.response.close();
-  }
-
-  void jsonResponse(String json) {
-    request.response.headers.contentType =
-        new ContentType("application", "json", charset: "utf-8");
-    saveCookie();
-    final cleanJson = jsonDecode(jsonEncode(json));
-    request.response.write(cleanJson);
-    request.response.close();
-  }
-
-  void htmlResponse(String html) {
+  void rscriptResponse(String filepath,
+      {bool from_url = false,
+      List<dynamic> list = null,
+      Map<dynamic, dynamic> map = null}) {
     request.response.headers.contentType =
         new ContentType("text", "html", charset: "utf-8");
-    saveCookie();
-    request.response.write(html);
-    request.response.close();
-  }
-
-  void rscriptResponse(String filepath, {bool from_url = false}) {
-    request.response.headers.contentType =
-        new ContentType("text", "html", charset: "utf-8");
-    saveCookie();
     if (from_url == true) {
       //filepath = 'bin/resources/' + filepath;
     }
+    rscript_args.list = list;
+    rscript_args.map = map;
     String html = rscript.createDocument(filepath, rscript_args);
     request.response.write(html);
     request.response.close();

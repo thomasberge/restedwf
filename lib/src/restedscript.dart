@@ -1,3 +1,7 @@
+// Part of Rested Web Framework
+// www.restedwf.com
+// © 2020 Thomas Sebastian Berge
+
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
@@ -20,6 +24,12 @@ String _randomString(int length) {
 // ----------- RestedScript ----------------------------------------------- //
 
 class RestedScriptArguments {
+  // From dart source
+  List<dynamic> list = new List();
+  Map<dynamic, dynamic> map = new Map();
+
+  Map args = new Map<String, dynamic>();
+
   Map setmap = new Map<String, String>();
   Map stringmap = new Map<String, String>();
   Map boolmap = new Map<String, bool>();
@@ -54,9 +64,8 @@ class RestedScriptArguments {
 class RestedScriptDocument {
   String flag = null;
   String document = "";
-  
-  RestedScriptDocument();
 
+  RestedScriptDocument();
 }
 
 class CodeBlock {
@@ -75,6 +84,8 @@ class RestedScript {
 
   String flag = null;
 
+  String expandForLists(String data, int count) {}
+
   List<CodeBlock> CreateCodeBlocks(String data) {
     int start_tags = 0;
     Parser bparser = new Parser(data);
@@ -84,10 +95,10 @@ class RestedScript {
     int levels = 0;
     String character = "startvalue";
     List<int> levellist = new List();
-    while(character != null) {
+    while (character != null) {
       character = bparser.moveToFirstInList(tags);
-      if(character != null) {
-        if(character == '{') {
+      if (character != null) {
+        if (character == '{') {
           levels++;
           levellist.add(levels);
           String movestring = "{{" + levels.toString() + "}}";
@@ -108,7 +119,7 @@ class RestedScript {
     List<CodeBlock> codeblocks = new List();
 
     int i = levels;
-    while(i > 0) {
+    while (i > 0) {
       List<String> blocklist = data.split('{{' + i.toString() + '}}');
       String temp = blocklist[1].toString();
       String temp2 = collapseBlockTags(temp, levels);
@@ -124,9 +135,9 @@ class RestedScript {
   String collapseBlockTags(String data, int levels) {
     Parser bparser = new Parser(data);
     int i = levels;
-    while(i > 0) {
+    while (i > 0) {
       String nextTag = '{{' + i.toString() + '}}';
-      if(data.contains(nextTag)) {
+      if (data.contains(nextTag)) {
         bparser.position = 0;
         bparser.moveUntil(nextTag);
         bparser.move(characters: 5);
@@ -140,9 +151,7 @@ class RestedScript {
     }
   }
 
-
   String createDocument(String filepath, RestedScriptArguments args) {
-
     // TESTING FUNCTION
     //List<CodeBlock> blocks = CreateCodeBlocks('{this{is}a{test}string}');
     //for(CodeBlock block in blocks) {
@@ -150,7 +159,7 @@ class RestedScript {
 
     flag = null;
     String doc = parse(filepath, args);
-    if(flag != null) {
+    if (flag != null) {
       doc = parse("bin/resources/flagsites/" + flag, args);
     }
     return doc;
@@ -171,15 +180,13 @@ class RestedScript {
   String doCommands(List<String> commands, RestedScriptArguments args) {
     String data = "";
     for (String command in commands) {
-      if(command != null) {
+      if (command != null) {
         command = command.trim();
-        if(command != "") {
+        if (command != "") {
           Parser cparser = new Parser(command);
-          if('${cparser.data[0]}' == '\$') {
-
+          if ('${cparser.data[0]}' == '\$') {
             // set-function
-            if(command[command.length-1] == ')')
-            {
+            if (command[command.length - 1] == ')') {
               cparser.move();
               cparser.setStartMark();
               cparser.moveUntil('(');
@@ -191,24 +198,25 @@ class RestedScript {
               cparser.setStopMark();
               String scriptarguments = cparser.getMarkedString();
               List<String> arglist = scriptarguments.split('|');
-              if(args.setmap.containsKey(key)) {
+              if (args.setmap.containsKey(key)) {
                 int i = 0;
                 String constructed_string = args.setmap[key];
-                for(String replacement in arglist) {
-                  constructed_string = constructed_string.replaceAll(('\$' + i.toString()), replacement);
+                for (String replacement in arglist) {
+                  constructed_string = constructed_string.replaceAll(
+                      ('\$' + i.toString()), replacement);
                   i++;
                 }
                 data = data + constructed_string;
               } else {
                 console.error("Key " + key + " not in setmap.");
-              }              
+              }
             } else {
               String key = cparser.data.substring(1);
-              if(args.setmap.containsKey(key)) {
+              if (args.setmap.containsKey(key)) {
                 data = data + args.setmap[key];
               } else {
                 console.error("Key " + key + " not in setmap.");
-              }              
+              }
             }
           } else {
             cparser.setStartMark();
@@ -221,26 +229,35 @@ class RestedScript {
             cparser.setStopMark();
             String scriptargument = cparser.getMarkedString();
 
-            if(scriptfunction == "include") {
+            if (scriptfunction == "include") {
               data = data + f_include(scriptargument, args);
-            } else  if(scriptfunction == "flag") {
+            } else if (scriptfunction == "flag") {
               data = data + f_flag(scriptargument, args);
-            } else if(scriptfunction == "print") {
+            } else if (scriptfunction == "print") {
               data = data + f_print(scriptargument, args);
-            } else if(scriptfunction == "set") {
+            } else if (scriptfunction == "set") {
               data = data + f_set(scriptargument, args);
+            } else if (scriptfunction == "args") {
+              data = data + f_args(scriptargument, args);
             }
           }
         }
-        }
+      }
     }
     return data;
   }
 
-  String f_set(scriptargument, args) {
+  /// RestedScript function: include
+  ///
+  /// Example:
+  /// include("scripts.html");
+
+  String f_set(String scriptargument, RestedScriptArguments args) {
     List<String> arguments = scriptargument.split(',');
-    if(arguments.length != 2) {
-      console.error("set() needs 2 arguments (key, value) but " + arguments.length.toString() + " was provided.");
+    if (arguments.length != 2) {
+      console.error("set() needs 2 arguments (key, value) but " +
+          arguments.length.toString() +
+          " was provided.");
       return "";
     } else {
       String key = arguments[0].trim();
@@ -250,10 +267,24 @@ class RestedScript {
     }
   }
 
+  String f_args(String scriptargument, RestedScriptArguments args) {
+    if (args.args.containsKey(scriptargument)) {
+      return args.args[scriptargument];
+    } else {
+      return "";
+    }
+  }
+
+  /// RestedScript function: include
+  /// Reads the file and inserts the text at the position of the command.
+  ///
+  /// Example:
+  /// include("scripts.html");
+
   String f_include(String argument, RestedScriptArguments args) {
     argument = argument.replaceAll('"', '');
     List<String> split = argument.split('.');
-    if(split.length > 1) {
+    if (split.length > 1) {
       String filetype = argument.split('.')[1];
 
       if (filetype == 'html' || filetype == 'css') {
@@ -264,7 +295,9 @@ class RestedScript {
         return "";
       }
     } else {
-      console.error("RestedScript: Attempted to include file with no filetype: " + argument.toString());
+      console.error(
+          "RestedScript: Attempted to include file with no filetype: " +
+              argument.toString());
     }
   }
 
@@ -276,20 +309,18 @@ class RestedScript {
       flag = argument;
       return "";
     } else {
-      console.error("RestedScript: Unsupported flag filetype for " +
-          argument);
+      console.error("RestedScript: Unsupported flag filetype for " + argument);
       return "";
-    }    
-  }  
+    }
+  }
 
   String f_print(String argument, RestedScriptArguments args) {
     Parser fparser = new Parser(argument);
     String output = "";
     bool string_on = false;
 
-    while(fparser.eol == false) {
-      if(fparser.lookNext() == '"')
-      {
+    while (fparser.eol == false) {
+      if (fparser.lookNext() == '"') {
         fparser.move();
         fparser.setStartMark();
         fparser.moveUntil('"');
@@ -301,17 +332,17 @@ class RestedScript {
     return output;
   }
 
-bool comment_on = false;
+  bool comment_on = false;
 
   String removeCommentsFromLine(String line) {
-    if(comment_on) {
+    if (comment_on) {
       line = "";
-    } else if(line.contains('//')) {
+    } else if (line.contains('//')) {
       line = line.split('//')[0];
-    } else if(line.contains('/*')) {
+    } else if (line.contains('/*')) {
       comment_on = true;
       line = line.split('/*')[0];
-    }else if(line.contains('*/')) {
+    } else if (line.contains('*/')) {
       comment_on = false;
       line = line.split('*/')[0];
     }
@@ -320,7 +351,7 @@ bool comment_on = false;
 
   String removeComments(List<String> lines) {
     List<String> document = new List();
-    bool rs= false;
+    bool rs = false;
 
     for (var line in lines) {
       document.add(line + "\n");
@@ -345,24 +376,58 @@ bool comment_on = false;
   }
 
   String processLines(List<String> lines, RestedScriptArguments args) {
-
     String document = removeComments(lines);
     List<String> rs_blocks = new List();
     Parser dparser = new Parser(document);
     bool run = true;
 
-    while(run) {
+    // process <% %> tags
+    while (run) {
+      String block;
+      if (dparser.moveUntil('<% forlist %>')) {
+        dparser.deleteCharacters(13);
+        dparser.setStartMark();
+        if (dparser.moveUntil('<% endforlist %>')) {
+          dparser.deleteCharacters(13);
+          dparser.setStopMark();
+          block = dparser.getMarkedString();
+          dparser.position = dparser.start_mark;
+          dparser.deleteMarkedString();
+          int i = 0;
+          while (i < args.list.length) {
+            print("i = " + i.toString());
+            print("args.list[i] = " + args.list[i]);
+            String newblock =
+                block.replaceAll("<% element %>", args.list[i].toString());
+            dparser.insertAtPosition(newblock);
+            dparser.move(characters: newblock.length);
+            i++;
+          }
+        } else {
+          console.error("Missing closing <% endforlist %>");
+        }
+      } else {
+        run = false;
+      }
+    }
+
+    document = dparser.data;
+    dparser = new Parser(document);
+    run = true;
+
+    // process <?rs ?> tags
+    while (run) {
       //console.message("setmap=" + args.setmap.toString());
-      if(dparser.moveUntil('<?rs')) {
+      if (dparser.moveUntil('<?rs')) {
         dparser.deleteCharacters(4);
         dparser.setStartMark();
-        if(dparser.moveUntil('?>')) {
+        if (dparser.moveUntil('?>')) {
           dparser.deleteCharacters(2);
           dparser.setStopMark();
           rs_blocks.add(dparser.getMarkedString().trim());
           dparser.position = dparser.start_mark;
           dparser.deleteMarkedString();
-          String codeblocktag = "{%" + (rs_blocks.length-1).toString() + "%}";
+          String codeblocktag = "{%" + (rs_blocks.length - 1).toString() + "%}";
           dparser.insertAtPosition(codeblocktag);
         } else {
           console.error("Missing closing bracket restedscript ?>");
@@ -375,9 +440,9 @@ bool comment_on = false;
     document = dparser.data;
 
     int i = 0;
-    for(String block in rs_blocks) {
-      if(block != null) {
-        if(block.contains(';')) {
+    for (String block in rs_blocks) {
+      if (block != null) {
+        if (block.contains(';')) {
           List<String> command_list = block.split(';');
           String result = doCommands(command_list, args);
           String codeblocktag = "{%" + i.toString() + "%}";

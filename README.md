@@ -1,6 +1,6 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.1.0
+# Alpha release 0.2.0
 
 An incomplete, disorganized and heavily disfunctional web framework. A work-in-progress with the goal of making something great. If you stumbled upon this and would like to throw me a comment or two then by all means contact me at restedwf@gmail.com
 

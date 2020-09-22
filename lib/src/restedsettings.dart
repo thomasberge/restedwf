@@ -1,4 +1,4 @@
-// Rested v0.1.0-alpha
+// Part of Rested Web Framework
 // www.restedwf.com
 // © 2020 Thomas Sebastian Berge
 
@@ -35,14 +35,20 @@ class RestedSettings {
   /// Set to true to store cookie data as ASE encrypted map in base64 as cookie. Set to false if you want everything to break.
   bool cookies_encrypt;
 
-  /// Cookie encryption key. Must be 32 bytes.
-  String cookies_key;
+  /// Set to true to enable storing session data. WARNING: Will not work unless cookies are also enabled.
+  bool sessions_enabled;
+
+  /// Session cookie encryption key. Must be 32 bytes.
+  String session_cookie_key;
 
   /// Set to true to enable file serving if there are no matching endpoint for the resource.
   bool files_enabled;
 
   /// Set to true if html files served will be treated as an rscriptResponse. Dependable on files_enabled to be true.
   bool open_html_as_rscript;
+
+  /// Set to true to enable /debug/ resource and request logging. Not for production environment!
+  bool debug_enabled;
 
   void createSettingsFile() {
     Map<String, dynamic> settings = new Map();
@@ -51,11 +57,13 @@ class RestedSettings {
     settings['jwt_key'] = 'CANNONBALLS!!!?';
     settings['jwt_duration'] = 20;
     settings['cookies_enabled'] = true;
+    settings['sessions_enabled'] = true;
     settings['cookies_max_age'] = 60; // minutes
     settings['cookies_encrypt'] = true;
-    settings['cookies_key'] = "my 32 length key................";
+    settings['session_cookie_key'] = "my 32 length key................";
     settings['files_enabled'] = true;
     settings['open_html_as_rscript'] = true;
+    settings['debug_enabled'] = false;
     File(settings_filepath)
         .writeAsStringSync(jsonEncode(settings), encoding: utf8);
   }
@@ -71,11 +79,13 @@ class RestedSettings {
     jwt_key = settings['jwt_key'];
     jwt_duration = settings['jwt_duration'];
     cookies_enabled = settings['cookies_enabled'];
+    sessions_enabled = settings['sessions_enabled'];
     cookies_max_age = settings['cookies_max_age'];
     cookies_encrypt = settings['cookies_encrypt'];
-    cookies_key = settings['cookies_key'];
+    session_cookie_key = settings['session_cookie_key'];
     files_enabled = settings['files_enabled'];
     open_html_as_rscript = settings['open_html_as_rscript'];
+    debug_enabled = settings['debug_enabled'];
   }
 
   void loadSettingsFromEnvironment() {
@@ -95,20 +105,26 @@ class RestedSettings {
     if (_envVars.containsKey("cookies_enabled")) {
       cookies_enabled = toBool(_envVars["cookies_enabled"]);
     }
+    if (_envVars.containsKey("sessions_enabled")) {
+      sessions_enabled = toBool(_envVars["sessions_enabled"]);
+    }    
     if (_envVars.containsKey("cookies_max_age")) {
       cookies_max_age = int.parse(_envVars["cookies_max_age"]);
     }
     if (_envVars.containsKey("cookies_encrypt")) {
       cookies_encrypt = toBool(_envVars["cookies_encrypt"]);
     }
-    if (_envVars.containsKey("cookies_key")) {
-      cookies_key = _envVars["cookies_key"];
+    if (_envVars.containsKey("session_cookie_key")) {
+      session_cookie_key = _envVars["session_cookie_key"];
     }
     if (_envVars.containsKey("files_enabled")) {
       files_enabled = toBool(_envVars["files_enabled"]);
     }
     if (_envVars.containsKey("open_html_as_rscript")) {
       open_html_as_rscript = toBool(_envVars["open_html_as_rscript"]);
+    }
+    if (_envVars.containsKey("debug_enabled")) {
+      debug_enabled = toBool(_envVars["debug_enabled"]);
     }
   }
 

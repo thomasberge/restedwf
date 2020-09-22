@@ -1,6 +1,9 @@
+// Part of Rested Web Framework
+// www.restedwf.com
+// © 2020 Thomas Sebastian Berge
+
 class Responses {
   Map responses = new Map<int, String>();
-  //{"404", "Not Found"};
 
   Responses() {
     responses[400] = "Bad Request";

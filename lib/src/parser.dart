@@ -1,3 +1,7 @@
+// Part of Rested Web Framework
+// www.restedwf.com
+// © 2020 Thomas Sebastian Berge
+
 import 'consolemessages.dart';
 
 class Parser {

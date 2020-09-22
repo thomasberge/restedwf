@@ -1,12 +1,16 @@
+// Part of Rested Web Framework
+// www.restedwf.com
+// © 2020 Thomas Sebastian Berge
+
 import 'package:ansicolor/ansicolor.dart';
 
 class ConsoleMessages {
 
   // 0 = silent
   // 1 = errors
-  // 2 = errors, alerts
-  // 3 = errors, alerts, headers/messages
-  // 4 = errors, alerts, headers/messages, debug
+  // 2 = errors, alerts/warnings
+  // 3 = errors, alerts/warnings, headers/messages
+  // 4 = errors, alerts/warnings, headers/messages, debug
   int debugLevel;
 
   bool colors = true;
@@ -15,6 +19,7 @@ class ConsoleMessages {
   AnsiPen messagePen = new AnsiPen()..rgb(r: 0.9, g: 0.9, b: 0.9);
   AnsiPen debugPen = new AnsiPen()..rgb(r: 0.0, g: 0.9, b: 0.0);
   AnsiPen alertPen = new AnsiPen()..rgb(r: 1.0, g: 1.0, b: 0.0);
+  AnsiPen warningPen = new AnsiPen()..red(bold: true);
 
   ConsoleMessages({int debug_level = 1})
   {
@@ -38,6 +43,16 @@ class ConsoleMessages {
         print(alertPen("-- ALERT: " + message));
       else
         print("-- ALERT: " + message);
+    }
+  }
+
+    void warning(String message) {
+    if(debugLevel > 1)
+    {
+      if (colors)
+        print(warningPen("-- WARNING: " + message));
+      else
+        print("-- WARNING: " + message);
     }
   }
 
