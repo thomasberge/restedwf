@@ -3,7 +3,7 @@
 
 import 'dart:io';
 import 'dart:convert';
-import 'rested.dart';
+import 'package:rested/rested.dart';
 
 // A remote server object we can communicate with. In this example the remote server happens
 // to be the same server.
