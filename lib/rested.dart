@@ -20,8 +20,6 @@ import 'src/pathparser.dart';
 import 'src/restedrequest.dart';
 export 'src/restedrequest.dart';
 import 'src/restedsettings.dart';
-import 'src/restedremotesoapserver.dart';
-export 'src/restedremotesoapserver.dart';
 import 'src/restedremoteserver.dart';
 export 'src/restedremoteserver.dart';
 import 'src/restedsession.dart';
