@@ -9,5 +9,3 @@ dependencies:
   path: ^1.6.2
   jaguar_jwt: ^2.1.6
   encrypt: ^4.0.2
-  rested:
-    git: https://github.com/thomasberge/rested
