@@ -1,5 +1,10 @@
-// Example 1: Webform API login
-// Author: Thomas Sebastian Berge
+/* 
+    Rested Web Framework example
+
+    Add to pubspec:
+    rested:
+      git: https://github.com/thomasberge/rested
+*/
 
 import 'dart:io';
 import 'dart:convert';
