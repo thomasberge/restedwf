@@ -7,15 +7,15 @@ import 'parser.dart';
 class PathParser {
   PathParser();
 
-  static String get_tagged_path(String path) {
-    if (path.contains('<')) {
+  static String get_uri_parameters(String path) {
+    if (path.contains('{')) {
       Parser parser = new Parser(path);
-      int args = '<'.allMatches(path).length;
+      int args = '{'.allMatches(path).length;
       while (args > 0) {
-        parser.moveUntil('<');
-        parser.move(); // add one more to not select the <
+        parser.moveUntil('{');
+        parser.move(); // add one more to not select the {
         parser.setStartMark();
-        parser.moveUntil('>');
+        parser.moveUntil('}');
         parser.setStopMark();
         parser.position = parser.start_mark;
         parser.deleteMarkedString();
@@ -28,16 +28,16 @@ class PathParser {
     }
   }
 
-  static List<String> get_keys(String path) {
-    if (path.contains('<')) {
+  static List<String> get_uri_keys(String path) {
+    if (path.contains('{')) {
       List<String> varlist = new List();
       Parser parser = new Parser(path);
-      int args = '<'.allMatches(path).length;
+      int args = '{'.allMatches(path).length;
       while (args > 0) {
-        parser.moveUntil('<');
-        parser.move(); // add one more to not select the <
+        parser.moveUntil('{');
+        parser.move(); // add one more to not select the {
         parser.setStartMark();
-        parser.moveUntil('>');
+        parser.moveUntil('}');
         parser.setStopMark();
         varlist.add(parser.getMarkedString());
         parser.position = parser.start_mark;

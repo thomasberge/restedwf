@@ -9,8 +9,10 @@ import 'dart:math';
 
 import 'consolemessages.dart';
 import 'parser.dart';
+import 'restedsettings.dart';
 
-ConsoleMessages console = new ConsoleMessages(debug_level: 4);
+RestedSettings rsettings = new RestedSettings();
+ConsoleMessages console = new ConsoleMessages(debug_level: rsettings.message_level);
 
 String _randomString(int length) {
   var rand = new Random();
@@ -24,6 +26,7 @@ String _randomString(int length) {
 // ----------- RestedScript ----------------------------------------------- //
 
 class RestedScriptArguments {
+
   // From dart source
   List<dynamic> list = new List();
   Map<dynamic, dynamic> map = new Map();
@@ -81,6 +84,7 @@ class CodeBlock {
 
 class RestedScript {
   RestedScript();
+  String rootDirectory = "";
 
   String flag = null;
 
@@ -151,40 +155,50 @@ class RestedScript {
     }
   }
 
-  String createDocument(String filepath, RestedScriptArguments args) {
+  Future<String> createDocument(String filepath, RestedScriptArguments args) async {
+    //console.debug("createDocument().filepath=" + filepath.toString());
     // TESTING FUNCTION
     //List<CodeBlock> blocks = CreateCodeBlocks('{this{is}a{test}string}');
     //for(CodeBlock block in blocks) {
     //}
-
+    
     flag = null;
-    String doc = parse(filepath, args);
+    String doc = await parse(filepath, args);
     if (flag != null) {
-      doc = parse("bin/resources/flagsites/" + flag, args);
+      doc = await parse("bin/resources/flagsites/" + flag, args);
     }
     return doc;
   }
 
-  String parse(String filepath, RestedScriptArguments args) {
-    try {
-      File data = new File('bin/resources/' + filepath);
-      List<String> lines = data.readAsLinesSync(encoding: utf8);
-      //String unused = processLines2(lines, args);
-      return (processLines(lines, args));
-    } on FileSystemException {
-      console.error("Error reading bin/resources/" + filepath);
-      return ("");
+  Future<String> parse(String filepath, RestedScriptArguments args, {String externalfile=null}) async {
+    if(filepath != null) {
+      try {
+        File data = new File(filepath);
+        List<String> lines = data.readAsLinesSync(encoding: utf8);
+        //String unused = processLines2(lines, args);
+        return (await processLines(lines, args));
+      } on FileSystemException {
+        console.error("Error reading " + filepath);
+        return ("");
+      }
+    } else if(externalfile!= null) {
+        LineSplitter ls = new LineSplitter();
+        List<String> lines = ls.convert(externalfile);
+        return(await processLines(lines, args));
+    } else {
+      return "";
     }
   }
 
-  String doCommands(List<String> commands, RestedScriptArguments args) {
+  Future<String> doCommands(List<String> commands, RestedScriptArguments args) async {
     String data = "";
     for (String command in commands) {
       if (command != null) {
         command = command.trim();
         if (command != "") {
+          //console.debug("COMMAND:" + command);
           Parser cparser = new Parser(command);
-          if ('${cparser.data[0]}' == '\$') {
+          if ('${cparser.data[0]}' == '\$') { // if the character first is a $ ...
             // set-function
             if (command[command.length - 1] == ')') {
               cparser.move();
@@ -194,28 +208,34 @@ class RestedScript {
               String key = cparser.getMarkedString();
               cparser.move();
               cparser.setStartMark();
-              cparser.moveUntil(')');
+              cparser.moveToEnd();
+              cparser.move(characters: -2);
               cparser.setStopMark();
               String scriptarguments = cparser.getMarkedString();
-              List<String> arglist = scriptarguments.split('|');
-              if (args.setmap.containsKey(key)) {
-                int i = 0;
-                String constructed_string = args.setmap[key];
-                for (String replacement in arglist) {
-                  constructed_string = constructed_string.replaceAll(
-                      ('\$' + i.toString()), replacement);
-                  i++;
+              //console.debug("scriptarguments=" + scriptarguments);
+              if(scriptarguments != null) {
+                List<String> arglist = scriptarguments.split('|');
+                if (args.setmap.containsKey(key)) {
+                  int i = 0;
+                  String constructed_string = args.setmap[key];
+                  for (String replacement in arglist) {
+                    constructed_string = constructed_string.replaceAll(
+                        ('\$' + i.toString()), replacement);
+                    i++;
+                  }
+                  data = data + constructed_string;
+                } else {
+                  console.error("Key >" + key + "< not in setmap.");
                 }
-                data = data + constructed_string;
               } else {
-                console.error("Key " + key + " not in setmap.");
+                console.error("Set variable reffered to as function " + key + "() but does not provide any arguments. Either use without () or add argument.");
               }
             } else {
               String key = cparser.data.substring(1);
               if (args.setmap.containsKey(key)) {
                 data = data + args.setmap[key];
               } else {
-                console.error("Key " + key + " not in setmap.");
+                console.error("Key >" + key + "< not in setmap.");
               }
             }
           } else {
@@ -223,22 +243,34 @@ class RestedScript {
             cparser.moveUntil('(');
             cparser.setStopMark();
             String scriptfunction = cparser.getMarkedString();
+            /*
             cparser.move();
             cparser.setStartMark();
             cparser.moveUntil(')');
             cparser.setStopMark();
+            */
+            cparser.move();
+            cparser.setStartMark();
+            cparser.moveToEnd();
+            cparser.move(characters: -2);
+            cparser.setStopMark();
             String scriptargument = cparser.getMarkedString();
+            //print("scriptargument=" + scriptargument);
+
+            console.debug(extractArgument(scriptargument));
 
             if (scriptfunction == "include") {
-              data = data + f_include(scriptargument, args);
+              data = data + await f_include(scriptargument, args);
             } else if (scriptfunction == "flag") {
               data = data + f_flag(scriptargument, args);
-            } else if (scriptfunction == "print") {
+            } else if (scriptfunction == "print" || scriptfunction == "echo") {
               data = data + f_print(scriptargument, args);
             } else if (scriptfunction == "set") {
               data = data + f_set(scriptargument, args);
             } else if (scriptfunction == "args") {
               data = data + f_args(scriptargument, args);
+            } else if (scriptfunction == "debug") {
+              f_debug(scriptargument, args);
             }
           }
         }
@@ -253,24 +285,26 @@ class RestedScript {
   /// include("scripts.html");
 
   String f_set(String scriptargument, RestedScriptArguments args) {
-    List<String> arguments = scriptargument.split(',');
-    if (arguments.length != 2) {
-      console.error("set() needs 2 arguments (key, value) but " +
-          arguments.length.toString() +
-          " was provided.");
-      return "";
-    } else {
-      String key = arguments[0].trim();
-      String value = arguments[1].trim();
-      args.setmap[key] = value;
-      return "";
-    }
+    Parser argparser = new Parser(scriptargument);
+    argparser.moveUntil(',');
+    String key = argparser.getPreString();
+    String value = argparser.getPostString();
+    args.setmap[key] = value;
+    return "";
   }
 
+  /// RestedScript function: args
+  ///
+  /// Example:
+  /// 
   String f_args(String scriptargument, RestedScriptArguments args) {
+    //console.debug("argument=" + scriptargument);
+    //console.debug("args=" + args.args.toString());
     if (args.args.containsKey(scriptargument)) {
-      return args.args[scriptargument];
+      return args.args[scriptargument].toString();
     } else {
+      //console.debug("ARG not found! args="+scriptargument);
+      //console.debug("All args=" + args.args.toString());
       return "";
     }
   }
@@ -281,23 +315,38 @@ class RestedScript {
   /// Example:
   /// include("scripts.html");
 
-  String f_include(String argument, RestedScriptArguments args) {
-    argument = argument.replaceAll('"', '');
-    List<String> split = argument.split('.');
-    if (split.length > 1) {
-      String filetype = argument.split('.')[1];
+  Future<String> downloadTextFile(String argument) async {
+    //console.debug("Downloading " + argument + " ...");
+    HttpClient client = new HttpClient();
+    HttpClientRequest web_request = await client.getUrl(Uri.parse(argument));
+    dynamic result;
+    HttpClientResponse web_response = await web_request.close();
+    result = await utf8.decoder.bind(web_response).join();
+    return result;
+  }
 
-      if (filetype == 'html' || filetype == 'css') {
-        return (parse(argument, args));
-      } else {
-        console.error("RestedScript: Unsupported include filetype for " +
-            argument.toString());
-        return "";
-      }
+  Future<String> f_include(String argument, RestedScriptArguments args) async {
+    if(argument.substring(0,4) == "http") {
+      String result = await downloadTextFile(argument);
+      return (await parse(null, args, externalfile: result));
     } else {
-      console.error(
-          "RestedScript: Attempted to include file with no filetype: " +
+      argument = argument.replaceAll('"', '');
+      List<String> split = argument.split('.');
+      if (split.length > 1) {
+        String filetype = argument.split('.')[1];
+
+        if (filetype == 'html' || filetype == 'css') {
+          return (await parse(rootDirectory + '/' + argument, args));
+        } else {
+          console.error("RestedScript: Unsupported include filetype for " +
               argument.toString());
+          return "";
+        }
+      } else {
+        console.error(
+            "RestedScript: Attempted to include file with no filetype: " +
+                argument.toString());
+      }
     }
   }
 
@@ -312,6 +361,16 @@ class RestedScript {
       console.error("RestedScript: Unsupported flag filetype for " + argument);
       return "";
     }
+  }
+
+  String extractArgument(String argument) {
+    // single or doublequote?
+    Parser fparser = new Parser(argument);
+    String output = "";
+    //console.debug("*** EXTRACT ARGUMENT ***");
+    //console.debug("-->" + argument + "<--");
+
+    return output;
   }
 
   String f_print(String argument, RestedScriptArguments args) {
@@ -331,6 +390,24 @@ class RestedScript {
 
     return output;
   }
+
+  String f_debug(String argument, RestedScriptArguments args) {
+    Parser fparser = new Parser(argument);
+    String output = "";
+    bool string_on = false;
+
+    while (fparser.eol == false) {
+      if (fparser.lookNext() == '"') {
+        fparser.move();
+        fparser.setStartMark();
+        fparser.moveUntil('"');
+        fparser.setStopMark();
+        output = output + fparser.getMarkedString();
+      }
+    }
+
+    print(output);
+  }  
 
   bool comment_on = false;
 
@@ -375,7 +452,7 @@ class RestedScript {
     return document.join();
   }
 
-  String processLines(List<String> lines, RestedScriptArguments args) {
+  Future<String> processLines(List<String> lines, RestedScriptArguments args) async {
     String document = removeComments(lines);
     List<String> rs_blocks = new List();
     Parser dparser = new Parser(document);
@@ -395,8 +472,8 @@ class RestedScript {
           dparser.deleteMarkedString();
           int i = 0;
           while (i < args.list.length) {
-            print("i = " + i.toString());
-            print("args.list[i] = " + args.list[i]);
+            //console.debug("i = " + i.toString());
+            //console.debug("args.list[i] = " + args.list[i]);
             String newblock =
                 block.replaceAll("<% element %>", args.list[i].toString());
             dparser.insertAtPosition(newblock);
@@ -444,7 +521,7 @@ class RestedScript {
       if (block != null) {
         if (block.contains(';')) {
           List<String> command_list = block.split(';');
-          String result = doCommands(command_list, args);
+          String result = await doCommands(command_list, args);
           String codeblocktag = "{%" + i.toString() + "%}";
           document = document.replaceAll(codeblocktag, result);
         }
@@ -455,10 +532,19 @@ class RestedScript {
     return document;
   }
 
+  String replaceInQuotedString(String block, String replace, String replaceWith) {
+    Parser block_parser = new Parser(block);
+    bool in_quote = false;
+    while(block_parser.eol == false) {
+      block_parser.moveUntil('"');
+    }
+    return block;
+  }
+
   String do_if(String command, String line, RestedScriptArguments args) {
     List<String> command_details = command.split(':');
     bool do_this = args.getBool(command_details[1]);
-    print("cookie_policy_agree=" + do_this.toString());
+    //console.debug("cookie_policy_agree=" + do_this.toString());
     return "";
   }
 }

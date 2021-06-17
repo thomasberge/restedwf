@@ -5,71 +5,109 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:math';
-import 'restedsession.dart';
+import 'dart:convert';
+
 import 'package:jaguar_jwt/jaguar_jwt.dart';
+import 'package:path/path.dart' as p;
+
 import 'consolemessages.dart';
+import 'pathparser.dart';
+import 'restedsession.dart';
 import 'restedsettings.dart';
 import 'restedrequest.dart';
-import 'dart:convert';
-import 'package:path/path.dart' as p;
-import 'pathparser.dart';
-import 'restedresource.dart';
+import 'restedscript.dart';
+import 'responses.dart';
+import 'mimetypes.dart';
+import 'restedvirtualdisk.dart';
+import 'oas3.dart';
 
-ConsoleMessages console = new ConsoleMessages(debug_level: 4);
+RestedSettings rsettings = new RestedSettings();
+ConsoleMessages console = new ConsoleMessages(debug_level: rsettings.message_level);
 Function _custom_JWT_verification;
-RestedSettings rsettings;
+SessionManager manager;
+RestedVirtualDisk disk = null;
+String rootDirectory = null;
+String resourcesDirectory = null;
+
+void saveSession(RestedRequest request) {
+  if (request.session.containsKey('id')) {
+    manager.updateSession(request.session);
+  } else {
+    String encrypted_sessionid = manager.newSession(request.session);
+    request.request.response.headers.add(
+        "Set-Cookie",
+        "session=" +
+            encrypted_sessionid +
+            "; Path=/; Max-Age=" +
+            rsettings.cookies_max_age.toString() +
+            "; HttpOnly");
+  }
+}
 
 class RestedRequestHandler {
-  List<RestedResource> resources = new List();
-  RestedSessionManager sessions;
 
-  Cookie saveSession(RestedRequest request) {
-    if(request.session.containsKey('id')){
-      sessions.updateSession(request.session);
-      return sessions.getSessionCookie(request.session['id']);
-    } else {
-      String id = sessions.createSession(request.session);
-      return sessions.getSessionCookie(id);
+  String address = "127.0.0.1";
+  int port = 8080;
+  int threadid = 0;
+
+  void loadOAS3(String path) {
+    OAS3Document doc = new OAS3Document(path);
+    for(String path in doc.paths) {
+      console.debug("setting up path " + path);
     }
   }
 
+  //void addFiles(String path, {recursive: true}) {
+  //  disk.addFiles(path, recursive: recursive);
+  //}
+
+  List<RestedResource> resources = new List();
+
   void redirect(RestedRequest request, String url) {
-    request.request.response.redirect(Uri.http(request.request.requestedUri.host, url));
+    request.request.response
+        .redirect(Uri.http(request.request.requestedUri.host, url));
   }
 
   RestedRequestHandler() {
-    rsettings = new RestedSettings();
+    rootDirectory = Directory.current.path;
+    console.debug("Rested rootDirectory:" + rootDirectory);
+    resourcesDirectory = rootDirectory + ('/bin/resources/');
+    rscript.rootDirectory = resourcesDirectory;
+    console.debug("Rested resourcesDirectory:" + resourcesDirectory);
+
     _custom_JWT_verification = custom_JWT_verification;
 
-    if(rsettings.cookies_enabled && rsettings.sessions_enabled) {
-      sessions = new RestedSessionManager();
+    // add if rsettings virtual_disk_enabled
+    //disk = new RestedVirtualDisk();
+
+    if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
+      //sessions = new RestedSessionManager();
+      manager = new SessionManager();
     }
   }
 
+  // ADDED TO DOC
   bool custom_JWT_verification(String token) {
     return true;
   }
 
+  // ADDED TO DOC
   void set_jwt_key(String key) {
     rsettings.jwt_key = key;
   }
 
+  // ADDED TO DOC
   void set_jwt_duration(int minutes) {
     rsettings.jwt_duration = minutes;
   }
 
+  // ADDED TO DOC
   void set_jwt_issuer(String issuer) {
     rsettings.jwt_issuer = issuer;
   }
 
-  Map _convertUrlVariablesToMap(String urlencoded) {
-    Map map = new Map();
-    List<String> pairs = urlencoded.split('&');
-    pairs.forEach((pair) {
-      List<String> variable = pair.split('=');
-      map[variable[0]] = variable[1];
-    });
-    return map;
+  Map _convertUriParametersToMap(String uri, String resourcepath) {
+
   }
 
   // Validates the incoming request and passes it to the proper RestedResource object
@@ -78,36 +116,28 @@ class RestedRequestHandler {
   //            element will become the entire body contents. Some applications seems to
   //            wrap the content like this { "body": { <actual content> }}. This means that
   //            if there is information outside the body tag that is part of the actual
-  //            body then they will be dropped when body = body['body']; is performed. ////////////////////////////////////////////////////////////////////////
+  //            body then they will be dropped when body = body['body']; is performed.
   void handle(HttpRequest incomingRequest) async {
+    console.debug("THREAD#" + threadid.toString());
+    // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
     RestedRequest request = new RestedRequest(incomingRequest, rsettings);
 
+    // Decrypts the session id and sets the session data in the request
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
-      if(request.cookies.containsKey('session_cookie')) {
+      if (request.cookies.containsKey('session')) {
+        var session =
+            manager.getSession(request.cookies.getFirst('session').value);
+        if (session != null) {
+          if (request.deleteSession) {
+            manager.deleteSession(request.cookies.getFirst('session').value);
+          } else {
+            request.session = session;
+          }
+        } else {
+          request.removeCookie(
+              "session"); // remove session cookie on client if there is no equivalent on server
 
-        // Decrypt the session id
-        var session_id = sessions.decryptSessionId(request.cookies.getFirst('session_cookie').value);
-
-        // If decrypt fails then return error 400 bad request
-        if(session_id == null) {
-          request.errorResponse(400);
-          return;
         }
-
-        // Check if session exists in session manager
-        if(sessions.containsKey(session_id)) {
-          
-          // Get the session data from the session manager and set it in the request
-          request.session = null;
-          request.session = sessions.getSessionData(session_id);
-          console.debug("Session data:" + request.session.toString());
-        }
-
-
-        //var session = sessions.getSession(request.cookies.getFirst('session_cookie').value);
-        //if(session != null) {
-        //  request.session = session;
-        //}
       }
     }
 
@@ -115,37 +145,23 @@ class RestedRequestHandler {
     String unverified_access_token = null;
     bool expired_token = false;
     int exception = 0;
-    Map body = new Map();
 
-    // If sessions (and cookies) are enable, access_token needs to be in the session.
+    // 2 --- Get access_token from either cookie or session, then verify it.
+
+    // Get access_token from cookie. Gets overwritten by access_token from session if present.
     if (rsettings.cookies_enabled) {
-      if (rsettings.sessions_enabled) {
-          if(request.session.containsKey("access_token")) {
-            unverified_access_token = request.session["access_token"];
-          }
-      } else {
-        if (request.cookies.containsKey("access_token")) {
-          unverified_access_token =
-              request.cookies.getFirst("access_token").value;
-        }
+      if (request.cookies.containsKey("access_token")) {
+        unverified_access_token =
+            request.cookies.getFirst("access_token").value;
       }
     }
 
-    // Crude and to-be-improved method of extracring the access_token from a client cookie
-    // and saving it as unverified.
-    /*
-      if (incomingRequest.cookies != '[]') {
-        List<String> values = incomingRequest.cookies
-            .toString()
-            .substring(1, incomingRequest.cookies.toString().length - 1)
-            .split(';');
-        for (String value in values) {
-          if (value.contains('access_token=')) {
-            unverified_access_token = value.substring(13);
-          }
-        }
+    // Get access_token from session. Overwrites access_token from cookie if present.
+    if (rsettings.sessions_enabled) {
+      if (request.session.containsKey("access_token")) {
+        unverified_access_token = request.session["access_token"];
       }
-    }*/
+    }
 
     // If there is an Authorization header, the token will be extracted if it is prefixed
     // in the header either as Bearer, access_token, token or jwt followed by a space and
@@ -202,52 +218,41 @@ class RestedRequestHandler {
       exception = 400;
     }
 
+    // 3 --- Identify the contentType so we can create the body map of the request correctly.
+
     // Splitting as a list in order to check each element instead of doing a literal.
     // Example: application/json; charset=utf-8
-    List<String> type =
-        incomingRequest.headers.contentType.toString().split(';');
+    // Each bodymap conversion function should return NULL if conversion fails for some reason.
+    // If the data is empty however it should return an empty map.
+    List<String> type = incomingRequest.headers.contentType.toString().split(';');
 
-    // If there are no headers (simplest GET request)
-    if (type.toString() == "[null]") {
-      // do nothing... or perhaps get variables from URL?
-
-      // If body is JSON
-    } else if (type.contains("application/json")) {
-      String temp = await utf8.decoder.bind(incomingRequest).join();
-
-      try {
-        body = json.decode(temp);
-      } on FormatException catch (e) {
-        console.error(e.toString());
-        exception = 400;
-      }
-
-      // Unsure if this even triggers
-      if (body.containsKey("body")) {
-        body = body['body'];
-      }
-
+    if (type.contains("application/json")) {
+      String jsonstring = await utf8.decoder.bind(incomingRequest).join();
+      Map body = applicationJsonToBodyMap(jsonstring);
       request.setBody(body);
 
-      // Grab urlencoded variables and convert to Map. If it contains a key 'body' then
-      // most likely the structure is body { <data> }. Extract the data and set it as body.
-      // This can potentially lead to &/¤#-ups so a method to check if there is a singular
-      // root element "body" should replace this garbage.
     } else if (type.contains("application/x-www-form-urlencoded")) {
-      var urlencoded = await utf8.decoder.bind(incomingRequest).join();
-      body = _convertUrlVariablesToMap(urlencoded);
-
-      if (body.containsKey("body")) {
-        body = body['body'];
-      }
-
+      String urlencoded = await utf8.decoder.bind(incomingRequest).join();
+      Map body = queryParametersToBodyMap(urlencoded);
       request.setBody(body);
 
-      // If body isn't specified
+    } else if (type.contains("multipart/form-data")) {
+      String data = await utf8.decoder.bind(incomingRequest).join();
+      Map body = multipartFormDataToBodyMap(type.toString(), data);
+      request.setBody(body);
+      
     } else {
-      console.alert("UNSUPPORTED HEADER TYPE: " + type.toString());
-      body['body'] = await utf8.decoder.bind(incomingRequest).join();
+      if(type.toString() != "[null]") {
+        console.alert("UNSUPPORTED HEADER TYPE: " + type.toString());
+      }
     }
+
+    if(request.body == null) {
+      exception = 400; // BAD REQUEST
+    }
+
+    // 4 --- ?
+
 
     // Creates the RestedRequest first. If the exception error code is set to 452 Token Expired
     // an "error" in rscript_args is added along with error description.
@@ -262,34 +267,125 @@ class RestedRequestHandler {
     }
 
     if (exception != 0) {
-      request.errorResponse(exception);
+      //request.errorResponse(exception);
+      request.response(data: "error somethingsomething");
     } else {
       request.access_token = access_token;
 
       int index = getResourceIndex(request.path);
 
       if (index != null) {
-        if (resources[index].path.contains('<')) {
-          request.createPathArgumentMap(resources[index].tagged_path,
-              PathParser.get_keys(resources[index].path));
+        if (resources[index].path.contains('{')) {
+          request.createPathArgumentMap(resources[index].uri_parameters,
+              PathParser.get_uri_keys(resources[index].path));
         }
         resources[index].doMethod(request.method, request);
       } else {
         if (rsettings.files_enabled) {
-          String path = getFilePath(request.path);
+          String path = request.path;
+          if (request.path.substring(0, 1) == '/') {
+            path = request.path.substring(1);
+          }
+          //path = disk.getFile(resourcesDirectory + request.path);
           if (path != null) {
-            request.fileResponse(path);
+            //request.fileResponse(path);
+            //path = resourcesDirectory + path;
+            request.response(
+                type: "file",
+                filepath:
+                    path); //-----------------------------------------------------------------------------------------------
+            RestedResponse resp = new RestedResponse(request);
+            resp.respond();
           } else {
             console.debug("Resource not found at endpoint " + request.path);
-            request.errorResponse(404);
+            request.response(data: "404 error somethingsomething");
           }
         } else {
           console.debug("Resource not found at endpoint " + request.path);
-          request.errorResponse(404);
+          request.response(data: "404 error somethingsomething");
         }
       }
     }
   }
+
+  Map<String, dynamic> applicationJsonToBodyMap(String data) {
+    Map<String, dynamic> bodymap = new Map();
+
+    try {
+        bodymap = json.decode(data);
+      } on FormatException catch (e) {
+        console.error(e.toString());
+        return null;
+      }
+
+      if (bodymap.containsKey("body")) {
+        bodymap = bodymap['body'];
+      }
+
+      return bodymap;
+  }
+
+  // Multipart formdata
+  // file not supported yet, only works on text
+  // https://ec.haxx.se/http/http-multipart
+  Map<String, dynamic> multipartFormDataToBodyMap(String typeHeader, String data){
+    Map<String, dynamic> bodymap = new Map();
+
+    String boundary = typeHeader.split('boundary=')[1];
+    boundary = boundary.substring(0, boundary.length - 1);
+
+    List<String> form = data.split(boundary);
+    for (String item in form) {
+      if (item.contains("Content-Disposition")) {
+
+        List<String> split = item.split('name="');
+        List<String> split2 = split[1].split('"');
+        String name = split2[0];
+
+        LineSplitter ls = new LineSplitter();
+        List<String> lines = ls.convert(split2[1]);
+
+        // First two are always blank. Last is always two dashes. We remove those and
+        // are left with a multiline-supported thingamajiggy
+        lines.removeAt(0);
+        lines.removeAt(0);
+        lines.removeLast();
+        String value = "";
+        if (lines.length > 1) {
+          for (String line in lines) {
+            value = value + line + '\n';
+          }
+        } else {
+          value = lines[0];
+        }
+        bodymap[name] = value;
+      }      
+    }
+    return bodymap;
+  }
+
+  // Grab urlencoded variables and convert to Map. If it contains a key 'body' then
+  // most likely the structure is body { <data> }. Extract the data and set it as body.
+  // This can potentially lead to &/¤#-ups so a method to check if there is a singular
+  // root element "body" should replace this garbage.
+  Map queryParametersToBodyMap(String urlencoded) {
+    Map bodymap = new Map();
+    if(urlencoded == null || urlencoded == "") {
+      return bodymap;
+    } else {
+      List<String> pairs = urlencoded.split('&');
+      pairs.forEach((pair) {
+        List<String> variable = pair.split('=');
+        bodymap[variable[0]] = variable[1];
+      });
+
+      if (bodymap.containsKey("body")) {
+        bodymap = bodymap['body'];
+      }
+
+      return bodymap;
+    }
+  }  
 
   String getFilePath(String path) {
     path = 'bin/resources' + path;
@@ -298,6 +394,18 @@ class RestedRequestHandler {
     } else {
       console.error("Requested path " + path.toString() + " does not exist.");
       return null;
+    }
+  }
+
+  // Predefines resource with supported HTTP verbs, schemas etc. from OAS3
+  void defineResource(String path) {
+    RestedResource resource = new RestedResource();
+    int exists = getResourceIndex(path);
+    if (exists == null) {
+      resource.setPath(path);
+      resources.add(resource);
+    } else {
+      console.error("Attempt to add duplicate resource: " + resource.path.toString());
     }
   }
 
@@ -390,5 +498,298 @@ class RestedJWT {
     } on JwtException {
       return (null);
     }
+  }
+}
+
+class RestedResource {
+  String path = null;
+  String uri_parameters = null;
+  List<String> uri_parameters_list = new List();
+
+  void setPath(String resourcepath) {
+    path = resourcepath;
+    if (resourcepath.contains('{')) {
+      uri_parameters = PathParser.get_uri_parameters(path);
+    }
+    console.debug("uri_parameters for path '" + path.toString() + "' is " + uri_parameters.toString());
+  }
+
+  bool pathMatch(String requested_path) {
+    if (path == requested_path) {
+      return true;
+    } else {
+      if (uri_parameters != null && requested_path != null) {
+        List<String> requested_path_segments = requested_path
+            .substring(1)
+            .split('/'); // substring in order to remove first /
+        List<String> uri_parameters_segments = uri_parameters.substring(1).split('/');
+        if (requested_path_segments.length != uri_parameters_segments.length) {
+          return false;
+        } else {
+          int i = 0;
+          for (String segment in uri_parameters_segments) {
+            if (segment == '{var}') {
+              requested_path_segments[i] = '{var}';
+            }
+            i++;
+          }
+          if (uri_parameters_segments.join() == requested_path_segments.join()) {
+            return true;
+          }
+          return false;
+        }
+      } else {
+        return false; // returning false because paths are null
+      }
+    }
+  }
+
+  // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
+  Map functions = new Map<String, Function>();
+
+  // Stored function for each HTTP error code. Returns standard error if not overridden with a function
+  Map onError = new Map<int, Function>();
+
+  // Storage of bool determining if access_token is required for the http method (_functions). Use method
+  // instead of setting the variable directly.
+  Map _token_required = new Map<String, bool>();
+
+  void require_token(String method, {String redirect_url = null}) {
+    _token_required[method] = true;
+  }
+
+  // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
+  // possible to return a redirect instead by setting the URL in this variable.
+  String protected_redirect = null;
+
+  void invalid_token_redirect(String url) {
+    protected_redirect = url;
+  }
+
+  RestedResource() {
+    //disk = new RestedVirtualDisk();
+    functions['get'] = get;
+    functions['post'] = post;
+    functions['put'] = put;
+    functions['patch'] = patch;
+    functions['delete'] = delete;
+    functions['copy'] = copy;
+    functions['head'] = head;
+    functions['options'] = options;
+    functions['link'] = link;
+    functions['unlink'] = unlink;
+    functions['purge'] = purge;
+    functions['lock'] = lock;
+    functions['unlock'] = unlock;
+    functions['propfind'] = propfind;
+    functions['view'] = view;
+
+    for (String value in rsettings.allowedMethods) {
+        _token_required[value] = false;
+      }
+  }
+
+  void get(RestedRequest request) {}
+  void post(RestedRequest request) {}
+  void put(RestedRequest request) {}
+  void patch(RestedRequest request) {}
+  void delete(RestedRequest request) {}
+  void copy(RestedRequest request) {}
+  void head(RestedRequest request) {}
+  void options(RestedRequest request) {}
+  void link(RestedRequest request) {}
+  void unlink(RestedRequest request) {}
+  void purge(RestedRequest request) {}
+  void lock(RestedRequest request) {}
+  void unlock(RestedRequest request) {}
+  void propfind(RestedRequest request) {}
+  void view(RestedRequest request) {}
+
+  Map<String, dynamic> getRequestSchema = null;
+
+  void wrapper(String method, RestedRequest request) async {
+    await functions[method](request);
+
+    if (request.session.containsKey('delete')) {
+      if (request.session['delete']) {
+        manager.deleteSession(request.session['id']);
+        request.request.response.headers
+            .add("Set-Cookie", "session=; Path=/; Max-Age=0; HttpOnly");
+      }
+    } else {
+      if (request.session.length > 0) {
+        saveSession(request);
+      }
+    }
+  }
+
+  // If the request contains an access_token then it has already been verified before this function
+  // is executed. If the corresponding http method protection variable is set to true then this
+  // function will check if access_token is set (and hence verified). If it is then it will allow
+  // the http method to execute. If access_token is null it will return an 401 Unathorized error
+  // response. If the http method protection variable is set to false however then it will execute
+  // the corresponding method without any checks.
+  void doMethod(String method, RestedRequest request) async {
+    method = method.toLowerCase();
+    if (_token_required[method]) {
+      if (request.access_token != null) {
+        await wrapper(method, request);
+        RestedResponse response = RestedResponse(request);
+        response.respond();
+      } else {
+        if (protected_redirect != null) {
+          console.debug("PROTECTED REDIRECT!");
+          request.response(type: "redirect", data: protected_redirect);
+          RestedResponse response = RestedResponse(request);
+          //request.request.response.statusCode = response.responsedata['status'];
+          response.respond();
+        } else {
+          request.response(data: "401 error somethingsomething");
+        }
+      }
+    } else {
+      await wrapper(method, request);
+      RestedResponse response = RestedResponse(request);
+      response.respond();
+    }
+  }
+}
+
+// ------------- RESTED RESPONSE ------------------------------------------------------//
+
+RestedScript rscript = new RestedScript();
+
+class RestedResponse {
+  Responses error_responses = new Responses();
+  Mimetypes mimetypes = new Mimetypes();
+
+  RestedRequest request;
+
+  RestedResponse(this.request);
+
+  void respond() async {
+    request.request.response.statusCode = request.restedresponse['status'];
+
+    switch (request.restedresponse['type']) {
+      case "redirect":
+        {
+          console.debug(":: --> Redirect() to " +
+              request.restedresponse['data'].toString());
+          request.request.response.redirect(Uri.http(
+              request.request.requestedUri.host,
+              request.restedresponse['data']));
+        }
+        break;
+
+      case "text":
+        {
+          console.debug(":: Textresponse()");
+          request.request.response.headers.contentType =
+              new ContentType("text", "text", charset: "utf-8");
+          response(request.restedresponse['data']);
+        }
+        break;
+
+      case "html":
+        {
+          console.debug(":: Htmlresponse()");
+          request.request.response.headers.contentType =
+              new ContentType("text", "html", charset: "utf-8");
+          response(request.restedresponse['data']);
+        }
+        break;
+
+      case "json":
+        {
+          console.debug(":: Jsonresponse()");
+          request.request.response.headers.contentType =
+              new ContentType("application", "json", charset: "utf-8");
+          response(request.restedresponse['data']);
+        }
+        break;
+
+      case "file":
+        {
+          if (request.restedresponse['filepath'] != null) {
+            String filepath =
+                resourcesDirectory + request.restedresponse['filepath'];
+            console.debug(":: Fileresponse() using path " + filepath);
+
+            bool fileExists = await File(filepath).exists();
+            if (fileExists) {
+              String filetype = p.extension(filepath);
+              console.debug(":: Filetype is " + filetype);
+
+              // Set headers
+              request.request.response.headers.contentType =
+                  mimetypes.getContentType(filetype);
+
+              if (mimetypes.isBinary(filetype)) {
+                File file = new File(filepath);
+                var rangeheadervalue =
+                    request.request.headers.value(HttpHeaders.rangeHeader);
+                if (rangeheadervalue != null) {
+                  request.request.response.statusCode =
+                      HttpStatus.partialContent;
+                }
+                Future f = file.readAsBytes();
+                request.request.response
+                    .addStream(f.asStream())
+                    .whenComplete(() {
+                  request.request.response.close();
+                });
+              } else {
+                String textdata = "";
+                if (rsettings.open_html_as_rscript) {
+                  //textdata = rscriptToHtml(filepath);
+                  console.debug("rscript_args.args in RestedResponse.respond()=" + request.rscript_args.args.toString());
+                  textdata = await rscript.createDocument(filepath, request.rscript_args);
+                } else {
+                  textdata = File(filepath).readAsStringSync(encoding: utf8);
+                }
+                response(textdata);
+              }
+            } else {
+              console.error("error 404");
+              response("404 not found: " + filepath);
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  String filetypeFromPath(String path) {
+    List<String> dirsplit = path.split('/');
+  }
+/*
+  // Parses html files for rscript and returns processed html
+  Future<String> rscriptToHtml(String filepath) async {
+    //if (request.restedresponse.containsKey('args')) {
+      //request.rscript_args.args = request.restedresponse['args'];
+    //}
+    return await rscript.createDocument(filepath, request.rscript_args);
+  }*/
+
+  void fileResponse(File file) {
+    Future f = file.readAsBytes();
+    request.request.response.addStream(f.asStream()).whenComplete(() {
+      request.request.response.close();
+    });
+  }
+
+  void fileStream() {
+    /*
+    Future f = file.readAsBytes();
+    request.request.response.addStream(f.asStream()).whenComplete(() {
+      request.request.response.close();
+    });    */
+  }
+
+  void response(String data) async {
+    if (data != "") {
+      await request.request.response.write(data);
+    }
+    request.request.response.close();
   }
 }

@@ -11,6 +11,8 @@ class RestedSettings {
     loadSettingsFromEnvironment();
   }
 
+  List<String> allowedMethods = ["get", "post", "put", "patch", "delete", "copy", "head", "options", "link", "unlink", "purge", "lock", "unlock", "propfind" "view"];
+
   /// Path to settings JSON file.
   String settings_filepath = '/bin/settings.json';
 
@@ -47,8 +49,12 @@ class RestedSettings {
   /// Set to true if html files served will be treated as an rscriptResponse. Dependable on files_enabled to be true.
   bool open_html_as_rscript;
 
-  /// Set to true to enable /debug/ resource and request logging. Not for production environment!
-  bool debug_enabled;
+  /// 0 = silent
+  /// 1 = errors
+  /// 2 = errors, alerts/warnings
+  /// 3 = errors, alerts/warnings, headers/messages
+  /// 4 = errors, alerts/warnings, headers/messages, debug
+  int message_level;
 
   void createSettingsFile() {
     Map<String, dynamic> settings = new Map();
@@ -63,7 +69,7 @@ class RestedSettings {
     settings['session_cookie_key'] = "my 32 length key................";
     settings['files_enabled'] = true;
     settings['open_html_as_rscript'] = true;
-    settings['debug_enabled'] = false;
+    settings['message_level'] = 0;
     File(settings_filepath)
         .writeAsStringSync(jsonEncode(settings), encoding: utf8);
   }
@@ -85,7 +91,7 @@ class RestedSettings {
     session_cookie_key = settings['session_cookie_key'];
     files_enabled = settings['files_enabled'];
     open_html_as_rscript = settings['open_html_as_rscript'];
-    debug_enabled = settings['debug_enabled'];
+    message_level = settings['message_level'];
   }
 
   void loadSettingsFromEnvironment() {
@@ -123,9 +129,9 @@ class RestedSettings {
     if (_envVars.containsKey("open_html_as_rscript")) {
       open_html_as_rscript = toBool(_envVars["open_html_as_rscript"]);
     }
-    if (_envVars.containsKey("debug_enabled")) {
-      debug_enabled = toBool(_envVars["debug_enabled"]);
-    }
+    if (_envVars.containsKey("message_level")) {
+      message_level = int.parse(_envVars["message_level"]);
+    }    
   }
 
   bool toBool(String input) {

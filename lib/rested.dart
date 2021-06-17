@@ -1,7 +1,7 @@
 // Rested Web Framework
-// Version: 0.2.0-alpha
+// Version: 0.3.0-alpha
 // www.restedwf.com
-// © 2020 Thomas Sebastian Berge
+// © 2021 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'dart:async';
@@ -15,6 +15,7 @@ import 'package:encrypt/encrypt.dart';
 import 'src/consolemessages.dart';
 import 'src/restedscript.dart';
 import 'src/parser.dart';
+export 'src/parser.dart';
 import 'src/pathparser.dart';
 
 import 'src/restedrequest.dart';
@@ -28,10 +29,17 @@ import 'src/restedserver.dart';
 export 'src/restedserver.dart';
 import 'src/restedrequesthandler.dart';
 export 'src/restedrequesthandler.dart';
-import 'src/restedresource.dart';
-export 'src/restedresource.dart';
+import 'src/restedvirtualdisk.dart';
+export 'src/restedvirtualdisk.dart';
+import 'src/oas3.dart';
+export 'src/oas3.dart';
 
-ConsoleMessages console = new ConsoleMessages(debug_level: 4);
+//import 'server.dart';
+//export 'server.dart';
+
+RestedSettings rsettings = new RestedSettings();
+ConsoleMessages console = new ConsoleMessages(debug_level: rsettings.message_level);
+
 Map responses = new Map();
 
 class RestedSchema {

@@ -27,10 +27,6 @@ class CookieCollection {
 
   CookieCollection(this.cookies);
 
-  void add(Cookie newcookie) {
-    cookies.add(newcookie);
-  }
-
   List<Cookie> get(String name) {
     List<Cookie> returnlist = new List();
     for (Cookie cookie in cookies) {
@@ -63,8 +59,9 @@ class CookieCollection {
 
 class RestedRequest {
   //  Request actions too be performed
-  String responseType = ""; // redirect/html/json/file
-  String responseResource = ""; // /some/resource  /path/to/somefile.jpg   <html>somedata</html>
+  //String responseType = ""; // redirect/html/json/file
+  //String responseResource = ""; // /some/resource  /path/to/somefile.jpg   <html>somedata</html>
+  bool deleteSession = false;
   //
   HttpRequest request;
   String method;
@@ -115,10 +112,7 @@ class RestedRequest {
     if (maxAge != null) {
       newcookie.maxAge = maxAge;
     }
-    request.response.cookies.add(newcookie);
-  }
-
-  void addCookie(Cookie newcookie) {
+    print("Adding new cookie: " + newcookie.toString());
     request.response.cookies.add(newcookie);
   }
 
@@ -127,6 +121,22 @@ class RestedRequest {
     newcookie.path = "/";
     newcookie.maxAge = 0;
     request.response.cookies.add(newcookie);
+  }
+
+  void removeSession() {
+    removeCookie("session");
+    deleteSession = true;
+  }
+
+  // Try to find a cookie. 
+  String getCookie(String name) {
+    var temp = cookies.getFirst(name);
+    if(temp != null) {
+      return temp.value;
+    } else {
+      print("cookie not found: " + name);
+      return "";
+    }
   }
 
   RestedRequest(HttpRequest this.request, RestedSettings server_settings) {
@@ -150,56 +160,104 @@ class RestedRequest {
     console.debug(method + " " + path);
   }
 
-  Map<String, String> path_arguments = new Map();
+  Map<String, String> uri_parameters = new Map();
 
   void createPathArgumentMap(String tagged_path, List<String> keys) {
+
+    print("keys=" + keys.toString());
+    print("tagged_path=" + tagged_path);
+
     List<String> path_segments = path.substring(1).split('/');
     List<String> tagged_path_segments = tagged_path.substring(1).split('/');
     int i = 0;
     int x = 0;
     for (String segment in tagged_path_segments) {
-      if (segment == '<var>') {
-        path_arguments[keys[x]] = path_segments[i];
+      if (segment == '{var}') {
+        uri_parameters[keys[x]] = path_segments[i];
         x++;
       }
       i++;
     }
   }
 
+  Map<String, dynamic> restedresponse = new Map();
+
   void response({
+      String type = "text", 
+      String data = "", 
+      File file = null, 
+      bool stream = false,
+      int status = 200,
+      String filepath = null,
+  }) {
+    restedresponse['type'] = type;
+    restedresponse['data'] = data;
+    restedresponse['file'] = file;
+    restedresponse['isStream'] = stream;
+    restedresponse['filepath'] = filepath;
+    restedresponse['status'] = status;
+    //print("Ready to respond with:" + restedresponse.toString());
+  }
+
+  void response2() {
+    if(restedresponse['type'] == "redirect") {
+      request.response.redirect(Uri.http(request.requestedUri.host, restedresponse['data']));
+    } else {
+
+      // Set headers
+      request.response.headers.contentType = mimetypes.getContentType(restedresponse['type']);
+      request.response.statusCode = HttpStatus.ok;
+
+      // Write responsedata if not blank
+      if(restedresponse['data'] != ""){
+        request.response.write(restedresponse['data']);
+      }
+
+      // Close response
+      request.response.close();      
+    }
+  }
+
+  void oldresponse({
       String type = "text", 
       String data = "", 
       File file = null, 
       bool stream = false
       }) {
 
-    // Headers
-    request.response.headers.contentType = mimetypes.getContentType(type);
-    request.response.statusCode = HttpStatus.ok;
-
-    if(stream) {
-      request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
-    }
-
-    // Writing data and closing
-    if(stream) {
-      Future f = file.readAsBytes();
-      request.response.addStream(f.asStream()).whenComplete(() {
-        request.response.close();
-      });
+    if(type == "redirect") {
+      request.response.redirect(Uri.http(request.requestedUri.host, data));
     } else {
-      if(data != ""){
-        request.response.write(data);
+      // Headers
+      print("Type=" + type.toString());
+      request.response.headers.contentType = mimetypes.getContentType(type);
+      request.response.statusCode = HttpStatus.ok;
+
+      if(stream) {
+        request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
       }
-      request.response.close();
+
+      // Writing data and closing
+      if(stream) {
+        Future f = file.readAsBytes();
+        request.response.addStream(f.asStream()).whenComplete(() {
+          request.response.close();
+        });
+      } else {
+        if(data != ""){
+          request.response.write(data);
+        }
+        request.response.close();
+      }
     }
   }
 
   void redirect(String resource) {
-    request.response.redirect(Uri.http(request.requestedUri.host, resource));
+    restedresponse['type'] = "redirect";
+    restedresponse['data'] = resource;
   }
-
-  void fileResponse(String path) async {
+/*
+  void fileResponse2(String path) async {
     bool isBinary = true;
     String fileExtension = path.split('.')[1];
     request.response.headers.contentType = mimetypes.getContentType(fileExtension);
@@ -211,7 +269,7 @@ class RestedRequest {
 
     if (fileExtension == "html" && rsettings.open_html_as_rscript) {
       path = path.substring("bin/resources/".length);
-      rscriptResponse(path, from_url: true);
+      rscriptResponse2(path, from_url: true);
     } else {
       if (isBinary == null) {
         console.error("Unsupported file type: " + fileExtension);
@@ -273,7 +331,7 @@ class RestedRequest {
       }
     }
   }
-
+*/
   Map<String, int> getRanges(String rangeheader, int fileLength) {
     Map<String, int> values = new Map();
     List<String> ranges = rangeheader.split(',');
@@ -291,28 +349,27 @@ class RestedRequest {
       return values;
     }
   }
-
-  void rscriptResponse(String filepath,
+/*
+  void rscriptResponse2(String filepath,
       {bool from_url = false,
-      List<dynamic> list = null,
-      Map<dynamic, dynamic> map = null}) {
+      Map<dynamic, dynamic> args = null}) {
     request.response.headers.contentType =
         new ContentType("text", "html", charset: "utf-8");
     if (from_url == true) {
-      //filepath = 'bin/resources/' + filepath;
     }
-    rscript_args.list = list;
-    rscript_args.map = map;
-    String html = rscript.createDocument(filepath, rscript_args);
+    if(args != null) {
+      rscript_args.args = args;
+    }
+    String html = await rscript.createDocument(filepath, rscript_args);
     request.response.write(html);
     request.response.close();
-  }
-
-  void errorResponse(int code) {
+  }*/
+/*
+  void errorResponse(int code) async {
     request.response.headers.contentType =
         new ContentType("text", "plain", charset: "utf-8");
     request.response.statusCode = code;
-    request.response.write(error_responses.text(code));
+    await request.response.write(error_responses.text(code));
     request.response.close();
-  }
+  }*/
 }

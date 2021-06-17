@@ -8,7 +8,7 @@
 
 import 'dart:io';
 import 'dart:convert';
-import 'package:rested/rested.dart';
+import 'rested.dart';
 
 // A remote server object we can communicate with. In this example the remote server happens
 // to be the same server.
@@ -24,26 +24,33 @@ RestedRequestHandler rested;
 Map<String, String> userdatabase = new Map();
 
 // Webpages as string.
-String loginpage = '<html><form action="/login" method="POST"><label for="username">Username:</label><br><input type="text" id="username" name="username"><br><label for="password">Password:</label><br><input type="text" id="password" name="password"><br><br><input type="submit" value="Submit"></form></html>';
+String loginpage = '<html><form action="/login" method="POST"><label for="username">Username:</label><br><input type="text" id="username" name="username"><br><label for="password">Password:</label><br><input type="password" id="password" name="password"><br><br><input type="submit" value="Submit"></form></html>';
 String adminpage = '<html>Welcome mr. Administrator! You have a session_cookie with a valid access_token in your browser. Awesome! <a href="/logout">Remove cookie and see what happens.</a></html>';
 String guestpage = '<html>Hello guest! Feel yourself at home or <a href="/logout">logout</a>.</html>';
 
+// main is only used to instantiate the server. Treat the Rested objectconstructor as your main instead.
 main() async {
+  // Create a server instance, start the server and keep it alive. Alternatively you can skip the keepAlive()
+  // function and write your own conditional loop to control when the application exits.
+  RestedServer server = new RestedServer();
+  await server.start();
+  server.keepAlive();
+}
 
-  // Create the user "admin" and "guest".
-  userdatabase['admin'] = 'pass1234';
-  userdatabase['guest'] = '';
+class Rested extends RestedRequestHandler {
+  Rested() {
 
-  // Instantiate the RestedRequestHandler and add some resource endpoints with their respective addresses.
-  rested = new RestedRequestHandler();
-  rested.addResource(new resource_root(), "/");
-  rested.addResource(new resource_login(), "/login");
-  rested.addResource(new resource_logout(), "/logout");
-  rested.addResource(new resource_database(), "/database/verify");
+    // Create two accounts in the "database"
+    userdatabase['admin'] = 'pass1234';
+    userdatabase['guest'] = '';
 
-  // Create a server instance and start a single isolate testserver.
-  RestedServer server = new RestedServer(rested);
-  server.startTestServer("0.0.0.0", 8080);
+    this.address = "0.0.0.0";
+    this.port = 8080;
+    this.addResource(new resource_root(), "/");
+    this.addResource(new resource_login(), "/login");
+    this.addResource(new resource_logout(), "/logout");
+    this.addResource(new resource_database(), "/database/verify");
+  }
 }
 
 // This resource serves the root '/' webpage. If you try to enter without a valid access_token you will
@@ -77,10 +84,10 @@ class resource_database extends RestedResource {
         Map token = jwt_handler.generate_token(additional_claims: claim_username);
         request.response(type: "json", data: json.encode(token));
       } else {
-        request.errorResponse(401);
+        request.response(data: "error 401");
       }
     } else {
-      request.errorResponse(401);
+      request.response(data: "error 401");
     }
   } 
 }
@@ -101,13 +108,11 @@ class resource_login extends RestedResource {
       "password": formdata['password']
     };
 
-    String loginresult = await api.post("/database/verify", json: logindata);
+    String loginresult = await api.post("/database/verify", jsondata: logindata);
     if (loginresult.contains("access_token")) {
       Map result = json.decode(loginresult);
       request.session["access_token"] = result['access_token'];
       request.session["username"] = formdata["username"];
-      Cookie session_cookie = rested.saveSession(request);
-      request.addCookie(session_cookie);
       request.redirect('/');
     } else {
       request.redirect('/login');
@@ -118,7 +123,7 @@ class resource_login extends RestedResource {
 // Clears session data.
 class resource_logout extends RestedResource {
   RestedRequest get(RestedRequest request) {
-    request.removeCookie("session_cookie");
+    request.removeSession();
     request.redirect('/');
   }
 }

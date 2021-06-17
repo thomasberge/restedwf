@@ -1,5 +1,5 @@
-name: rested
-version: 0.1.0
+name: RestedWF
+version: 0.3.0
 description: >-
   Rested Web Framework
 environment:
@@ -9,3 +9,5 @@ dependencies:
   path: ^1.6.2
   jaguar_jwt: ^2.1.6
   encrypt: ^4.0.2
+  nanoid: ^1.0.0
+

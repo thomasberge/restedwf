@@ -1,24 +1,60 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2020 Thomas Sebastian Berge
+// © 2021 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'dart:async';
+import 'dart:isolate';
 import 'consolemessages.dart';
 import 'restedrequesthandler.dart';
+import '../server.dart';
+import 'restedsettings.dart';
 
-ConsoleMessages console = new ConsoleMessages(debug_level: 4);
+RestedSettings rsettings = new RestedSettings();
+ConsoleMessages console = new ConsoleMessages(debug_level: rsettings.message_level);
 
 class RestedServer {
-  RestedRequestHandler request_handler;
+  List<Thread> workers = new List();
 
-  RestedServer(this.request_handler);
+  RestedServer();
 
-  void startTestServer(String address, int port) async {
-    var server = await HttpServer.bind(address, port);
-    console.message("Test server listening on " + address + ":" + port.toString());
+  void start() async {
+    int i = 0;
+    while(i < 1) {
+      print("Thread #" + (i+1).toString() + " starting ...");
+      workers.add(new Thread(i));
+      await workers[i].start();
+      i++;
+    }
+  }
+
+  void keepAlive() {
+    while(true){}
+  }
+}
+
+class Thread {
+  final int threadid;
+  Isolate _isolate;
+
+  Thread(this.threadid);
+
+  Future<void> start() async {
+      _isolate = await Isolate.spawn(
+        _thread,
+        threadid
+      );
+  }
+
+  static _thread(int threadid) async {
+    print("Thread #" + (threadid+1).toString() + " started.");
+
+    Rested rested = new Rested();
+    rested.threadid = threadid;
+    var server = await HttpServer.bind(rested.address, rested.port, shared: true);
+
     await for (HttpRequest request in server) {
-      request_handler.handle(request);
-    }    
+      rested.handle(request);
+    }
   }
 }

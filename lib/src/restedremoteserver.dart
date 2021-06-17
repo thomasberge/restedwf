@@ -62,16 +62,18 @@ class RestedRemoteServer {
     return result;
   }
 
-  Future<dynamic> newpost(
+  Future<dynamic> post(
     String resource, {
+      String returntype = "body",   // body (returns body as string), binary (returns body as binary), response (returns entire response)
       String data = "", 
-      String jsondata = null, 
+      Map jsondata = null, 
       bool oauth1 = false, 
       bool soap = false,
       List<String> soap_envelopes = null,
       String soap_username,
       String soap_password,
-      String soap_body
+      String soap_body,
+      Map<String, String> headers = null
       }) async {
 
     String url = getFullUrlPath(resource);
@@ -86,8 +88,8 @@ class RestedRemoteServer {
       url = _getOAuthURL("POST", url); 
     }
 
-    List<String> envelopes;
     if(soap) {
+      List<String> envelopes;
       soap_body = "<soapenv:Envelope {%envelope%}><soapenv:Header/><soapenv:Body>{%body%}</soapenv:Body></soapenv:Envelope>".replaceAll("{%body%}", soap_body);
 
       // Mye unødvendig tullete kode her rundt envelopes. Må ryddes og forkortes.
@@ -105,14 +107,23 @@ class RestedRemoteServer {
     }
 
     HttpClient client = new HttpClient();
-    print("URL --> " + url.toString());
+    print("Sending request to " + url.toString());
     HttpClientRequest api_request = await client.postUrl(Uri.parse(url));
+
+    if(headers != null) {
+      for(MapEntry e in headers.entries) {
+        api_request.headers.add(e.key.toString(), e.value.toString());
+        print("Request Headers:");
+        print(api_request.headers.toString());
+      }
+    }
+
     if(soap) {
       api_request.headers.add(HttpHeaders.authorizationHeader, basicAuthenticationHeader(soap_username, soap_password));
       api_request.headers.contentType = new ContentType("application", "xml");
       List<int> bytes = utf8.encode(soap_body);
       api_request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
-      api_request.headers.add("SOAPAction", "");      
+      api_request.headers.add("SOAPAction", "");
     } else {
       api_request.headers.contentType = new ContentType("application", "json; charset=UTF-8");
     }
@@ -125,21 +136,30 @@ class RestedRemoteServer {
       api_request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
       api_request.write(data);
     } else if(jsondata != null) {
-      List<int> bytes = utf8.encode(jsondata);
+      List<int> bytes = utf8.encode(json.encode(jsondata));
       api_request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);            
-      api_request.write(jsondata);
+      api_request.write(json.encode(jsondata));
     }
     HttpClientResponse api_response = await api_request.close();
     //print("response-type: " + api_response.headers.contentType.toString());
-    if(api_response.headers.contentType == ContentType("application", "json"))
-    {
-      //print("response-type: application/json");
-      result = await utf8.decoder.bind(api_response).join();
+
+    if(returntype == "body") {
+      if(api_response.headers.contentType == ContentType("application", "json"))
+      {
+        //print("response-type: application/json");
+        result = await utf8.decoder.bind(api_response).join();
+      } else {
+        //print("response-type: undefined");
+        result = await utf8.decoder.bind(api_response).join();
+      }
+      return result;
+    } else if(returntype == "binary") {
+      print("binary returntype not yet implemented");
+    } else if(returntype == "response") {
+      return api_response;
     } else {
-      //print("response-type: undefined");
-      result = await utf8.decoder.bind(api_response).join();
+      print("RestedRemoteServer Error. Returntype " + returntype + " not supported. Valid returntypes: 'body', 'binary' or 'response'");
     }
-    return result;    
   }
 
   String basicAuthenticationHeader(String username, String password) {
@@ -158,17 +178,18 @@ class RestedRemoteServer {
    return new String.fromCharCodes(codeUnits);
   }
 
+  /*
   Future<String> post(String url,
-      {String token = null, Map json = null, String text = null}) async {
+      {String token = null, Map json_data = null, String text = null}) async {
     //HttpClientRequest api_request;
 
     final client = HttpClient();
     final api_request = await client.post(address, port, url);
 
-    if (json != null) {
+    if (json_data != null) {
       api_request.headers
           .set(HttpHeaders.contentTypeHeader, 'application/json');
-      api_request.write(jsonEncode(json));
+      api_request.write(jsonEncode(json_data));
       //api_request = await HttpClient().post(address, port, url)
       //..headers.contentType = ContentType.json
       //..write(jsonEncode(json));
@@ -182,7 +203,7 @@ class RestedRemoteServer {
     HttpClientResponse api_response = await api_request.close();
     String temp = await utf8.decoder.bind(api_response).join();
     return temp;
-  }
+  }*/
 
   String _getOAuthURL(String method, String url, {String token = ""}) {
 
