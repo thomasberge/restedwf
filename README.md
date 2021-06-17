@@ -18,6 +18,7 @@ These are the main features currently supported
 - Automatic parsing of incoming body for JSON and webforms.
 - Support for easy HTTP requests.
 - Text/binary file server support, although with limited streaming capabilities.
+- RestedScript, a serverside scripting language.
 - Settings from either code, environment or json file.
 
 ### Example
