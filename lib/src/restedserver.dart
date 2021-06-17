@@ -28,8 +28,10 @@ class RestedServer {
     }
   }
 
-  void keepAlive() {
-    while(true){}
+  void keepAlive() async {
+    while(true){
+      await Future.delayed(Duration(seconds: 1));
+    }
   }
 }
 
