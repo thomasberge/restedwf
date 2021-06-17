@@ -63,7 +63,7 @@ class Rested extends RestedRequestHandler {
   
   Rested() {
     this.address = "127.0.0.1";
-    this.port = 8080;
+    this.port = 80;
     this.addResource(Resource_root(), "/");
   }
 }
