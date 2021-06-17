@@ -12,7 +12,7 @@ main() async {
 class Rested extends RestedRequestHandler {
   Rested() {
     this.address = "0.0.0.0";
-    this.port = 8080;
+    this.port = 80;
     this.addResource(Resource_root(), "/");
   }
 }
