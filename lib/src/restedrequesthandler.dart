@@ -1,6 +1,6 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2020 Thomas Sebastian Berge
+// © 2021 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'dart:async';
@@ -9,20 +9,21 @@ import 'dart:convert';
 
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'package:path/path.dart' as p;
+import 'package:rested_script/rested_script.dart';
 
 import 'consolemessages.dart';
 import 'pathparser.dart';
 import 'restedsession.dart';
 import 'restedsettings.dart';
 import 'restedrequest.dart';
-import 'restedscript.dart';
 import 'responses.dart';
 import 'mimetypes.dart';
 import 'restedvirtualdisk.dart';
 import 'oas3.dart';
 
 RestedSettings rsettings = new RestedSettings();
-ConsoleMessages console = new ConsoleMessages(debug_level: rsettings.message_level);
+ConsoleMessages console =
+    new ConsoleMessages(debug_level: rsettings.message_level);
 Function _custom_JWT_verification;
 SessionManager manager;
 RestedVirtualDisk disk = null;
@@ -45,14 +46,13 @@ void saveSession(RestedRequest request) {
 }
 
 class RestedRequestHandler {
-
   String address = "127.0.0.1";
   int port = 8080;
   int threadid = 0;
 
   void loadOAS3(String path) {
     OAS3Document doc = new OAS3Document(path);
-    for(String path in doc.paths) {
+    for (String path in doc.paths) {
       console.debug("setting up path " + path);
     }
   }
@@ -106,9 +106,7 @@ class RestedRequestHandler {
     rsettings.jwt_issuer = issuer;
   }
 
-  Map _convertUriParametersToMap(String uri, String resourcepath) {
-
-  }
+  Map _convertUriParametersToMap(String uri, String resourcepath) {}
 
   // Validates the incoming request and passes it to the proper RestedResource object
   //
@@ -224,35 +222,32 @@ class RestedRequestHandler {
     // Example: application/json; charset=utf-8
     // Each bodymap conversion function should return NULL if conversion fails for some reason.
     // If the data is empty however it should return an empty map.
-    List<String> type = incomingRequest.headers.contentType.toString().split(';');
+    List<String> type =
+        incomingRequest.headers.contentType.toString().split(';');
 
     if (type.contains("application/json")) {
       String jsonstring = await utf8.decoder.bind(incomingRequest).join();
       Map body = applicationJsonToBodyMap(jsonstring);
       request.setBody(body);
-
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
       Map body = queryParametersToBodyMap(urlencoded);
       request.setBody(body);
-
     } else if (type.contains("multipart/form-data")) {
       String data = await utf8.decoder.bind(incomingRequest).join();
       Map body = multipartFormDataToBodyMap(type.toString(), data);
       request.setBody(body);
-      
     } else {
-      if(type.toString() != "[null]") {
+      if (type.toString() != "[null]") {
         console.alert("UNSUPPORTED HEADER TYPE: " + type.toString());
       }
     }
 
-    if(request.body == null) {
+    if (request.body == null) {
       exception = 400; // BAD REQUEST
     }
 
     // 4 --- ?
-
 
     // Creates the RestedRequest first. If the exception error code is set to 452 Token Expired
     // an "error" in rscript_args is added along with error description.
@@ -260,7 +255,9 @@ class RestedRequestHandler {
     // if the error code is still not 0 we return an error response.
 
     if (exception == 452) {
-      request.rscript_args.setString("error", "Token has expired.");
+      //request.rscript_args.setString("error", "Token has expired.");
+      request.status = 401;
+      request.error = "Token has expired.";
       access_token = null;
       exception = 0;
       expired_token = true;
@@ -312,23 +309,24 @@ class RestedRequestHandler {
     Map<String, dynamic> bodymap = new Map();
 
     try {
-        bodymap = json.decode(data);
-      } on FormatException catch (e) {
-        console.error(e.toString());
-        return null;
-      }
+      bodymap = json.decode(data);
+    } on FormatException catch (e) {
+      console.error(e.toString());
+      return null;
+    }
 
-      if (bodymap.containsKey("body")) {
-        bodymap = bodymap['body'];
-      }
+    if (bodymap.containsKey("body")) {
+      bodymap = bodymap['body'];
+    }
 
-      return bodymap;
+    return bodymap;
   }
 
   // Multipart formdata
   // file not supported yet, only works on text
   // https://ec.haxx.se/http/http-multipart
-  Map<String, dynamic> multipartFormDataToBodyMap(String typeHeader, String data){
+  Map<String, dynamic> multipartFormDataToBodyMap(
+      String typeHeader, String data) {
     Map<String, dynamic> bodymap = new Map();
 
     String boundary = typeHeader.split('boundary=')[1];
@@ -337,7 +335,6 @@ class RestedRequestHandler {
     List<String> form = data.split(boundary);
     for (String item in form) {
       if (item.contains("Content-Disposition")) {
-
         List<String> split = item.split('name="');
         List<String> split2 = split[1].split('"');
         String name = split2[0];
@@ -359,7 +356,7 @@ class RestedRequestHandler {
           value = lines[0];
         }
         bodymap[name] = value;
-      }      
+      }
     }
     return bodymap;
   }
@@ -370,7 +367,7 @@ class RestedRequestHandler {
   // root element "body" should replace this garbage.
   Map queryParametersToBodyMap(String urlencoded) {
     Map bodymap = new Map();
-    if(urlencoded == null || urlencoded == "") {
+    if (urlencoded == null || urlencoded == "") {
       return bodymap;
     } else {
       List<String> pairs = urlencoded.split('&');
@@ -385,7 +382,7 @@ class RestedRequestHandler {
 
       return bodymap;
     }
-  }  
+  }
 
   String getFilePath(String path) {
     path = 'bin/resources' + path;
@@ -405,7 +402,8 @@ class RestedRequestHandler {
       resource.setPath(path);
       resources.add(resource);
     } else {
-      console.error("Attempt to add duplicate resource: " + resource.path.toString());
+      console.error(
+          "Attempt to add duplicate resource: " + resource.path.toString());
     }
   }
 
@@ -511,7 +509,10 @@ class RestedResource {
     if (resourcepath.contains('{')) {
       uri_parameters = PathParser.get_uri_parameters(path);
     }
-    console.debug("uri_parameters for path '" + path.toString() + "' is " + uri_parameters.toString());
+    console.debug("uri_parameters for path '" +
+        path.toString() +
+        "' is " +
+        uri_parameters.toString());
   }
 
   bool pathMatch(String requested_path) {
@@ -522,7 +523,8 @@ class RestedResource {
         List<String> requested_path_segments = requested_path
             .substring(1)
             .split('/'); // substring in order to remove first /
-        List<String> uri_parameters_segments = uri_parameters.substring(1).split('/');
+        List<String> uri_parameters_segments =
+            uri_parameters.substring(1).split('/');
         if (requested_path_segments.length != uri_parameters_segments.length) {
           return false;
         } else {
@@ -533,7 +535,8 @@ class RestedResource {
             }
             i++;
           }
-          if (uri_parameters_segments.join() == requested_path_segments.join()) {
+          if (uri_parameters_segments.join() ==
+              requested_path_segments.join()) {
             return true;
           }
           return false;
@@ -585,8 +588,8 @@ class RestedResource {
     functions['view'] = view;
 
     for (String value in rsettings.allowedMethods) {
-        _token_required[value] = false;
-      }
+      _token_required[value] = false;
+    }
   }
 
   void get(RestedRequest request) {}
@@ -605,10 +608,13 @@ class RestedResource {
   void propfind(RestedRequest request) {}
   void view(RestedRequest request) {}
 
+  void callback(RestedRequest request) {}
+
   Map<String, dynamic> getRequestSchema = null;
 
   void wrapper(String method, RestedRequest request) async {
     await functions[method](request);
+    await callback(request);
 
     if (request.session.containsKey('delete')) {
       if (request.session['delete']) {
@@ -740,13 +746,17 @@ class RestedResponse {
                 });
               } else {
                 String textdata = "";
-                if (rsettings.open_html_as_rscript) {
+                /*if (rsettings.open_html_as_rscript) {
+                  print("IN HERE!!!!!!");
                   //textdata = rscriptToHtml(filepath);
-                  console.debug("rscript_args.args in RestedResponse.respond()=" + request.rscript_args.args.toString());
-                  textdata = await rscript.createDocument(filepath, request.rscript_args);
-                } else {
+                  /*console.debug(
+                      "rscript_args.args in RestedResponse.respond()=" +
+                          request.rscript_args.args.toString());*/
+                  textdata = await rscript.createDocument(
+                      filepath, request.rscript_args);
+                } else {*/
                   textdata = File(filepath).readAsStringSync(encoding: utf8);
-                }
+                //}
                 response(textdata);
               }
             } else {

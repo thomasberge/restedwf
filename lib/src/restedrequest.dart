@@ -11,10 +11,9 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:rested_script/rested_script.dart';
 
-import 'restedscript.dart';
 import 'responses.dart';
-import 'parser.dart';
 import 'restedsettings.dart';
 import 'restedsession.dart';
 import 'mimetypes.dart';
@@ -58,6 +57,10 @@ class CookieCollection {
 }
 
 class RestedRequest {
+  // new in 0.4
+  int status = 0;
+  String error = "";
+
   //  Request actions too be performed
   //String responseType = ""; // redirect/html/json/file
   //String responseResource = ""; // /some/resource  /path/to/somefile.jpg   <html>somedata</html>
@@ -76,8 +79,8 @@ class RestedRequest {
   //List<String> removeCookie = new List();
 
   // rscript variables are stored per request
-  RestedScriptArguments rscript_args = new RestedScriptArguments();
-  RestedScript rscript = new RestedScript();
+  //RestedScriptArguments rscript_args = new RestedScriptArguments();
+  //RestedScript rscript = new RestedScript();
 
   String toString() {
     Map<String, dynamic> restedrequest = new Map();
@@ -97,7 +100,7 @@ class RestedRequest {
 
   void setBody(Map bodymap) {
     body = bodymap;
-    console.debug("Content: " + body.toString());
+    print("Content: " + body.toString());
   }
 
   void createCookie(String name, String value,
@@ -128,10 +131,10 @@ class RestedRequest {
     deleteSession = true;
   }
 
-  // Try to find a cookie. 
+  // Try to find a cookie.
   String getCookie(String name) {
     var temp = cookies.getFirst(name);
-    if(temp != null) {
+    if (temp != null) {
       return temp.value;
     } else {
       print("cookie not found: " + name);
@@ -141,7 +144,7 @@ class RestedRequest {
 
   RestedRequest(HttpRequest this.request, RestedSettings server_settings) {
     rsettings = server_settings;
-    
+
     if (rsettings.cookies_enabled) {
       cookies = new CookieCollection(request.cookies);
     }
@@ -157,13 +160,12 @@ class RestedRequest {
 
     method = request.method.toString().toUpperCase();
 
-    console.debug(method + " " + path);
+    print(method + " " + path);
   }
 
   Map<String, String> uri_parameters = new Map();
 
   void createPathArgumentMap(String tagged_path, List<String> keys) {
-
     print("keys=" + keys.toString());
     print("tagged_path=" + tagged_path);
 
@@ -183,12 +185,12 @@ class RestedRequest {
   Map<String, dynamic> restedresponse = new Map();
 
   void response({
-      String type = "text", 
-      String data = "", 
-      File file = null, 
-      bool stream = false,
-      int status = 200,
-      String filepath = null,
+    String type = "text",
+    String data = "",
+    File file = null,
+    bool stream = false,
+    int status = 200,
+    String filepath = null,
   }) {
     restedresponse['type'] = type;
     restedresponse['data'] = data;
@@ -200,32 +202,31 @@ class RestedRequest {
   }
 
   void response2() {
-    if(restedresponse['type'] == "redirect") {
-      request.response.redirect(Uri.http(request.requestedUri.host, restedresponse['data']));
+    if (restedresponse['type'] == "redirect") {
+      request.response.redirect(
+          Uri.http(request.requestedUri.host, restedresponse['data']));
     } else {
-
       // Set headers
-      request.response.headers.contentType = mimetypes.getContentType(restedresponse['type']);
+      request.response.headers.contentType =
+          mimetypes.getContentType(restedresponse['type']);
       request.response.statusCode = HttpStatus.ok;
 
       // Write responsedata if not blank
-      if(restedresponse['data'] != ""){
+      if (restedresponse['data'] != "") {
         request.response.write(restedresponse['data']);
       }
 
       // Close response
-      request.response.close();      
+      request.response.close();
     }
   }
 
-  void oldresponse({
-      String type = "text", 
-      String data = "", 
-      File file = null, 
-      bool stream = false
-      }) {
-
-    if(type == "redirect") {
+  void oldresponse(
+      {String type = "text",
+      String data = "",
+      File file = null,
+      bool stream = false}) {
+    if (type == "redirect") {
       request.response.redirect(Uri.http(request.requestedUri.host, data));
     } else {
       // Headers
@@ -233,18 +234,18 @@ class RestedRequest {
       request.response.headers.contentType = mimetypes.getContentType(type);
       request.response.statusCode = HttpStatus.ok;
 
-      if(stream) {
+      if (stream) {
         request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
       }
 
       // Writing data and closing
-      if(stream) {
+      if (stream) {
         Future f = file.readAsBytes();
         request.response.addStream(f.asStream()).whenComplete(() {
           request.response.close();
         });
       } else {
-        if(data != ""){
+        if (data != "") {
           request.response.write(data);
         }
         request.response.close();
@@ -256,6 +257,7 @@ class RestedRequest {
     restedresponse['type'] = "redirect";
     restedresponse['data'] = resource;
   }
+
 /*
   void fileResponse2(String path) async {
     bool isBinary = true;
@@ -336,7 +338,7 @@ class RestedRequest {
     Map<String, int> values = new Map();
     List<String> ranges = rangeheader.split(',');
     if (ranges.length > 1) {
-      console.error("Multi-range request not supported!");
+      print("Multi-range request not supported!");
     } else {
       List<String> range = ranges[0].split('-');
       values["bytesFrom"] = int.parse(range[0]);

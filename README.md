@@ -1,6 +1,6 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.3.0
+# Alpha release 0.4.0
 
 A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and even Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
@@ -8,18 +8,25 @@ A word of caution: This framework is still very much in development. Structural 
 
 The source is being developed on a private repo. I will update this repo from time to time.
 
+### Changenotes
+
+The focus of this release have been to remove elements that either didn't belong or should be an extension. The parser have gotten its own release through StringTools, which is usable out-of-the-box. RestedScript has been isolated and made into its own project as it will serve as an optional extension to RestedWF. Both these projects are available from my github as their own repos. RestedWF will focus on core functionality such as serving a standard REST API. The server implementation in v0.3 was out of place and should really have been part of an implementation of RestedWF, not in RestedWF itself. The old single-threaded development server has been reimplemented instead and will now display a warning when run.
+
 ### Features
 
-These are the main features currently supported
-- Multi-threaded, scalable server.
+This is the core module that adds the basic functionality. Add-ons will give optional functionality. The main features in this module are:
 - Class-oriented code pattern. Each /resource is its own class with each HTTP method being a function.
 - Sessions & Cookies. Who doesn't like cookies?
 - Automatic JSON Web Token implementation, seemlessly integrated with Session & Cookie support. JWT requirement per method in a /resource. Optional redirect if token doesn't validate.
 - Automatic parsing of incoming body for JSON and webforms.
-- Support for easy HTTP requests.
 - Text/binary file server support, although with limited streaming capabilities.
-- RestedScript, a serverside scripting language.
 - Settings from either code, environment or json file.
+- Test development server server.
+
+### Add-ons
+
+RestedWF have exclusive, optional add-ons that will give you more tools in your HTTP toolbelt:
+- RestedScript, a serverside scripting language.
 
 ### Example
 
@@ -56,25 +63,22 @@ class Resource_root extends RestedResource {
 ```
 
 
-Create a class called Rested that extends RestedRequestHandler. This class' constructor serves as your applications main().
+Create a class called Rested that extends RestedRequestHandler. This is where you add your endpoints.
 
 ```
 class Rested extends RestedRequestHandler {
   
   Rested() {
-    this.address = "127.0.0.1";
-    this.port = 80;
     this.addResource(Resource_root(), "/");
   }
 }
 ```
 
-Instantiate and start a server. The server will in turn instantiate Rested classes in isolates. Use keepAlive for the application to not exit prematurely, or code your own function.
+Instantiate and start a development test server at the specified address and port.
 
 ```
 main() async {
-  RestedServer server = new RestedServer();
-  await server.start();
-  server.keepAlive();
+  RestedServer server = RestedServer(Rested());
+  server.start("127.0.0.1", 80);
 }
 ```

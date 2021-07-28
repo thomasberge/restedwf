@@ -7,56 +7,22 @@ import 'dart:async';
 import 'dart:isolate';
 import 'consolemessages.dart';
 import 'restedrequesthandler.dart';
-import '../server.dart';
 import 'restedsettings.dart';
 
 RestedSettings rsettings = new RestedSettings();
 ConsoleMessages console = new ConsoleMessages(debug_level: rsettings.message_level);
 
 class RestedServer {
-  List<Thread> workers = new List();
+  RestedRequestHandler request_handler;
 
-  RestedServer();
+  RestedServer(this.request_handler);
 
-  void start() async {
-    int i = 0;
-    while(i < 1) {
-      print("Thread #" + (i+1).toString() + " starting ...");
-      workers.add(new Thread(i));
-      await workers[i].start();
-      i++;
-    }
-  }
-
-  void keepAlive() async {
-    while(true){
-      await Future.delayed(Duration(seconds: 1));
-    }
-  }
-}
-
-class Thread {
-  final int threadid;
-  Isolate _isolate;
-
-  Thread(this.threadid);
-
-  Future<void> start() async {
-      _isolate = await Isolate.spawn(
-        _thread,
-        threadid
-      );
-  }
-
-  static _thread(int threadid) async {
-    print("Thread #" + (threadid+1).toString() + " started.");
-
-    Rested rested = new Rested();
-    rested.threadid = threadid;
-    var server = await HttpServer.bind(rested.address, rested.port, shared: true);
-
+  void start(String address, int port) async {
+    var server = await HttpServer.bind(address, port);
+    print("Test server listening on " + address + ":" + port.toString());
+    print("\n\u001b[31mThis is only a test server and is not suited for production.\u001b[0m\n");
     await for (HttpRequest request in server) {
-      rested.handle(request);
-    }
+      request_handler.handle(request);
+    }    
   }
-}
+} 

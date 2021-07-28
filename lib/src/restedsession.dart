@@ -1,6 +1,6 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2020 Thomas Sebastian Berge
+// © 2021 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'package:encrypt/encrypt.dart';
@@ -8,11 +8,14 @@ import 'package:nanoid/nanoid.dart';
 import 'dart:convert';
 import 'restedsettings.dart';
 import 'dart:math';
+import 'consolemessages.dart';
+
+RestedSettings rsettings = new RestedSettings();
+ConsoleMessages console2 = new ConsoleMessages(debug_level: rsettings.message_level);
 
 // New, simpler manager. Easier to migrate to Redis later.
 class SessionManager {
   RestedSettings rsettings = null;
-  //int idpool = 0;
   Map<String, Map<String, dynamic>> sessions = new Map();
 
   SessionManager(){
@@ -20,23 +23,19 @@ class SessionManager {
   }
 
   void printSessions() {
-    print("--- SESSIONS ---");
-    print(sessions.toString());
-    print("--- END ---");
+    console2.debug("--- SESSIONS ---");
+    console2.debug(sessions.toString());
+    console2.debug("--- END ---");
   }
 
   // Takes whatever is stored in RestedRequest.session and creates a new session.
   String newSession(Map<String, dynamic> data) {
     try {
-      //String sessionid = idpool.toString();
-      //idpool = idpool + 1;
-      //String encrypted_sessionid = encrypt(sessionid);
-      //data['id'] = encrypted_sessionid;
       data['id'] = nanoid(32);
       sessions[data['id']] = data;
       return data['id'];
     } catch(e) {
-      print(e.toString());
+      console2.error(e.toString());
       return null;
     }
   }
@@ -47,7 +46,7 @@ class SessionManager {
         sessions[data['id']] = data;
       }
     } catch(e) {
-      print(e.toString());
+      console2.error(e.toString());
     }
   }
 
@@ -57,7 +56,7 @@ class SessionManager {
         sessions.remove(sessionid);
       }
     } catch(e) {
-      print(e.toString());
+      console2.error(e.toString());
     }
   }
 
@@ -67,7 +66,7 @@ class SessionManager {
         sessions[sessionid][key] = value;
       }
     } catch(e) {
-      print(e.toString());
+      console2.error(e.toString());
     }
   }
 
@@ -79,7 +78,7 @@ class SessionManager {
         return null;
       }
     } catch(e) {
-      print(e.toString());
+      console2.error(e.toString());
       return null;
     }
   }
@@ -90,7 +89,7 @@ class SessionManager {
         sessions[sessionid].remove(key);
       }
     } catch(e) {
-      print(e.toString());
+      console2.error(e.toString());
     }
   }
 
@@ -100,52 +99,8 @@ class SessionManager {
         return sessions[sessionid];
       }
     } catch(e) {
-      print(e.toString());
+      console2.error(e.toString());
       return null;
     }
   }
-  /*
-  // Encrypts the argument data using AES128 with session_cookie_key from RestedSettings and
-  // returns the base64 representation of the encryption.
-  String encrypt(String data) {
-    try {
-      String keySTR = "16 characters16 characters"; //16 byte
-      String ivSTR = "16 characters16 characters"; //16 byte
-      final key = Key.fromUtf8(keySTR);
-      final iv = IV.fromUtf8(ivSTR);      
-      //final iv = IV.fromBase64("8PzGKSMLuqSm0MVf");
-      //print("rsettings.session_cookie_key=" + rsettings.session_cookie_key);
-      //print("encrypting " + data);
-      //final key = Key.fromUtf8(rsettings.session_cookie_key);
-      //final iv = IV.fromBase64("8PzGKSMLuqSm0MVf");//IV.fromLength(16);
-      //final encrypter = Encrypter(AES(key));
-      final encrypter = Encrypter(AES(key,mode: AESMode.cbc,padding: 'PKCS7'));
-      final encrypted = encrypter.encrypt(data, iv: iv);
-      return encrypted.base64;
-    } catch(e) {
-      print(e.toString());
-      return null;
-    }
-  }
-
-  // Decrypts the argument base 64 AES128 encoded data and returns the decrypted string.
-  String decrypt(String data) {
-    try {
-      String keySTR = "16 characters"; //16 byte
-      String ivSTR = "16 characters"; //16 byte
-      final key = Key.fromUtf8(keySTR);
-      final iv = IV.fromUtf8(ivSTR);
-      //final key = Key.fromUtf8(rsettings.session_cookie_key);
-      //final iv = IV.fromLength(16);
-      //final iv = IV.fromBase64("8PzGKSMLuqSm0MVf");//IV.fromLength(16);
-      //final encrypter = Encrypter(AES(key));
-      final encrypter = Encrypter(AES(key,mode: AESMode.cbc,padding: 'PKCS7'));
-      final decrypted = encrypter.decrypt64(data, iv: iv);
-      return decrypted;
-    } catch(e) {
-      print(e.toString());
-      return null;
-    }
-  }  
-  */
 }

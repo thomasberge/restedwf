@@ -1,12 +1,13 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2020 Thomas Sebastian Berge
+// © 2021 Thomas Sebastian Berge
  
 import 'dart:io';
 import 'dart:convert';
 import 'package:crypto/crypto.dart' as crypto;
 import 'dart:collection';
 import 'dart:math';
+import 'dart:typed_data';
 
 class RestedRemoteServer {
   String protocol;
@@ -29,7 +30,9 @@ class RestedRemoteServer {
     return protocol + "://" + address + port_text + endpoint + resource;
   }
 
-  Future<dynamic> get(String resource, {String text = "", bool oauth1 = false}) async {
+  // ---  GET -----------------------------------------------------
+
+  Future<dynamic> get(String resource, {String text = "", bool oauth1 = false, Map<String, String> headers = null}) async {
     
     String url = getFullUrlPath(resource);
 
@@ -40,27 +43,48 @@ class RestedRemoteServer {
       }
       print("GET:" + url);
       url = _getOAuthURL("GET", url);
-      //print("URL=" + url);
     }
 
     HttpClient client = new HttpClient();
     HttpClientRequest api_request = await client.getUrl(Uri.parse(url));
+
+    if(headers != null) {
+      for(MapEntry e in headers.entries) {
+        api_request.headers.add(e.key.toString(), e.value.toString());
+      }
+    }    
+
     dynamic result;
     if(text != "") {
       api_request.write(text);
     }
     HttpClientResponse api_response = await api_request.close();
-    //print("response-type: " + api_response.headers.contentType.toString());
-    if(api_response.headers.contentType == ContentType("application", "json"))
-    {
-      //print("response-type: application/json");
+
+    //print(api_response.headers.toString());
+
+    
+
+    if(api_response.headers.contentType.toString() == "application/json") {
       result = await utf8.decoder.bind(api_response).join();
+    } else if(api_response.headers.contentType.toString() == "application/zip") {
+      print("application/zip");
+      List<int> zip = new List();
+      await api_response.listen(zip.addAll, onDone: ()  {
+        //zip.write
+        //var data = api_response.
+        //print(zip.toString());
+      });
+      Uint8List result = new Uint8List.fromList(zip);
+      return result;
     } else {
-      //print("response-type: undefined");
-      result = await utf8.decoder.bind(api_response).join();
+      result = "Unsupported ContentType";
+      print("RemoteServer response is of an unsupported ContentType:" + api_response.headers.contentType.toString());
     }
-    return result;
+
+    //return result;
   }
+
+  // ---  POST -----------------------------------------------------
 
   Future<dynamic> post(
     String resource, {

@@ -1,8 +1,6 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2020 Thomas Sebastian Berge
-
-import 'package:ansicolor/ansicolor.dart';
+// © 2021 Thomas Sebastian Berge
 
 class ConsoleMessages {
 
@@ -12,17 +10,15 @@ class ConsoleMessages {
   // 3 = errors, alerts/warnings, headers/messages
   // 4 = errors, alerts/warnings, headers/messages, debug
   int debugLevel;
-
   bool colors = true;
-  AnsiPen errorPen = new AnsiPen()..red(bold: true);
-  AnsiPen headerPen = new AnsiPen()..white(bold: true);
-  AnsiPen messagePen = new AnsiPen()..rgb(r: 0.9, g: 0.9, b: 0.9);
-  AnsiPen debugPen = new AnsiPen()..rgb(r: 0.0, g: 0.9, b: 0.0);
-  AnsiPen alertPen = new AnsiPen()..rgb(r: 1.0, g: 1.0, b: 0.0);
-  AnsiPen warningPen = new AnsiPen()..red(bold: true);
+  Map<String,String> color = new Map();
 
   ConsoleMessages({int debug_level = 1})
   {
+    color["default"] = "\u001b[0m]";  // resets back to system default
+    color["green"] = "\u001b[31m";  // green
+    color["warning"] = "\u001B[33m"; // yellow
+    color["error"] = "\u001B[31m";  // red    
     debugLevel = debug_level;
   }
 
@@ -30,7 +26,7 @@ class ConsoleMessages {
     if(debugLevel > 0)
     {
       if (colors)
-        print(errorPen("-- ERROR: " + message));
+        print(color["error"] + "-- ERROR: " + message + color["default"]);
       else
         print("-- ERROR: " + message);
     }
@@ -40,7 +36,7 @@ class ConsoleMessages {
     if(debugLevel > 1)
     {
       if (colors)
-        print(alertPen("-- ALERT: " + message));
+        print(color["alert"] + "-- ALERT: " + message + color["default"]);
       else
         print("-- ALERT: " + message);
     }
@@ -50,7 +46,7 @@ class ConsoleMessages {
     if(debugLevel > 1)
     {
       if (colors)
-        print(warningPen("-- WARNING: " + message));
+        print(color["warning"] + "-- WARNING: " + message + color["default"]);
       else
         print("-- WARNING: " + message);
     }
@@ -60,7 +56,7 @@ class ConsoleMessages {
     if(debugLevel > 2)
     {
       if (colors)
-        print(headerPen("-- *** " + message + " ***"));
+        print(color["header"] + "-- *** " + message + " ***" + color["default"]);
       else
         print("-- *** " + message + " ***");
     }
@@ -70,7 +66,7 @@ class ConsoleMessages {
     if(debugLevel > 2)
     {    
       if (colors)
-        print(messagePen("-- " + message));
+        print( color["message"] + "-- " + message + color["default"]);
       else
         print("-- " + message);
     }
@@ -80,7 +76,7 @@ class ConsoleMessages {
     if(debugLevel > 3)
     {
       if (colors)
-        print(debugPen("-- " + message));
+        print(color["debug"] + "-- " + message + color["default"]);
       else
         print("-- " + message);
     }

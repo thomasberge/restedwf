@@ -32,9 +32,8 @@ String guestpage = '<html>Hello guest! Feel yourself at home or <a href="/logout
 main() async {
   // Create a server instance, start the server and keep it alive. Alternatively you can skip the keepAlive()
   // function and write your own conditional loop to control when the application exits.
-  RestedServer server = new RestedServer();
-  await server.start();
-  server.keepAlive();
+  RestedServer server = new RestedServer(Rested());
+  server.start("0.0.0.0", 8080);
 }
 
 class Rested extends RestedRequestHandler {
@@ -43,9 +42,6 @@ class Rested extends RestedRequestHandler {
     // Create two accounts in the "database"
     userdatabase['admin'] = 'pass1234';
     userdatabase['guest'] = '';
-
-    this.address = "0.0.0.0";
-    this.port = 8080;
     this.addResource(new resource_root(), "/");
     this.addResource(new resource_login(), "/login");
     this.addResource(new resource_logout(), "/logout");

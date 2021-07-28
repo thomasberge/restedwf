@@ -4,6 +4,7 @@
 
 import 'dart:io';
 import 'dart:convert';
+import 'package:nanoid/nanoid.dart';
 
 class RestedSettings {
   RestedSettings() {
@@ -34,14 +35,8 @@ class RestedSettings {
   /// Duration in minutes before cookies expire.
   int cookies_max_age;
 
-  /// Set to true to store cookie data as ASE encrypted map in base64 as cookie. Set to false if you want everything to break.
-  bool cookies_encrypt;
-
   /// Set to true to enable storing session data. WARNING: Will not work unless cookies are also enabled.
   bool sessions_enabled;
-
-  /// Session cookie encryption key. Must be 32 bytes.
-  String session_cookie_key;
 
   /// Set to true to enable file serving if there are no matching endpoint for the resource.
   bool files_enabled;
@@ -60,13 +55,11 @@ class RestedSettings {
     Map<String, dynamic> settings = new Map();
     settings['threads'] = 4;
     settings['jwt_issuer'] = 'Rested Examples';
-    settings['jwt_key'] = 'CANNONBALLS!!!?';
+    settings['jwt_key'] = nanoid(32);
     settings['jwt_duration'] = 20;
     settings['cookies_enabled'] = true;
     settings['sessions_enabled'] = true;
     settings['cookies_max_age'] = 60; // minutes
-    settings['cookies_encrypt'] = true;
-    settings['session_cookie_key'] = "my 32 length key................";
     settings['files_enabled'] = true;
     settings['open_html_as_rscript'] = true;
     settings['message_level'] = 0;
@@ -87,8 +80,6 @@ class RestedSettings {
     cookies_enabled = settings['cookies_enabled'];
     sessions_enabled = settings['sessions_enabled'];
     cookies_max_age = settings['cookies_max_age'];
-    cookies_encrypt = settings['cookies_encrypt'];
-    session_cookie_key = settings['session_cookie_key'];
     files_enabled = settings['files_enabled'];
     open_html_as_rscript = settings['open_html_as_rscript'];
     message_level = settings['message_level'];
@@ -116,12 +107,6 @@ class RestedSettings {
     }    
     if (_envVars.containsKey("cookies_max_age")) {
       cookies_max_age = int.parse(_envVars["cookies_max_age"]);
-    }
-    if (_envVars.containsKey("cookies_encrypt")) {
-      cookies_encrypt = toBool(_envVars["cookies_encrypt"]);
-    }
-    if (_envVars.containsKey("session_cookie_key")) {
-      session_cookie_key = _envVars["session_cookie_key"];
     }
     if (_envVars.containsKey("files_enabled")) {
       files_enabled = toBool(_envVars["files_enabled"]);
