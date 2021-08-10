@@ -1,5 +1,5 @@
 name: restedwf
-version: 0.3.0
+version: 0.4.1
 description: >-
   Rested Web Framework
 environment:
@@ -11,4 +11,6 @@ dependencies:
   encrypt: ^4.0.2
   nanoid: ^1.0.0
   mysql1: ^0.17.1
-
+  rested_script:
+    git:
+      url: https://github.com/thomasberge/rested_script
