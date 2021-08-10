@@ -1,6 +1,6 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.4.0
+# Alpha release 0.4.1
 
 A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and even Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
@@ -8,9 +8,14 @@ A word of caution: This framework is still very much in development. Structural 
 
 The source is being developed on a private repo. I will update this repo from time to time.
 
-### Changenotes
+### 0.4.0 Main changes
 
 The focus of this release have been to remove elements that either didn't belong or should be an extension. The parser have gotten its own release through StringTools, which is usable out-of-the-box. RestedScript has been isolated and made into its own project as it will serve as an optional extension to RestedWF. Both these projects are available from my github as their own repos. RestedWF will focus on core functionality such as serving a standard REST API. The server implementation in v0.3 was out of place and should really have been part of an implementation of RestedWF, not in RestedWF itself. The old single-threaded development server has been reimplemented instead and will now display a warning when run.
+
+### 0.4.1 fixes
+- Fixed missing rested_script reference in pubspec.
+- Fixed version error in pubspec.
+- Fixed error in readme example.
 
 ### Features
 
@@ -44,7 +49,7 @@ In the example there is a server example that does the following:
 The following needs to be in a file called 'server.dart', which in turn must reside in the same level as 'rested.dart'.
 
 ```
-import 'rested.dart';
+import 'package:restedwf/rested.dart';
 ```
 
 Create a Resource class. You create these for each /resource. Supports all standard HTTP methods as functions.
