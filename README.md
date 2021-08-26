@@ -1,6 +1,6 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.4.1
+# Alpha release 0.4.2
 
 A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and even Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
@@ -16,6 +16,9 @@ The focus of this release have been to remove elements that either didn't belong
 - Fixed missing rested_script reference in pubspec.
 - Fixed version error in pubspec.
 - Fixed error in readme example.
+
+### 0.4.2 fixes
+- Changed rested_script dependency to follow dev branch.
 
 ### Features
 

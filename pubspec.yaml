@@ -14,3 +14,4 @@ dependencies:
   rested_script:
     git:
       url: https://github.com/thomasberge/rested_script
+      ref: dev
