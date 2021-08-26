@@ -72,7 +72,7 @@ class RestedRequestHandler {
     rootDirectory = Directory.current.path;
     console.debug("Rested rootDirectory:" + rootDirectory);
     resourcesDirectory = rootDirectory + ('/bin/resources/');
-    rscript.rootDirectory = resourcesDirectory;
+    rscript.root = resourcesDirectory;
     console.debug("Rested resourcesDirectory:" + resourcesDirectory);
 
     _custom_JWT_verification = custom_JWT_verification;
