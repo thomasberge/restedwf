@@ -1,6 +1,6 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.4.2
+# Alpha release 0.5.0
 
 A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and even Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
@@ -8,17 +8,9 @@ A word of caution: This framework is still very much in development. Structural 
 
 The source is being developed on a private repo. I will update this repo from time to time.
 
-### 0.4.0 Main changes
+### 0.5.0 Main changes
 
-The focus of this release have been to remove elements that either didn't belong or should be an extension. The parser have gotten its own release through StringTools, which is usable out-of-the-box. RestedScript has been isolated and made into its own project as it will serve as an optional extension to RestedWF. Both these projects are available from my github as their own repos. RestedWF will focus on core functionality such as serving a standard REST API. The server implementation in v0.3 was out of place and should really have been part of an implementation of RestedWF, not in RestedWF itself. The old single-threaded development server has been reimplemented instead and will now display a warning when run.
-
-### 0.4.1 fixes
-- Fixed missing rested_script reference in pubspec.
-- Fixed version error in pubspec.
-- Fixed error in readme example.
-
-### 0.4.2 fixes
-- Changed rested_script dependency to follow dev branch.
+- Added testing capability. To be used as test server on dev. No test script implemented yet.
 
 ### Features
 
@@ -89,4 +81,12 @@ main() async {
   RestedServer server = RestedServer(Rested());
   server.start("127.0.0.1", 80);
 }
+```
+
+## Testing
+
+There is a test script included in /test that runs a server and tests some functions. A report is written to console. The accompanying Dockerfile in this repo root can be run in order to run the test server.
+
+```bash
+docker build -t restedwf_test . && docker run --init -p 80:80 restedwf_test
 ```

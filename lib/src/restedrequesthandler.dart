@@ -50,22 +50,11 @@ class RestedRequestHandler {
   int port = 8080;
   int threadid = 0;
 
-  void loadOAS3(String path) {
-    OAS3Document doc = new OAS3Document(path);
-    for (String path in doc.paths) {
-      console.debug("setting up path " + path);
-    }
-  }
-
-  //void addFiles(String path, {recursive: true}) {
-  //  disk.addFiles(path, recursive: recursive);
-  //}
-
   List<RestedResource> resources = new List();
 
   void redirect(RestedRequest request, String url) {
-    request.request.response
-        .redirect(Uri.http(request.request.requestedUri.host, url));
+
+    request.request.response.redirect(Uri.http(request.request.requestedUri.host, url));
   }
 
   RestedRequestHandler() {
@@ -76,9 +65,6 @@ class RestedRequestHandler {
     console.debug("Rested resourcesDirectory:" + resourcesDirectory);
 
     _custom_JWT_verification = custom_JWT_verification;
-
-    // add if rsettings virtual_disk_enabled
-    //disk = new RestedVirtualDisk();
 
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
       //sessions = new RestedSessionManager();
@@ -679,11 +665,10 @@ class RestedResponse {
     switch (request.restedresponse['type']) {
       case "redirect":
         {
-          console.debug(":: --> Redirect() to " +
-              request.restedresponse['data'].toString());
-          request.request.response.redirect(Uri.http(
-              request.request.requestedUri.host,
-              request.restedresponse['data']));
+          console.debug(":: --> Redirect() to " + request.restedresponse['data'].toString());
+          String newpath = request.request.requestedUri.host + ":800";
+          print("NEWPATH:" + newpath);
+          request.request.response.redirect(Uri.http(newpath, request.restedresponse['data']));
         }
         break;
 
