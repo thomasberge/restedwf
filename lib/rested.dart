@@ -1,5 +1,5 @@
 // Rested Web Framework
-// Version: 0.4.0-alpha
+// Version: 0.4.2-alpha
 // www.restedwf.com
 // © 2021 Thomas Sebastian Berge
 
