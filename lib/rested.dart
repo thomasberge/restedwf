@@ -29,8 +29,6 @@ import 'src/restedrequesthandler.dart';
 export 'src/restedrequesthandler.dart';
 import 'src/restedvirtualdisk.dart';
 export 'src/restedvirtualdisk.dart';
-import 'src/oas3.dart';
-export 'src/oas3.dart';
 
 RestedSettings rsettings = new RestedSettings();
 ConsoleMessages console =

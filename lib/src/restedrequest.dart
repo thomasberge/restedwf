@@ -57,30 +57,20 @@ class CookieCollection {
 }
 
 class RestedRequest {
-  // new in 0.4
+  String hostAddress;
+  int hostPort;
+  
   int status = 0;
   String error = "";
-
-  //  Request actions too be performed
-  //String responseType = ""; // redirect/html/json/file
-  //String responseResource = ""; // /some/resource  /path/to/somefile.jpg   <html>somedata</html>
   bool deleteSession = false;
-  //
   HttpRequest request;
   String method;
   String path;
   String access_token;
   Map body = new Map();
-  //RestedSession session = null;
   CookieCollection cookies = null;
   RestedSettings rsettings;
   Map<String, dynamic> session = new Map();
-  //bool deleteSessionCookie = false;
-  //List<String> removeCookie = new List();
-
-  // rscript variables are stored per request
-  //RestedScriptArguments rscript_args = new RestedScriptArguments();
-  //RestedScript rscript = new RestedScript();
 
   String toString() {
     Map<String, dynamic> restedrequest = new Map();
@@ -142,7 +132,7 @@ class RestedRequest {
     }
   }
 
-  RestedRequest(HttpRequest this.request, RestedSettings server_settings) {
+  RestedRequest(HttpRequest this.request, RestedSettings server_settings, this.hostAddress, this.hostPort) {
     rsettings = server_settings;
 
     if (rsettings.cookies_enabled) {

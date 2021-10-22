@@ -8,15 +8,14 @@ import 'rested.dart';
 
 main() async {
     RestedServer admin_server = RestedServer(TestServer());
-    admin_server.start("0.0.0.0", 800);     
+    admin_server.start("0.0.0.0", 800);
 }
 
 class TestServer extends RestedRequestHandler {
   TestServer() {
-    //this.address = "0.0.0.0";
-    //this.port = 80;
     this.addResource(Root(), "/");
     this.addResource(Login(), "/login");
+    this.addResource(Redirect(), "/g");
   }
 }
 
@@ -33,7 +32,13 @@ class Root extends RestedResource {
 }
 
 class Login extends RestedResource {
-    void get(RestedRequest request) async {
-        request.response(data: "login");
-    }
+  void get(RestedRequest request) async {
+      request.response(data: "login");
+  }
+}
+
+class Redirect extends RestedResource {
+  void get(RestedRequest request) async {
+      request.redirect("http://www.google.com");
+  }
 }

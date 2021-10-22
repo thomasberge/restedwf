@@ -19,7 +19,6 @@ import 'restedrequest.dart';
 import 'responses.dart';
 import 'mimetypes.dart';
 import 'restedvirtualdisk.dart';
-import 'oas3.dart';
 
 RestedSettings rsettings = new RestedSettings();
 ConsoleMessages console =
@@ -52,10 +51,11 @@ class RestedRequestHandler {
 
   List<RestedResource> resources = new List();
 
+/*
   void redirect(RestedRequest request, String url) {
 
     request.request.response.redirect(Uri.http(request.request.requestedUri.host, url));
-  }
+  }*/
 
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
@@ -104,7 +104,7 @@ class RestedRequestHandler {
   void handle(HttpRequest incomingRequest) async {
     console.debug("THREAD#" + threadid.toString());
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
-    RestedRequest request = new RestedRequest(incomingRequest, rsettings);
+    RestedRequest request = new RestedRequest(incomingRequest, rsettings, address, port);
 
     // Decrypts the session id and sets the session data in the request
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
@@ -534,25 +534,25 @@ class RestedResource {
   }
 
   // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
-  Map functions = new Map<String, Function>();
+  Map functions = Map<String, Function>();
 
   // Stored function for each HTTP error code. Returns standard error if not overridden with a function
-  Map onError = new Map<int, Function>();
+  Map onError = Map<int, Function>();
 
   // Storage of bool determining if access_token is required for the http method (_functions). Use method
   // instead of setting the variable directly.
-  Map _token_required = new Map<String, bool>();
+  Map _token_required = Map<String, bool>();
 
-  void require_token(String method, {String redirect_url = null}) {
-    _token_required[method] = true;
+  void require_token(String _method, {String redirect_url = null}) {
+    _token_required[_method] = true;
   }
 
   // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
   // possible to return a redirect instead by setting the URL in this variable.
   String protected_redirect = null;
 
-  void invalid_token_redirect(String url) {
-    protected_redirect = url;
+  void invalid_token_redirect(String _url) {
+    protected_redirect = _url;
   }
 
   RestedResource() {
@@ -665,10 +665,20 @@ class RestedResponse {
     switch (request.restedresponse['type']) {
       case "redirect":
         {
-          console.debug(":: --> Redirect() to " + request.restedresponse['data'].toString());
-          String newpath = request.request.requestedUri.host + ":800";
-          print("NEWPATH:" + newpath);
-          request.request.response.redirect(Uri.http(newpath, request.restedresponse['data']));
+          //console.debug(":: --> Redirect() to " + request.restedresponse['data'].toString());
+          //String host = request.request.requestedUri.host;
+          String host = request.hostAddress + ":" + request.hostPort.toString();
+          String path = request.restedresponse['data'];
+
+          print("HOST:" + host);
+          print("PATH:" + path);
+
+          // If path contains :// then assume external host and use the entire path as redirect url
+          if(path.contains('://')) {
+            request.request.response.redirect(Uri.parse(path));
+          } else {
+            request.request.response.redirect(Uri.http(host, request.restedresponse['data']));  
+          }
         }
         break;
 
