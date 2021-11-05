@@ -20,9 +20,8 @@ import 'responses.dart';
 import 'mimetypes.dart';
 import 'restedvirtualdisk.dart';
 
-RestedSettings rsettings = new RestedSettings();
-ConsoleMessages console =
-    new ConsoleMessages(debug_level: rsettings.message_level);
+RestedSettings rsettings = RestedSettings();
+ConsoleMessages console = ConsoleMessages(debug_level: rsettings.message_level);
 Function _custom_JWT_verification;
 SessionManager manager;
 RestedVirtualDisk disk = null;
@@ -208,21 +207,26 @@ class RestedRequestHandler {
     // Example: application/json; charset=utf-8
     // Each bodymap conversion function should return NULL if conversion fails for some reason.
     // If the data is empty however it should return an empty map.
-    List<String> type =
-        incomingRequest.headers.contentType.toString().split(';');
+    List<String> type = incomingRequest.headers.contentType.toString().split(';');
 
     if (type.contains("application/json")) {
+      print("JSON RECEIVED");
       String jsonstring = await utf8.decoder.bind(incomingRequest).join();
+      print("jsonstring=" + jsonstring);
       Map body = applicationJsonToBodyMap(jsonstring);
+      print("body=" + body.toString());
       request.setBody(body);
+
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
       Map body = queryParametersToBodyMap(urlencoded);
       request.setBody(body);
+
     } else if (type.contains("multipart/form-data")) {
       String data = await utf8.decoder.bind(incomingRequest).join();
       Map body = multipartFormDataToBodyMap(type.toString(), data);
       request.setBody(body);
+
     } else {
       if (type.toString() != "[null]") {
         console.alert("UNSUPPORTED HEADER TYPE: " + type.toString());
@@ -292,20 +296,27 @@ class RestedRequestHandler {
   }
 
   Map<String, dynamic> applicationJsonToBodyMap(String data) {
-    Map<String, dynamic> bodymap = new Map();
+    Map<String, dynamic> bodymap = {};
+    var temp;
 
     try {
-      bodymap = json.decode(data);
+      temp = json.decode(data);
     } on FormatException catch (e) {
       console.error(e.toString());
       return null;
     }
 
-    if (bodymap.containsKey("body")) {
-      bodymap = bodymap['body'];
-    }
+    if(temp == null) {
+      return null;
+    } else {
+      print("bodymap=" + bodymap.toString());
 
-    return bodymap;
+      if (bodymap.containsKey("body")) {
+        bodymap = bodymap['body'];
+      }
+
+      return bodymap;
+    }
   }
 
   // Multipart formdata
