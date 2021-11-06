@@ -305,16 +305,12 @@ class RestedRequestHandler {
       print(e.toString());
       return null;
     }
-   /* } on FormatException catch (e) {
-      console.error(e.toString());
-      return null;
-    }*/
 
     if(temp == null) {
       return null;
     } else {
+      bodymap = json.decode(data);
       print("bodymap=" + bodymap.toString());
-
       if (bodymap.containsKey("body")) {
         bodymap = bodymap['body'];
       }
