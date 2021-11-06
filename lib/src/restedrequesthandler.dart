@@ -301,10 +301,14 @@ class RestedRequestHandler {
 
     try {
       temp = json.decode(data);
-    } on FormatException catch (e) {
-      console.error(e.toString());
+    } catch (e) {
+      print(e.toString());
       return null;
     }
+   /* } on FormatException catch (e) {
+      console.error(e.toString());
+      return null;
+    }*/
 
     if(temp == null) {
       return null;
