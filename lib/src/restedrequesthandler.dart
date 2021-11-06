@@ -697,7 +697,7 @@ class RestedResponse {
         {
           console.debug(":: Textresponse()");
           request.request.response.headers.contentType =
-              new ContentType("text", "text", charset: "utf-8");
+              new ContentType("text", "plain", charset: "utf-8");
           response(request.restedresponse['data']);
         }
         break;
