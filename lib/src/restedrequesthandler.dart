@@ -212,7 +212,7 @@ class RestedRequestHandler {
     if (type.contains("application/json")) {
       print("JSON RECEIVED");
       String jsonstring = await utf8.decoder.bind(incomingRequest).join();
-      Map jsonmap = json.decode(jsonstring);
+      Map jsonmap = json.decode(json.encode(jsonstring));
       //String testjson = json.encode(json.decode(jsonstring));
       //print("jsonstring=" + jsonstring);
       //Map body = applicationJsonToBodyMap(jsonmap);
