@@ -212,13 +212,19 @@ class RestedRequestHandler {
     if (type.contains("application/json")) {
       print("JSON RECEIVED");
       String jsonstring = await utf8.decoder.bind(incomingRequest).join();
-      Map jsonmap = json.decode(json.encode(jsonstring));
+
+      String temp = json.encode(jsonstring);
+      print("A");
+      Map jsonmap = json.decode(temp);
+      print("B");
+      //Map jsonmap = json.decode(json.encode(jsonstring));
       //String testjson = json.encode(json.decode(jsonstring));
       //print("jsonstring=" + jsonstring);
       //Map body = applicationJsonToBodyMap(jsonmap);
       //print("body=" + body.toString());
-      print("body=" + jsonmap.toString());
-      request.setBody(jsonmap);
+      
+      //print("body=" + jsonmap.toString());
+      //request.setBody(jsonmap);
 
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
