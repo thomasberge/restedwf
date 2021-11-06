@@ -225,7 +225,7 @@ class RestedRequestHandler {
       //print("body=" + body.toString());
       
       //print("body=" + jsonmap.toString());
-      //request.setBody(jsonmap);
+      request.setBody(jsonmap);
 
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
