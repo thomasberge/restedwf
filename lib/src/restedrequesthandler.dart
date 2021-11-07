@@ -210,21 +210,22 @@ class RestedRequestHandler {
     List<String> type = incomingRequest.headers.contentType.toString().split(';');
 
     if (type.contains("application/json")) {
-      print("JSON RECEIVED");
-      var jsonstring = r'';
-      jsonstring = await utf8.decoder.bind(incomingRequest).join();
 
-      //String temp = json.encode(jsonstring);
-      print("A");
+      String jsonstring = await utf8.decoder.bind(incomingRequest).join();
+
+      // dirty trick to manually change a json sent as string to a parsable string. Unelegant af
+      if(jsonstring.substring(0,1) == '"') {
+        jsonstring = jsonstring.substring(1, jsonstring.length -1);
+        jsonstring = jsonstring.replaceAll(r'\"', '"');
+      }
+
       Map jsonmap = json.decode(jsonstring);
-      print("B");
-      //Map jsonmap = json.decode(json.encode(jsonstring));
-      //String testjson = json.encode(json.decode(jsonstring));
-      //print("jsonstring=" + jsonstring);
-      //Map body = applicationJsonToBodyMap(jsonmap);
-      //print("body=" + body.toString());
-      
-      //print("body=" + jsonmap.toString());
+
+      // some clients wrap body in a body-block. If this is the case here then the content of the
+      // body block is extracted to become the new body.
+      if (jsonmap.containsKey("body")) {
+        jsonmap = jsonmap['body'];
+      }
       request.setBody(jsonmap);
 
     } else if (type.contains("application/x-www-form-urlencoded")) {
@@ -302,22 +303,6 @@ class RestedRequestHandler {
           request.response(data: "404 error somethingsomething");
         }
       }
-    }
-  }
-
-  Map<String, dynamic> applicationJsonToBodyMap(String data) {
-    Map<String, dynamic> bodymap = {};
-
-    try {
-      bodymap = json.decode(data);
-      print("bodymap=" + bodymap.toString());
-      if (bodymap.containsKey("body")) {
-        bodymap = bodymap['body'];
-      }
-      return bodymap;
-    } catch (e) {
-      print(e.toString());
-      return null;
     }
   }
 

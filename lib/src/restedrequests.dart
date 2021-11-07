@@ -77,6 +77,7 @@ class RestedRequests {
 
             switch(responseHandling) {
                 case "TEXT": {
+                    print("Requests handling TEXT response ...");
                     if(response.headers.value(HttpHeaders.contentTypeHeader).contains("ISO-8859-1")) {
                         response.transform(latin1.decoder).listen((data) {
                             contents.write(data);
