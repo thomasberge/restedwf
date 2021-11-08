@@ -467,7 +467,7 @@ class RestedJWT {
     }
   }
 
-  Map extract_claims(String token) {
+  static Map extractClaims(String token) {
     try {
       // Verify the signature and extract claimset
       final JwtClaim decClaimSet =
