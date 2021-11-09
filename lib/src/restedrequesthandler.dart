@@ -424,7 +424,7 @@ class RestedJWT {
     return new String.fromCharCodes(codeUnits);
   }
 
-  JwtClaim generate_claimset({Map additional_claims = null}) {
+  JwtClaim _generateClaimset({Map additional_claims = null}) {
     // Horrible workaround to Dart Map -> Json problems, ref: https://github.com/flutter/flutter/issues/16589
     final cleanMap = jsonDecode(jsonEncode(additional_claims));
 
@@ -439,17 +439,15 @@ class RestedJWT {
   }
 
   Map generate_token({Map additional_claims}) {
-    JwtClaim claim_set =
-        generate_claimset(additional_claims: additional_claims);
+    JwtClaim claim_set = _generateClaimset(additional_claims: additional_claims);
     String token = issueJwtHS256(claim_set, rsettings.jwt_key);
-    Map tokenmap = {"access_token": token};
+    Map tokenmap = { "access_token": token };
     return tokenmap;
   }
 
   int verify_token(String token) {
     try {
-      final JwtClaim decClaimSet =
-          verifyJwtHS256Signature(token, rsettings.jwt_key);
+      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.jwt_key);
       DateTime issued_at = DateTime.parse(decClaimSet['iat'].toString());
       DateTime expires = DateTime.parse(decClaimSet['exp'].toString());
       Duration duration = DateTime.now().difference(issued_at);
@@ -467,18 +465,17 @@ class RestedJWT {
     }
   }
 
-  static Map extractClaims(String token) {
+  static String getClaim(String token, String key) {
     try {
-      // Verify the signature and extract claimset
-      final JwtClaim decClaimSet =
-          verifyJwtHS256Signature(token, rsettings.jwt_key);
-
-      // Validate the claimset
-      decClaimSet.validate(issuer: rsettings.jwt_issuer);
-      Map claims = json.decode(json.encode(decClaimSet.toString()));
-      return (claims);
-    } on JwtException {
-      return (null);
+      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.jwt_key);
+      if(decClaimSet.containsKey(key)) {
+        return decClaimSet[key];
+      } else {
+        return null;
+      }
+    } catch(e) {
+      print("error: " + e.toString());
+      return null;
     }
   }
 }

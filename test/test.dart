@@ -5,6 +5,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'rested.dart';
+import 'package:jaguar_jwt/jaguar_jwt.dart';
 
 main() async {
     RestedServer admin_server = RestedServer(TestServer());
@@ -19,6 +20,19 @@ class TestServer extends RestedRequestHandler {
     this.addResource(Dump(), "/dump");
     this.addResource(GetPage(), "/get");
     this.addResource(JsonTest(), "/json");
+    this.addResource(Claims(), "/claims");
+  }
+}
+
+class Claims extends RestedResource {
+  void get(RestedRequest request) async {
+    RestedJWT jwthandler = RestedJWT();
+    Map claims = { "somevariable": "somevalue" };
+    Map token = jwthandler.generate_token(additional_claims: claims);
+    Map result = json.decode(json.encode(token));
+    String tokenstring = result["access_token"];
+    String somevariable = RestedJWT.getClaim(tokenstring, "somevariable");
+    request.response(data: somevariable);
   }
 }
 
