@@ -191,6 +191,7 @@ class RestedRequest {
     //print("Ready to respond with:" + restedresponse.toString());
   }
 
+/*
   void response2() {
     if (restedresponse['type'] == "redirect") {
       request.response.redirect(
@@ -210,7 +211,7 @@ class RestedRequest {
       request.response.close();
     }
   }
-
+*/
   void oldresponse(
       {String type = "text",
       String data = "",

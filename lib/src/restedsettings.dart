@@ -67,6 +67,12 @@ class RestedSettings {
         .writeAsStringSync(jsonEncode(settings), encoding: utf8);
   }
 
+  Map getSettingsFile() {
+    String text = File(settings_filepath).readAsStringSync(encoding: utf8);
+    Map settings = json.decode(text);
+    return(settings);
+  }
+
   void loadSettingsFromFile() {
     if (File(settings_filepath).existsSync() == false) {
       createSettingsFile();

@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'rested.dart';
 import 'package:jaguar_jwt/jaguar_jwt.dart';
+import 'src/restedsettings.dart';
 
 main() async {
     RestedServer admin_server = RestedServer(TestServer());
@@ -21,6 +22,22 @@ class TestServer extends RestedRequestHandler {
     this.addResource(GetPage(), "/get");
     this.addResource(JsonTest(), "/json");
     this.addResource(Claims(), "/claims");
+    this.addResource(SettingsTest(), "/settings");
+    this.addResource(PathParam(), "/t/{test}");
+  }
+}
+
+class PathParam extends RestedResource {
+  void get(RestedRequest request) async {
+    
+    request.response(data: request.uri_parameters["test"].toString());
+  }
+}
+
+class SettingsTest extends RestedResource {
+  void get(RestedRequest request) async {
+    RestedSettings testsettings = RestedSettings();
+    request.response(data: testsettings.getSettingsFile().toString());
   }
 }
 

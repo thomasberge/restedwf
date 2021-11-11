@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'package:path/path.dart' as p;
 import 'package:rested_script/rested_script.dart';
+import 'package:string_tools/string_tools.dart';
 
 import 'consolemessages.dart';
 import 'pathparser.dart';
@@ -50,48 +51,17 @@ class RestedRequestHandler {
 
   List<RestedResource> resources = new List();
 
-/*
-  void redirect(RestedRequest request, String url) {
-
-    request.request.response.redirect(Uri.http(request.request.requestedUri.host, url));
-  }*/
-
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
     console.debug("Rested rootDirectory:" + rootDirectory);
     resourcesDirectory = rootDirectory + ('/bin/resources/');
-    rscript.root = resourcesDirectory;
     console.debug("Rested resourcesDirectory:" + resourcesDirectory);
-
-    _custom_JWT_verification = custom_JWT_verification;
 
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
       //sessions = new RestedSessionManager();
       manager = new SessionManager();
     }
   }
-
-  // ADDED TO DOC
-  bool custom_JWT_verification(String token) {
-    return true;
-  }
-
-  // ADDED TO DOC
-  void set_jwt_key(String key) {
-    rsettings.jwt_key = key;
-  }
-
-  // ADDED TO DOC
-  void set_jwt_duration(int minutes) {
-    rsettings.jwt_duration = minutes;
-  }
-
-  // ADDED TO DOC
-  void set_jwt_issuer(String issuer) {
-    rsettings.jwt_issuer = issuer;
-  }
-
-  Map _convertUriParametersToMap(String uri, String resourcepath) {}
 
   // Validates the incoming request and passes it to the proper RestedResource object
   //
@@ -102,6 +72,7 @@ class RestedRequestHandler {
   //            body then they will be dropped when body = body['body']; is performed.
   void handle(HttpRequest incomingRequest) async {
     console.debug("THREAD#" + threadid.toString());
+
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
     RestedRequest request = new RestedRequest(incomingRequest, rsettings, address, port);
 
@@ -117,8 +88,7 @@ class RestedRequestHandler {
             request.session = session;
           }
         } else {
-          request.removeCookie(
-              "session"); // remove session cookie on client if there is no equivalent on server
+          request.removeCookie("session"); // remove session cookie on client if there is no equivalent on server
 
         }
       }
@@ -134,8 +104,7 @@ class RestedRequestHandler {
     // Get access_token from cookie. Gets overwritten by access_token from session if present.
     if (rsettings.cookies_enabled) {
       if (request.cookies.containsKey("access_token")) {
-        unverified_access_token =
-            request.cookies.getFirst("access_token").value;
+        unverified_access_token = request.cookies.getFirst("access_token").value;
       }
     }
 
@@ -159,18 +128,9 @@ class RestedRequestHandler {
 
         if (unverified_access_token != null) {
           List<String> authtype = unverified_access_token.split(' ');
-          if (authtype[0] == 'Bearer') {
-            unverified_access_token =
-                unverified_access_token.replaceAll('Bearer ', '');
-          } else if (authtype[0] == 'access_token') {
-            unverified_access_token =
-                unverified_access_token.replaceAll('access_token ', '');
-          } else if (authtype[0] == 'token') {
-            unverified_access_token =
-                unverified_access_token.replaceAll('token ', '');
-          } else if (authtype[0] == 'jwt') {
-            unverified_access_token =
-                unverified_access_token.replaceAll('jwt ', '');
+          List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
+          if (valid_auths.contains(authtype[0].toUpperCase())) {
+            unverified_access_token = authtype[1];
           } else {
             exception = 400;
             console.error("Malformed Authorization header");
@@ -219,7 +179,14 @@ class RestedRequestHandler {
         jsonstring = jsonstring.replaceAll(r'\"', '"');
       }
 
-      Map jsonmap = json.decode(jsonstring);
+      Map jsonmap = {};
+
+      try {
+        jsonmap = json.decode(jsonstring);
+      } catch(e) {
+        
+      }
+
 
       // some clients wrap body in a body-block. If this is the case here then the content of the
       // body block is extracted to become the new body.
@@ -256,7 +223,6 @@ class RestedRequestHandler {
     // if the error code is still not 0 we return an error response.
 
     if (exception == 452) {
-      //request.rscript_args.setString("error", "Token has expired.");
       request.status = 401;
       request.error = "Token has expired.";
       access_token = null;
@@ -644,8 +610,6 @@ class RestedResource {
 
 // ------------- RESTED RESPONSE ------------------------------------------------------//
 
-RestedScript rscript = new RestedScript();
-
 class RestedResponse {
   Responses error_responses = new Responses();
   Mimetypes mimetypes = new Mimetypes();
@@ -736,17 +700,7 @@ class RestedResponse {
                 });
               } else {
                 String textdata = "";
-                /*if (rsettings.open_html_as_rscript) {
-                  print("IN HERE!!!!!!");
-                  //textdata = rscriptToHtml(filepath);
-                  /*console.debug(
-                      "rscript_args.args in RestedResponse.respond()=" +
-                          request.rscript_args.args.toString());*/
-                  textdata = await rscript.createDocument(
-                      filepath, request.rscript_args);
-                } else {*/
-                  textdata = File(filepath).readAsStringSync(encoding: utf8);
-                //}
+                textdata = File(filepath).readAsStringSync(encoding: utf8);
                 response(textdata);
               }
             } else {
@@ -762,14 +716,6 @@ class RestedResponse {
   String filetypeFromPath(String path) {
     List<String> dirsplit = path.split('/');
   }
-/*
-  // Parses html files for rscript and returns processed html
-  Future<String> rscriptToHtml(String filepath) async {
-    //if (request.restedresponse.containsKey('args')) {
-      //request.rscript_args.args = request.restedresponse['args'];
-    //}
-    return await rscript.createDocument(filepath, request.rscript_args);
-  }*/
 
   void fileResponse(File file) {
     Future f = file.readAsBytes();
