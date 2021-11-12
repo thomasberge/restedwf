@@ -2,9 +2,13 @@
 // www.restedwf.com
 // © 2020 Thomas Sebastian Berge
 
+library rested.rsettings;
+
 import 'dart:io';
 import 'dart:convert';
 import 'package:nanoid/nanoid.dart';
+
+RestedSettings rsettings = RestedSettings();
 
 class RestedSettings {
   RestedSettings() {

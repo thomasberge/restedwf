@@ -69,7 +69,6 @@ class RestedRequest {
   String access_token;
   Map body = new Map();
   CookieCollection cookies = null;
-  RestedSettings rsettings;
   Map<String, dynamic> session = new Map();
 
   String toString() {
@@ -132,8 +131,7 @@ class RestedRequest {
     }
   }
 
-  RestedRequest(HttpRequest this.request, RestedSettings server_settings, this.hostAddress, this.hostPort) {
-    rsettings = server_settings;
+  RestedRequest(HttpRequest this.request, this.hostAddress, this.hostPort) {
 
     if (rsettings.cookies_enabled) {
       cookies = new CookieCollection(request.cookies);
@@ -142,14 +140,7 @@ class RestedRequest {
     // By splitting by hostname the full request path will reside in temp[1] while the protocol will reside in temp[0]
     //List temp = request.requestedUri.toString().split(request.headers.host);
     path = request.requestedUri.path;
-
-    // In case the path is ":<port>/<path>" we need to remove the port part of the path.
-    //if (path.contains(':')) {
-    //  path = '/' + path.split('/')[1];
-    //}
-
     method = request.method.toString().toUpperCase();
-
     print(method + " " + path);
   }
 
@@ -188,30 +179,8 @@ class RestedRequest {
     restedresponse['isStream'] = stream;
     restedresponse['filepath'] = filepath;
     restedresponse['status'] = status;
-    //print("Ready to respond with:" + restedresponse.toString());
   }
-
 /*
-  void response2() {
-    if (restedresponse['type'] == "redirect") {
-      request.response.redirect(
-          Uri.http(request.requestedUri.host, restedresponse['data']));
-    } else {
-      // Set headers
-      request.response.headers.contentType =
-          mimetypes.getContentType(restedresponse['type']);
-      request.response.statusCode = HttpStatus.ok;
-
-      // Write responsedata if not blank
-      if (restedresponse['data'] != "") {
-        request.response.write(restedresponse['data']);
-      }
-
-      // Close response
-      request.response.close();
-    }
-  }
-*/
   void oldresponse(
       {String type = "text",
       String data = "",
@@ -242,89 +211,13 @@ class RestedRequest {
         request.response.close();
       }
     }
-  }
+  }*/
 
   void redirect(String resource) {
     restedresponse['type'] = "redirect";
     restedresponse['data'] = resource;
   }
 
-/*
-  void fileResponse2(String path) async {
-    bool isBinary = true;
-    String fileExtension = path.split('.')[1];
-    request.response.headers.contentType = mimetypes.getContentType(fileExtension);
-    if (fileExtension == 'html' ||
-        fileExtension == 'css' ||
-        fileExtension == 'txt') {
-      isBinary = false;
-    }
-
-    if (fileExtension == "html" && rsettings.open_html_as_rscript) {
-      path = path.substring("bin/resources/".length);
-      rscriptResponse2(path, from_url: true);
-    } else {
-      if (isBinary == null) {
-        console.error("Unsupported file type: " + fileExtension);
-        errorResponse(404);
-      } else if (isBinary) {
-        var file = new File(path);
-        var rangeheadervalue = request.headers.value(HttpHeaders.rangeHeader);
-        if (rangeheadervalue != null && true == false) {
-          // true == false to avoid this ¤%"#&¤/( rangerequest garbage for now
-          //if(true){
-          print("------- rangeHeader=" + rangeheadervalue.toString());
-          Map<String, int> ranges =
-              getRanges(rangeheadervalue.substring(6), file.lengthSync());
-          request.response.statusCode = HttpStatus.partialContent;
-          request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
-          request.response.headers.contentType = ContentType.parse("video/mp4");
-          request.response.headers.set(
-              "Content-Range",
-              "bytes " +
-                  ranges["bytesFrom"].toString() +
-                  "-" +
-                  ranges["bytesTo"].toString() +
-                  "/" +
-                  ranges["bytesTotal"].toString());
-          print("bytesFrom=" + ranges["bytesFrom"].toString());
-          print("bytesTo=" + ranges["bytesTo"].toString());
-          //RandomAccessFile raf= file.openSync(mode: FileMode.read);
-          //raf.setPositionSync(ranges["bytesFrom"]);
-          //Uint8List data = raf.readSync((ranges["bytesTo"] - ranges["bytesFrom"]));
-          //request.response.add(data);
-          //request.response.close();
-          //Future f = raf.read((ranges["bytesTo"] - ranges["bytesFrom"]));
-          //request.response.addStream(raf.asStream()).whenComplete(() {
-          //  request.response.close();
-          //       });
-          //Stream<List<int>> stream = file.openRead(ranges["bytesFrom"], ranges["bytesTo"]);
-          //var bytestream = ByteStream.fromBytes(stream);
-          //await request.response.addStream(file.openRead(ranges["bytesFrom"], ranges["bytesTo"]));
-          //await request.response.addStream(stream);
-          //request.response.addStream(stream).whenComplete(() {
-          //            request.response.close();
-          //        });
-          //request.response.close();
-
-          // If request does not contain range header
-        } else {
-          request.response.statusCode = HttpStatus.ok;
-          request.response.headers.contentType = ContentType.parse("video/mp4");
-          request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
-          Future f = file.readAsBytes();
-          request.response.addStream(f.asStream()).whenComplete(() {
-            request.response.close();
-          });
-        }
-      } else {
-        String textdata = File(path).readAsStringSync(encoding: utf8);
-        request.response.write(textdata);
-        request.response.close();
-      }
-    }
-  }
-*/
   Map<String, int> getRanges(String rangeheader, int fileLength) {
     Map<String, int> values = new Map();
     List<String> ranges = rangeheader.split(',');
@@ -342,27 +235,4 @@ class RestedRequest {
       return values;
     }
   }
-/*
-  void rscriptResponse2(String filepath,
-      {bool from_url = false,
-      Map<dynamic, dynamic> args = null}) {
-    request.response.headers.contentType =
-        new ContentType("text", "html", charset: "utf-8");
-    if (from_url == true) {
-    }
-    if(args != null) {
-      rscript_args.args = args;
-    }
-    String html = await rscript.createDocument(filepath, rscript_args);
-    request.response.write(html);
-    request.response.close();
-  }*/
-/*
-  void errorResponse(int code) async {
-    request.response.headers.contentType =
-        new ContentType("text", "plain", charset: "utf-8");
-    request.response.statusCode = code;
-    await request.response.write(error_responses.text(code));
-    request.response.close();
-  }*/
 }

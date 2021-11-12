@@ -9,9 +9,6 @@ import 'consolemessages.dart';
 import 'restedrequesthandler.dart';
 import 'restedsettings.dart';
 
-RestedSettings rsettings = new RestedSettings();
-ConsoleMessages console = new ConsoleMessages(debug_level: rsettings.message_level);
-
 class RestedServer {
   RestedRequestHandler request_handler;
 

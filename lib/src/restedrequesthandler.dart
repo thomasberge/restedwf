@@ -21,11 +21,8 @@ import 'responses.dart';
 import 'mimetypes.dart';
 import 'restedvirtualdisk.dart';
 
-RestedSettings rsettings = RestedSettings();
-ConsoleMessages console = ConsoleMessages(debug_level: rsettings.message_level);
 Function _custom_JWT_verification;
 SessionManager manager;
-RestedVirtualDisk disk = null;
 String rootDirectory = null;
 String resourcesDirectory = null;
 
@@ -58,7 +55,6 @@ class RestedRequestHandler {
     console.debug("Rested resourcesDirectory:" + resourcesDirectory);
 
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
-      //sessions = new RestedSessionManager();
       manager = new SessionManager();
     }
   }
@@ -71,16 +67,14 @@ class RestedRequestHandler {
   //            if there is information outside the body tag that is part of the actual
   //            body then they will be dropped when body = body['body']; is performed.
   void handle(HttpRequest incomingRequest) async {
-    console.debug("THREAD#" + threadid.toString());
 
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
-    RestedRequest request = new RestedRequest(incomingRequest, rsettings, address, port);
+    RestedRequest request = new RestedRequest(incomingRequest, address, port);
 
     // Decrypts the session id and sets the session data in the request
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
       if (request.cookies.containsKey('session')) {
-        var session =
-            manager.getSession(request.cookies.getFirst('session').value);
+        var session = manager.getSession(request.cookies.getFirst('session').value);
         if (session != null) {
           if (request.deleteSession) {
             manager.deleteSession(request.cookies.getFirst('session').value);
@@ -89,7 +83,6 @@ class RestedRequestHandler {
           }
         } else {
           request.removeCookie("session"); // remove session cookie on client if there is no equivalent on server
-
         }
       }
     }
@@ -140,7 +133,6 @@ class RestedRequestHandler {
 
       if (exception == 0) {
         if (unverified_access_token != null) {
-          console.debug("Verifying token ...");
           // Verify that the token is valid. Raise exception it it is not.
           RestedJWT jwt_handler = new RestedJWT();
           int verify_result = jwt_handler.verify_token(unverified_access_token);
