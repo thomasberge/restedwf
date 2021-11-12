@@ -48,12 +48,17 @@ class RestedRequestHandler {
 
   List<RestedResource> resources = new List();
 
+  // This function can be overridden by server implementation to add custom JWT verification
+  bool custom_JWT_verification(String token) {
+    return true;
+  }
+
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
     console.debug("Rested rootDirectory:" + rootDirectory);
     resourcesDirectory = rootDirectory + ('/bin/resources/');
     console.debug("Rested resourcesDirectory:" + resourcesDirectory);
-
+    _custom_JWT_verification = custom_JWT_verification;
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
       manager = new SessionManager();
     }
