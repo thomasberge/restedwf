@@ -11,6 +11,7 @@ The source is being developed on a private repo. I will update this repo from ti
 ### 0.5.0 Main changes
 
 - Added testing capability. To be used as test server on dev. No test script implemented yet.
+- Bugfix: Expired token rendered no response.
 
 ### Features
 

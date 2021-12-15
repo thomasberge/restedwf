@@ -223,7 +223,7 @@ class RestedRequestHandler {
       request.status = 401;
       request.error = "Token has expired.";
       access_token = null;
-      exception = 0;
+      //exception = 0;
       expired_token = true;
     }
 
