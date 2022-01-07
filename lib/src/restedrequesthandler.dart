@@ -623,11 +623,12 @@ class RestedResponse {
         {
           //console.debug(":: --> Redirect() to " + request.restedresponse['data'].toString());
           //String host = request.request.requestedUri.host;
-          String host = request.hostAddress + ":" + request.hostPort.toString();
+          //print("DUMP:" + hosttest);
+          String host = request.request.requestedUri.host + ":" + request.hostPort.toString();
           String path = request.restedresponse['data'];
 
-          print("HOST:" + host);
-          print("PATH:" + path);
+          //print("HOST:" + host);
+          //print("PATH:" + path);
 
           // If path contains :// then assume external host and use the entire path as redirect url
           if(path.contains('://')) {
