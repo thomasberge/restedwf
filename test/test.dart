@@ -24,6 +24,13 @@ class TestServer extends RestedRequestHandler {
     this.addResource(Claims(), "/claims");
     this.addResource(SettingsTest(), "/settings");
     this.addResource(PathParam(), "/t/{test}");
+    this.addResource(SchemaTest(), "/validate");
+  }
+}
+
+class SchemaTest extends RestedResource {
+  void post(RestedRequest request) async {
+    request.response(data: "test");
   }
 }
 

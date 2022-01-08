@@ -535,22 +535,22 @@ class RestedResource {
       _token_required[value] = false;
     }
   }
-
-  void get(RestedRequest request) {}
-  void post(RestedRequest request) {}
-  void put(RestedRequest request) {}
-  void patch(RestedRequest request) {}
-  void delete(RestedRequest request) {}
-  void copy(RestedRequest request) {}
-  void head(RestedRequest request) {}
-  void options(RestedRequest request) {}
-  void link(RestedRequest request) {}
-  void unlink(RestedRequest request) {}
-  void purge(RestedRequest request) {}
-  void lock(RestedRequest request) {}
-  void unlock(RestedRequest request) {}
-  void propfind(RestedRequest request) {}
-  void view(RestedRequest request) {}
+  Map<String, dynamic> error404 = { "error": "not implemented" };
+  void get(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void post(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void put(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void patch(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void delete(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void copy(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void head(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void options(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void link(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void unlink(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void purge(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void lock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void unlock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void propfind(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void view(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
 
   void callback(RestedRequest request) {}
 
