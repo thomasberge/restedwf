@@ -10,7 +10,6 @@ import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 import 'package:jaguar_jwt/jaguar_jwt.dart';
-import 'package:encrypt/encrypt.dart';
 import 'package:rested_script/rested_script.dart';
 
 import 'responses.dart';

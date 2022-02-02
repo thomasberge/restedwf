@@ -3,7 +3,6 @@
 // © 2021 Thomas Sebastian Berge
 
 import 'dart:io';
-import 'package:encrypt/encrypt.dart';
 import 'package:nanoid/nanoid.dart';
 import 'dart:convert';
 import 'restedsettings.dart';

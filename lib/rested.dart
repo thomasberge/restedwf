@@ -10,7 +10,6 @@ import 'dart:math';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
-import 'package:encrypt/encrypt.dart';
 import 'package:string_tools/string_tools.dart';
 
 import 'src/consolemessages.dart';
