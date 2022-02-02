@@ -10,7 +10,8 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.0 Main changes
 
-- Added testing capability. To be used as test server on dev. No test script implemented yet.
+- Added test server. To be used as test server on dev. No test script implemented yet.
+- Added temporary 404 reply for non-implemented methods on paths. Used to not yield a response.
 - Bugfix: Expired token rendered no response.
 
 ### Features
