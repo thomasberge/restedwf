@@ -29,6 +29,7 @@ export 'src/restedrequesthandler.dart';
 import 'src/restedrequests.dart';
 export 'src/restedrequests.dart';
 import 'src/restedschema.dart';
+export 'src/restedschema.dart';
 
 RestedSettings rsettings = new RestedSettings();
 ConsoleMessages console =
