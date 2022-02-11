@@ -37,21 +37,3 @@ ConsoleMessages console =
 
 Map responses = new Map();
 
-class RestedSchema {
-  List<String> mandatory_strings = new List();
-  List<String> mandatory_strings_label = new List();
-  List<String> strings = new List();
-  List<String> strings_label = new List();
-
-  RestedSchema();
-
-  void addString(String label, String data, {bool mandatory = false}) {
-    if (mandatory) {
-      mandatory_strings_label.add(label);
-      mandatory_strings.add(data);
-    } else {
-      strings_label.add(label);
-      strings.add(data);
-    }
-  }
-}
