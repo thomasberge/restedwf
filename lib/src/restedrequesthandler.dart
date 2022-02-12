@@ -20,6 +20,7 @@ import 'restedrequest.dart';
 import 'responses.dart';
 import 'mimetypes.dart';
 import 'restedvirtualdisk.dart';
+import 'restedschema.dart';
 
 Function _custom_JWT_verification;
 SessionManager manager;
@@ -491,6 +492,9 @@ class RestedResource {
     }
   }
 
+  // Stores schemas for each HTTP method.
+  Map schemas = Map<String, RestedSchema>();
+
   // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
   Map functions = Map<String, Function>();
 
@@ -531,11 +535,35 @@ class RestedResource {
     functions['propfind'] = propfind;
     functions['view'] = view;
 
+    schemas['get'] = null;
+    schemas['post'] = null;
+    schemas['put'] = null;
+    schemas['patch'] = null;
+    schemas['delete'] = null;
+    schemas['copy'] = null;
+    schemas['head'] = null;
+    schemas['options'] = null;
+    schemas['link'] = null;
+    schemas['unlink'] = null;
+    schemas['purge'] = null;
+    schemas['lock'] = null;
+    schemas['unlock'] = null;
+    schemas['propfind'] = null;
+    schemas['view'] = null;
+
     for (String value in rsettings.allowedMethods) {
       _token_required[value] = false;
     }
   }
+
+  void setSchema(String method, RestedSchema schema) {
+    if(schemas.containsKey(method)) {
+      schemas[method] = schema;
+    }
+  }
+
   Map<String, dynamic> error404 = { "error": "not implemented" };
+
   void get(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
   void post(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
   void put(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
@@ -557,8 +585,18 @@ class RestedResource {
   Map<String, dynamic> getRequestSchema = null;
 
   void wrapper(String method, RestedRequest request) async {
-    await functions[method](request);
-    await callback(request);
+
+    if(schemas[method] != null) {
+      if(schemas[method].validate(request.body)) {
+        await functions[method](request);
+        await callback(request);
+      } else {
+        print("Error, schema does not validate!");
+      }
+    } else {
+      await functions[method](request);
+      await callback(request);
+    }
 
     if (request.session.containsKey('delete')) {
       if (request.session['delete']) {

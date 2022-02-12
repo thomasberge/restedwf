@@ -12,6 +12,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 - Added test server. To be used as test server on dev. No test script implemented yet.
 - Added temporary 404 reply for non-implemented methods on paths. Used to not yield a response.
+- RestedSchema created. Rather simple for the time being. Implemented on resource level.
 - Cleaned up unused dependencies and updated some of the used ones to latest version.
 - Bugfix: Expired token rendered no response.
 
