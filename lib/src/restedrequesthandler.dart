@@ -587,6 +587,7 @@ class RestedResource {
   void wrapper(String method, RestedRequest request) async {
 
     if(schemas[method] != null) {
+      print("request.body=" + request.body.toString());
       if(schemas[method].validate(request.body)) {
         await functions[method](request);
         await callback(request);
