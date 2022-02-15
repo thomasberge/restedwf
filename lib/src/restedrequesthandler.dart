@@ -557,8 +557,8 @@ class RestedResource {
   }
 
   void setSchema(String method, RestedSchema schema) {
-    if(schemas.containsKey(method)) {
-      schemas[method] = schema;
+    if(schemas.containsKey(method.toLowerCase())) {
+      schemas[method.toLowerCase()] = schema;
     }
   }
 
