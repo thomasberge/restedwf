@@ -593,6 +593,7 @@ class RestedResource {
         await functions[method](request);
         await callback(request);
       } else {
+        request.response(type: "error", status: 400);
         print("Error, schema does not validate!");
       }
     } 
