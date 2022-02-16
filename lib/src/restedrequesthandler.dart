@@ -594,7 +594,6 @@ class RestedResource {
         await callback(request);
       } else {
         request.response(type: "error", status: 400);
-        print("Error, schema does not validate!");
       }
     } 
     // If the resource method does NOT have a schema requirement
