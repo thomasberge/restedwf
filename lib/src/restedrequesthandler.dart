@@ -658,7 +658,12 @@ class RestedResponse {
   RestedResponse(this.request);
 
   void respond() async {
-    request.request.response.statusCode = request.restedresponse['status'];
+    if(request.restedresponse['status'] == null) {
+      request.request.response.statusCode = 200;
+    } else {
+      request.request.response.statusCode = request.restedresponse['status'];
+    }
+
     if(request.request.response.statusCode > 399 && request.request.response.statusCode < 600) {
       request.restedresponse['type'] = "error";
     }
