@@ -21,6 +21,7 @@ import 'responses.dart';
 import 'mimetypes.dart';
 import 'restedvirtualdisk.dart';
 import 'restedschema.dart';
+import 'errors.dart';
 
 Function _custom_JWT_verification;
 SessionManager manager;
@@ -586,15 +587,17 @@ class RestedResource {
 
   void wrapper(String method, RestedRequest request) async {
 
+    // If the resource method has a schema requirement
     if(schemas[method] != null) {
-      print("request.body=" + request.body.toString());
       if(schemas[method].validate(request.body)) {
         await functions[method](request);
         await callback(request);
       } else {
         print("Error, schema does not validate!");
       }
-    } else {
+    } 
+    // If the resource method does NOT have a schema requirement
+    else {
       await functions[method](request);
       await callback(request);
     }
@@ -656,97 +659,109 @@ class RestedResponse {
 
   void respond() async {
     request.request.response.statusCode = request.restedresponse['status'];
+    if(request.request.response.statusCode > 399 && request.request.response.statusCode < 600) {
+      request.restedresponse['type'] = "error";
+    }
 
     switch (request.restedresponse['type']) {
+      case "error":
+      {
+        request.request.response.headers.contentType =
+            new ContentType("application", "json", charset: "utf-8");        
+        response(json.encode(Errors.getJson(request.request.response.statusCode)));
+      }
+      break;
+
       case "redirect":
-        {
-          //console.debug(":: --> Redirect() to " + request.restedresponse['data'].toString());
-          //String host = request.request.requestedUri.host;
-          //print("DUMP:" + hosttest);
-          String host = request.request.requestedUri.host + ":" + request.hostPort.toString();
-          String path = request.restedresponse['data'];
+      {
+        //console.debug(":: --> Redirect() to " + request.restedresponse['data'].toString());
+        //String host = request.request.requestedUri.host;
+        //print("DUMP:" + hosttest);
+        String host = request.request.requestedUri.host + ":" + request.hostPort.toString();
+        String path = request.restedresponse['data'];
 
-          //print("HOST:" + host);
-          //print("PATH:" + path);
+        //print("HOST:" + host);
+        //print("PATH:" + path);
 
-          // If path contains :// then assume external host and use the entire path as redirect url
-          if(path.contains('://')) {
-            request.request.response.redirect(Uri.parse(path));
-          } else {
-            request.request.response.redirect(Uri.http(host, request.restedresponse['data']));  
-          }
+        // If path contains :// then assume external host and use the entire path as redirect url
+        if(path.contains('://')) {
+          request.request.response.redirect(Uri.parse(path));
+        } else {
+          request.request.response.redirect(Uri.http(host, request.restedresponse['data']));  
         }
-        break;
+      }
+      break;
 
       case "text":
-        {
-          console.debug(":: Textresponse()");
-          request.request.response.headers.contentType =
-              new ContentType("text", "plain", charset: "utf-8");
-          response(request.restedresponse['data']);
-        }
-        break;
+      {
+        console.debug(":: Textresponse()");
+        request.request.response.headers.contentType =
+            new ContentType("text", "plain", charset: "utf-8");
+        response(request.restedresponse['data']);
+      }
+      break;
 
       case "html":
-        {
-          console.debug(":: Htmlresponse()");
-          request.request.response.headers.contentType =
-              new ContentType("text", "html", charset: "utf-8");
-          response(request.restedresponse['data']);
-        }
-        break;
+      {
+        console.debug(":: Htmlresponse()");
+        request.request.response.headers.contentType =
+            new ContentType("text", "html", charset: "utf-8");
+        response(request.restedresponse['data']);
+      }
+      break;
 
       case "json":
-        {
-          console.debug(":: Jsonresponse()");
-          request.request.response.headers.contentType =
-              new ContentType("application", "json", charset: "utf-8");
-          response(request.restedresponse['data']);
-        }
-        break;
+      {
+        console.debug(":: Jsonresponse()");
+        request.request.response.headers.contentType =
+            new ContentType("application", "json", charset: "utf-8");
+        response(request.restedresponse['data']);
+      }
+      break;
 
       case "file":
-        {
-          if (request.restedresponse['filepath'] != null) {
-            String filepath =
-                resourcesDirectory + request.restedresponse['filepath'];
-            console.debug(":: Fileresponse() using path " + filepath);
+      {
+        if (request.restedresponse['filepath'] != null) {
+          String filepath =
+              resourcesDirectory + request.restedresponse['filepath'];
+          console.debug(":: Fileresponse() using path " + filepath);
 
-            bool fileExists = await File(filepath).exists();
-            if (fileExists) {
-              String filetype = p.extension(filepath);
-              console.debug(":: Filetype is " + filetype);
+          bool fileExists = await File(filepath).exists();
+          if (fileExists) {
+            String filetype = p.extension(filepath);
+            console.debug(":: Filetype is " + filetype);
 
-              // Set headers
-              request.request.response.headers.contentType =
-                  mimetypes.getContentType(filetype);
+            // Set headers
+            request.request.response.headers.contentType =
+                mimetypes.getContentType(filetype);
 
-              if (mimetypes.isBinary(filetype)) {
-                File file = new File(filepath);
-                var rangeheadervalue =
-                    request.request.headers.value(HttpHeaders.rangeHeader);
-                if (rangeheadervalue != null) {
-                  request.request.response.statusCode =
-                      HttpStatus.partialContent;
-                }
-                Future f = file.readAsBytes();
-                request.request.response
-                    .addStream(f.asStream())
-                    .whenComplete(() {
-                  request.request.response.close();
-                });
-              } else {
-                String textdata = "";
-                textdata = File(filepath).readAsStringSync(encoding: utf8);
-                response(textdata);
+            if (mimetypes.isBinary(filetype)) {
+              File file = new File(filepath);
+              var rangeheadervalue =
+                  request.request.headers.value(HttpHeaders.rangeHeader);
+              if (rangeheadervalue != null) {
+                request.request.response.statusCode =
+                    HttpStatus.partialContent;
               }
+              Future f = file.readAsBytes();
+              request.request.response
+                  .addStream(f.asStream())
+                  .whenComplete(() {
+                request.request.response.close();
+              });
             } else {
-              console.error("error 404");
-              response("404 not found: " + filepath);
+              String textdata = "";
+              textdata = File(filepath).readAsStringSync(encoding: utf8);
+              response(textdata);
             }
+          } else {
+            console.error("error 404");
+            response("404 not found: " + filepath);
           }
         }
-        break;
+      }
+      break;
+
     }
   }
 
