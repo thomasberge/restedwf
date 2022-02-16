@@ -17,5 +17,7 @@ class Errors {
             }
             break;
         }
+
+        return message;
     }
 }
