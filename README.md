@@ -11,10 +11,12 @@ The source is being developed on a private repo. I will update this repo from ti
 ### 0.5.0 Main changes
 
 - Added test server. To be used as test server on dev. No test script implemented yet.
-- Added temporary 404 reply for non-implemented methods on paths. Used to not yield a response.
+- Added temporary 404 reply for non-implemented methods on paths.
+- Added ignore_authorization_header server setting. Default obviously set to false.
 - RestedSchema created. Rather simple for the time being. Implemented on resource level.
 - Cleaned up unused dependencies and updated some of the used ones to latest version.
 - Bugfix: Expired token rendered no response.
+- Bugfix: Unsupported or malformed authorization header now returns 401 instead of 400.
 
 ### Features
 

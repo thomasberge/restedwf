@@ -44,6 +44,7 @@ void saveSession(RestedRequest request) {
 }
 
 class RestedRequestHandler {
+  bool ignoreAuthorizationHeaders = false;
   String address = "127.0.0.1";
   int port = 8080;
   int threadid = 0;
@@ -56,11 +57,13 @@ class RestedRequestHandler {
   }
 
   RestedRequestHandler() {
+    ignoreAuthorizationHeaders = rsettings.ignoreAuthorizationHeaders;
     rootDirectory = Directory.current.path;
     console.debug("Rested rootDirectory:" + rootDirectory);
     resourcesDirectory = rootDirectory + ('/bin/resources/');
     console.debug("Rested resourcesDirectory:" + resourcesDirectory);
     _custom_JWT_verification = custom_JWT_verification;
+
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
       manager = new SessionManager();
     }
@@ -119,45 +122,46 @@ class RestedRequestHandler {
     // in the header either as Bearer, access_token, token or jwt followed by a space and
     // the jwt token itself. The extracted token will be stored in the access_token variable
     // and passed to the RestedRequest object. If it fails it will set exception to true,
-    // which in turn will trigger a 400 Bad Request error response.
+    // which in turn will trigger a 401 Unauthorized error response.
 
-    try {
-      if (unverified_access_token == null) {
-        unverified_access_token =
-            incomingRequest.headers.value(HttpHeaders.authorizationHeader);
+    if (ignoreAuthorizationHeaders == false) {
+      try {
+        if (unverified_access_token == null) {
+          unverified_access_token =
+              incomingRequest.headers.value(HttpHeaders.authorizationHeader);
 
-        if (unverified_access_token != null) {
-          List<String> authtype = unverified_access_token.split(' ');
-          List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
-          if (valid_auths.contains(authtype[0].toUpperCase())) {
-            unverified_access_token = authtype[1];
-          } else {
-            exception = 400;
-            console.error("Malformed Authorization header");
+          if (unverified_access_token != null) {
+            List<String> authtype = unverified_access_token.split(' ');
+            List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
+            if (valid_auths.contains(authtype[0].toUpperCase())) {
+              unverified_access_token = authtype[1];
+            } else {
+              exception = 401; // Unauthorized, unsupported or malformed Authorization header
+            }
           }
         }
-      }
 
-      if (exception == 0) {
-        if (unverified_access_token != null) {
-          // Verify that the token is valid. Raise exception it it is not.
-          RestedJWT jwt_handler = new RestedJWT();
-          int verify_result = jwt_handler.verify_token(unverified_access_token);
-          if (verify_result == 401) {
-            console.debug("Token not valid!");
-            exception = verify_result;
-          } else if (verify_result == 452) {
-            console.debug("Token expired!");
-            exception = verify_result;
-          } else {
-            console.debug("Token verified!");
-            access_token = unverified_access_token;
+        if (exception == 0) {
+          if (unverified_access_token != null) {
+            // Verify that the token is valid. Raise exception it it is not.
+            RestedJWT jwt_handler = new RestedJWT();
+            int verify_result = jwt_handler.verify_token(unverified_access_token);
+            if (verify_result == 401) {
+              //console.debug("Token not valid!");
+              exception = verify_result;
+            } else if (verify_result == 452) {
+              //console.debug("Token expired!");
+              exception = verify_result;
+            } else {
+              //console.debug("Token verified!");
+              access_token = unverified_access_token;
+            }
           }
         }
+      } on Exception catch (e) {
+        console.error(e.toString());
+        exception = 400;
       }
-    } on Exception catch (e) {
-      console.error(e.toString());
-      exception = 400;
     }
 
     // 3 --- Identify the contentType so we can create the body map of the request correctly.
@@ -223,9 +227,8 @@ class RestedRequestHandler {
 
     if (exception == 452) {
       request.status = 401;
-      request.error = "Token has expired.";
+      request.error = "Unauthorized";
       access_token = null;
-      //exception = 0;
       expired_token = true;
     }
 
@@ -468,7 +471,7 @@ class RestedResource {
       if (uri_parameters != null && requested_path != null) {
         List<String> requested_path_segments = requested_path
             .substring(1)
-            .split('/'); // substring in order to remove first /
+            .split('/'); // substring in order to remove leading slash
         List<String> uri_parameters_segments =
             uri_parameters.substring(1).split('/');
         if (requested_path_segments.length != uri_parameters_segments.length) {
@@ -679,14 +682,8 @@ class RestedResponse {
 
       case "redirect":
       {
-        //console.debug(":: --> Redirect() to " + request.restedresponse['data'].toString());
-        //String host = request.request.requestedUri.host;
-        //print("DUMP:" + hosttest);
         String host = request.request.requestedUri.host + ":" + request.hostPort.toString();
         String path = request.restedresponse['data'];
-
-        //print("HOST:" + host);
-        //print("PATH:" + path);
 
         // If path contains :// then assume external host and use the entire path as redirect url
         if(path.contains('://')) {

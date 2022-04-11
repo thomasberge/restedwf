@@ -27,6 +27,8 @@ class RestedSettings {
   /// Name of JSON web token issuer.
   String jwt_issuer;
 
+  bool ignoreAuthorizationHeaders;
+
   /// JSON web token encryption key.
   String jwt_key;
 
@@ -67,6 +69,7 @@ class RestedSettings {
     settings['files_enabled'] = true;
     settings['open_html_as_rscript'] = true;
     settings['message_level'] = 0;
+    settings['ignore_authorization_headers'] = false;
     File(settings_filepath)
         .writeAsStringSync(jsonEncode(settings), encoding: utf8);
   }
@@ -93,6 +96,7 @@ class RestedSettings {
     files_enabled = settings['files_enabled'];
     open_html_as_rscript = settings['open_html_as_rscript'];
     message_level = settings['message_level'];
+    ignoreAuthorizationHeaders = settings['ignore_authorization_headers'];
   }
 
   void loadSettingsFromEnvironment() {
@@ -126,7 +130,10 @@ class RestedSettings {
     }
     if (_envVars.containsKey("message_level")) {
       message_level = int.parse(_envVars["message_level"]);
-    }    
+    }
+    if (_envVars.containsKey("ignore_authorization_headers")) {
+      ignoreAuthorizationHeaders = toBool(_envVars["ignore_authorization_headers"]);
+    }
   }
 
   bool toBool(String input) {
