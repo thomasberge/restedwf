@@ -236,7 +236,10 @@ class RestedRequestHandler {
       //request.errorResponse(exception);
       request.response(data: "error somethingsomething");
     } else {
-      request.access_token = access_token;
+      
+      if(access_token != null) {
+        request.access_token = access_token;
+      }
 
       int index = getResourceIndex(request.path);
 
