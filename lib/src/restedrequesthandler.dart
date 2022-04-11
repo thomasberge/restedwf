@@ -689,6 +689,7 @@ class RestedResponse {
         if(path.contains('://')) {
           request.request.response.redirect(Uri.parse(path));
         } else {
+          print("Redirecting to " + host);
           request.request.response.redirect(Uri.http(host, request.restedresponse['data']));  
         }
       }
