@@ -206,12 +206,12 @@ class RestedRequestHandler {
     } else if (type.contains("multipart/form-data")) {
       String data = await utf8.decoder.bind(incomingRequest).join();
       Map body = multipartFormDataToBodyMap(type.toString(), data);
+      request.text = data;
       request.setBody(body);
 
     } else if (type.contains("text/plain")) {
       String data = await utf8.decoder.bind(incomingRequest).join();
-      Map body = { "text": data };
-      request.setBody(body);
+      request.text = data;
 
     } else {
       if (type.toString() != "[null]") {

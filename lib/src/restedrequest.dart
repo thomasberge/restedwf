@@ -67,6 +67,7 @@ class RestedRequest {
   String path;
   String access_token;
   Map body = Map<String, dynamic>();
+  String text = "";
   CookieCollection cookies = null;
   Map<String, dynamic> session = new Map();
 
