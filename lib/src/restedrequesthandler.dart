@@ -208,8 +208,16 @@ class RestedRequestHandler {
       Map body = multipartFormDataToBodyMap(type.toString(), data);
       request.setBody(body);
 
+    } else if (type.contains("text/plain")) {
+      String data = await utf8.decoder.bind(incomingRequest).join();
+      Map body = { "text": data };
+      request.setBody(body);
+
     } else {
       if (type.toString() != "[null]") {
+      String data = await utf8.decoder.bind(incomingRequest).join();
+      Map body = {};
+      request.setBody(body);
         console.alert("UNSUPPORTED HEADER TYPE: " + type.toString());
       }
     }
