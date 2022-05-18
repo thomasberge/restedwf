@@ -17,6 +17,7 @@ The source is being developed on a private repo. I will update this repo from ti
 - Cleaned up unused dependencies and updated some of the used ones to latest version.
 - Bugfix: Expired token rendered no response.
 - Bugfix: Unsupported or malformed authorization header now returns 401 instead of 400.
+- Documentation updated quite heavily.
 
 ### Features
 
@@ -47,46 +48,216 @@ In the example there is a server example that does the following:
 
 ### Mini-documentation
 
-The following needs to be in a file called 'server.dart', which in turn must reside in the same level as 'rested.dart'.
+#### The basics
+
+Link this repo as a requirement in the `pubspec.yaml` file. If you leave out `ref: dev` then you will get the main, stable(ish) release.
+
+````
+  restedwf:
+    git:
+      url: https://github.com/thomasberge/restedwf
+      ref: dev
+```
+
+Import the package to get access to all of its objects. There should be no need to reference other files internal to RestedWF.
 
 ```
 import 'package:restedwf/rested.dart';
 ```
 
-Create a Resource class. You create these for each /resource. Supports all standard HTTP methods as functions.
+You define a resource as a `RestedResource` class. Supports all standard HTTP methods as functions within the class (yes, `get` as well even though its a reserved word).
 
 ```
-class Resource_root extends RestedResource {
+class Resource_Root extends RestedResource {
   void get(RestedRequest request) {
     request.response(type: 'html', data: "<html>I am a glorious website!</html>");
   }
 
   void post(RestedRequest request) {
-    // This function would handle post requests.
+    // This function handles post requests.
   }
 }
-
 ```
 
-
-Create a class called Rested that extends RestedRequestHandler. This is where you add your endpoints.
+All resource classes are instantiated and added to a single `RestedRequestHandler` class and given a path.
 
 ```
 class Rested extends RestedRequestHandler {
   
   Rested() {
-    this.addResource(Resource_root(), "/");
+    this.addResource(Resource_Root(), "/");
+    this.addResource(Resource_Login(), "/login");
   }
 }
 ```
 
-Instantiate and start a development test server at the specified address and port.
+Once you have a `RestedRequestHandler` clas defined you can start a `RestedServer` with the requesthandler as an argument. Start the server by specifying its address and port.
 
 ```
 main() async {
   RestedServer server = RestedServer(Rested());
   server.start("127.0.0.1", 80);
 }
+```
+
+If you are running this inside a docker container then use `0.0.0.0` instead of `127.0.0.1` or `localhost`.
+
+
+#### The Request Object
+
+Each RestedResource function needs a RestedRequest object as its argument. This object will contain information about the incoming request. It is a server-side HttpRequest object from dart:io wrapped in a RestedRequest object. You can directly access the HttpRequest object through request.request should you need to.
+
+request.body is of type Map<String, dynamic> and will contain data if the incoming request was either a JSON or formdata.
+
+request.text is of type String and contains text data if the incoming request has Content-Type text/plain.
+
+There is currently no proper way to handle incoming binary stream nor XML.
+
+```
+class Resource_Login extends RestedResource {
+  void post(RestedRequest request) {
+    String login_username = request.body['username'];
+    String login_password = request.body['password'];
+
+    // do API login request
+  }
+}
+```
+
+
+#### The Response and Redirect Functions
+
+Normally you will either respond to a request with some data, or you will redirect the user somewhere else.
+
+```
+class Resource_Login extends RestedResource {
+  void get(RestedRequest request) {
+    request.response(type: "html", data: "<html>Website goes here</html>");    
+  }
+
+  void post(RestedRequest request) {
+
+    // do API login request, get token cookie, then redirect back to root
+
+    request.redirect('/');
+  }
+}
+```
+
+The response function has two named arguments; type and data. Type is default `text`, but other allowed values are `json` and `html`.
+
+Redirecting is as easy as running the function name with the path as an argument.
+
+
+#### Protecting endpoints with JSON Web Tokens
+
+First of all, this require some light setup before it can be used. In your environment you need the following variables set:
+
+````
+      - jwt_key=C4NN0NB477S!!!!?
+      - jwt_issuer=yourwebsitegoeshere
+      - jwt_duration=5000
+      - cookies_max_age=1200
+```
+
+`jwt_key` need to be 16 characters. Any JWT created with this `jwt_key` by this `jwt_issuer` will validate. If you create a separate API server then those two values needs to be identical for the JWT token issued by the API to resolve on the website (or vice versa).
+
+All JWT tokens have a server and a client expiration time. `jwt_duration` is checked by the server. The cookie containing the JWT token will also be deleted by the client when `cookies_max_age` expires, although that is up to the client to uphold.
+
+Once this is set up then you need to instantiate the RestedJWT class in the root of the application (outside main).
+
+```
+import 'package:restedwf/rested.dart';
+
+RestedJWT jwt_handler = new RestedJWT();
+
+class Resource_Login extends RestedResource {
+  // ...
+````
+
+A RestedResource can be protected by requiring a valid JWT. This is just about the first thing the RequestHandler checks when processing a request. In order to enable this you will need to add it in the RestedResources instantiate function. You need to explicitly set each method you want to protect.
+
+The default behavior of a protected resource method is to return 403 Forbidden if the token is not valid or expired. You can however set a default forwarding URL as an alternative. This is set per resource however and will therefor work the same for all of the resource methods that are protected.
+
+```
+class Resource_Root extends RestedResource {
+  String protected_redirect = "/login";
+
+  Resource_Root() {
+    require_token("get");
+  }
+
+  // ...
+}
+```
+
+To create a token you simply let the jwt_handler generate it. You also have the option of adding custom claims to the token. Note that these are not encrypted claims. You can later extract claims for other purposes.
+
+```
+Map claims = {"role": "administrator"};
+Map token = jwt_handler.generate_token(additional_claims: claims);
+````
+
+You can also add custom verification of JWT tokens by overriding the `custom_JWT_verification` function on the requesthandler. It needs to have a ´String token´ argument and return a bool signaling if its verified or not.
+
+```
+class Rested extends RestedRequestHandler {
+  
+  Rested() {
+    this.addResource(Resource_Root(), "/");
+    this.addResource(Resource_Login(), "/login");
+  }
+
+  bool custom_JWT_verification(String token) {
+    // can be used to for example create a blacklist of tokens (not part of RestedWF)
+    return !isBlacklisted(token);
+  }
+}
+```
+
+
+#### Server Sessions
+
+... to be documented. Basically add a SessionManager and return session id in a cookie instead of JWT token. The requesthandler will automatically identify the session, look up the token and try to verify it. Examples to come.
+
+
+#### Implementing restedscript for templating and scripting
+
+... to be better documented. Here is a simple example:
+
+Add to pubspec.yaml
+
+```
+  rested_script:
+    git:
+      url: https://github.com/thomasberge/rested_script
+      ref: dev
+```
+
+```
+// Instantiate this on root level (or per dart file)
+RestedScript rscript = RestedScript(root: "/app/bin/resources/", debug: true);
+
+// Build a document from any page with the createDocument command
+class AdminPage extends RestedResource {
+  void get(RestedRequest request) async {
+    String index_page = await rscript.createDocument("admin/index.html");
+    request.response(type: "html", data: index_page);
+  }
+}
+```
+
+RestedScript is documented here: https://github.com/thomasberge/rested_script
+
+
+#### Doing REST requests
+
+... to be documented properly. Here is a short example:
+
+```
+    Map<String, String> _headers = { "Content-Type": "application/json" };
+    Map<String, dynamic> _data = { "username": login_username, "password": login_password };
+    String result = await RestedRequests.post('http://api.something.com/login', headers: _headers, data: json.encode(_data));
 ```
 
 ## Testing
