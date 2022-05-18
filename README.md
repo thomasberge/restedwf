@@ -52,7 +52,7 @@ In the example there is a server example that does the following:
 
 Link this repo as a requirement in the `pubspec.yaml` file. If you leave out `ref: dev` then you will get the main, stable(ish) release.
 
-````
+```
   restedwf:
     git:
       url: https://github.com/thomasberge/restedwf
@@ -153,7 +153,7 @@ Redirecting is as easy as running the function name with the path as an argument
 
 First of all, this require some light setup before it can be used. In your environment you need the following variables set:
 
-````
+```
       - jwt_key=C4NN0NB477S!!!!?
       - jwt_issuer=yourwebsitegoeshere
       - jwt_duration=5000
@@ -173,7 +173,7 @@ RestedJWT jwt_handler = new RestedJWT();
 
 class Resource_Login extends RestedResource {
   // ...
-````
+```
 
 A RestedResource can be protected by requiring a valid JWT. This is just about the first thing the RequestHandler checks when processing a request. In order to enable this you will need to add it in the RestedResources instantiate function. You need to explicitly set each method you want to protect.
 
@@ -196,7 +196,7 @@ To create a token you simply let the jwt_handler generate it. You also have the 
 ```
 Map claims = {"role": "administrator"};
 Map token = jwt_handler.generate_token(additional_claims: claims);
-````
+```
 
 You can also add custom verification of JWT tokens by overriding the `custom_JWT_verification` function on the requesthandler. It needs to have a ´String token´ argument and return a bool signaling if its verified or not.
 
