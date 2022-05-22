@@ -10,6 +10,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.0 Main changes
 
+- Created a new http error handler. Simple to use and effective.
 - Added test server. To be used as test server on dev. No test script implemented yet.
 - Added temporary 404 reply for non-implemented methods on paths.
 - Added ignore_authorization_header server setting. Default obviously set to false.
@@ -255,9 +256,24 @@ RestedScript is documented here: https://github.com/thomasberge/rested_script
 ... to be documented properly. Here is a short example:
 
 ```
-    Map<String, String> _headers = { "Content-Type": "application/json" };
-    Map<String, dynamic> _data = { "username": login_username, "password": login_password };
-    String result = await RestedRequests.post('http://api.something.com/login', headers: _headers, data: json.encode(_data));
+Map<String, String> _headers = { "Content-Type": "application/json" };
+Map<String, dynamic> _data = { "username": login_username, "password": login_password };
+String result = await RestedRequests.post('http://api.something.com/login', headers: _headers, data: json.encode(_data));
+```
+
+#### Handling HTTP errors
+
+In case you want to raise a HTTP error from within a HTTP method you need to have instantiated an Errors object. Pass the request object as well as the error code, and a response will be sent back to the client. It is imperative that you then use the return statement, or else the rest of your code will be run.
+
+```
+Errors error_handler = Errors();
+
+class CrashTest extends RestedResource {
+  void get(RestedRequest request) async {
+    errors.raise(request, 400);
+    return;
+  }
+}
 ```
 
 ## Testing
