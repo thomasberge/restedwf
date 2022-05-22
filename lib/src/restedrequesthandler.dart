@@ -27,6 +27,7 @@ Function _custom_JWT_verification;
 SessionManager manager;
 String rootDirectory = null;
 String resourcesDirectory = null;
+Errors error_handler = Errors();
 
 void saveSession(RestedRequest request) {
   if (request.session.containsKey('id')) {
@@ -100,7 +101,6 @@ class RestedRequestHandler {
     String access_token = null;
     String unverified_access_token = null;
     bool expired_token = false;
-    int exception = 0;
 
     // 2 --- Get access_token from either cookie or session, then verify it.
 
@@ -136,31 +136,28 @@ class RestedRequestHandler {
             if (valid_auths.contains(authtype[0].toUpperCase())) {
               unverified_access_token = authtype[1];
             } else {
-              exception = 401; // Unauthorized, unsupported or malformed Authorization header
+              error_handler.raise(request, 401);
+              return;
             }
           }
         }
 
-        if (exception == 0) {
-          if (unverified_access_token != null) {
-            // Verify that the token is valid. Raise exception it it is not.
-            RestedJWT jwt_handler = new RestedJWT();
-            int verify_result = jwt_handler.verify_token(unverified_access_token);
-            if (verify_result == 401) {
-              //console.debug("Token not valid!");
-              exception = verify_result;
-            } else if (verify_result == 452) {
-              //console.debug("Token expired!");
-              exception = verify_result;
-            } else {
-              //console.debug("Token verified!");
-              access_token = unverified_access_token;
-            }
+        if (unverified_access_token != null) {
+          // Verify that the token is valid. Raise exception it it is not.
+          RestedJWT jwt_handler = new RestedJWT();
+          int verify_result = jwt_handler.verify_token(unverified_access_token);
+          if (verify_result == 401) {
+            error_handler.raise(request, 401);
+            return;
+          } else {
+            access_token = unverified_access_token;
           }
         }
+
       } on Exception catch (e) {
         console.error(e.toString());
-        exception = 400;
+        error_handler.raise(request, 400);
+        return;
       }
     }
 
@@ -187,7 +184,8 @@ class RestedRequestHandler {
       try {
         jsonmap = json.decode(jsonstring);
       } catch(e) {
-        
+        error_handler.raise(request, 400);
+        return;
       }
 
 
@@ -223,64 +221,52 @@ class RestedRequestHandler {
     }
 
     if (request.body == null) {
-      exception = 400; // BAD REQUEST
+        error_handler.raise(request, 400);
+        return;
     }
 
     // 4 --- ?
 
-    // Creates the RestedRequest first. If the exception error code is set to 452 Token Expired
+    // Creates the RestedRequest first. If the exception error code is set to 401 Token Expired
     // an "error" in rscript_args is added along with error description.
     // we reset error code and makes sure access_token is blank before we continue. After that,
     // if the error code is still not 0 we return an error response.
-
-    if (exception == 452) {
-      request.status = 401;
-      request.error = "Unauthorized";
-      access_token = null;
-      expired_token = true;
+      
+    if(access_token != null) {
+      request.access_token = access_token;
     }
 
-    if (exception != 0) {
-      //request.errorResponse(exception);
-      request.response(data: "error somethingsomething");
-    } else {
-      
-      if(access_token != null) {
-        request.access_token = access_token;
+    int index = getResourceIndex(request.path);
+
+    if (index != null) {
+      if (resources[index].path.contains('{')) {
+        request.createPathArgumentMap(resources[index].uri_parameters,
+            PathParser.get_uri_keys(resources[index].path));
       }
-
-      int index = getResourceIndex(request.path);
-
-      if (index != null) {
-        if (resources[index].path.contains('{')) {
-          request.createPathArgumentMap(resources[index].uri_parameters,
-              PathParser.get_uri_keys(resources[index].path));
+      resources[index].doMethod(request.method, request);
+    } else {
+      if (rsettings.files_enabled) {
+        String path = request.path;
+        if (request.path.substring(0, 1) == '/') {
+          path = request.path.substring(1);
         }
-        resources[index].doMethod(request.method, request);
-      } else {
-        if (rsettings.files_enabled) {
-          String path = request.path;
-          if (request.path.substring(0, 1) == '/') {
-            path = request.path.substring(1);
-          }
-          //path = disk.getFile(resourcesDirectory + request.path);
-          if (path != null) {
-            //request.fileResponse(path);
-            //path = resourcesDirectory + path;
-            request.response(
-                type: "file",
-                filepath:
-                    path); //-----------------------------------------------------------------------------------------------
-            RestedResponse resp = new RestedResponse(request);
-            resp.respond();
-          } else {
-            console.debug("Resource not found at endpoint " + request.path);
-            request.response(data: "404 error somethingsomething");
-          }
+        //path = disk.getFile(resourcesDirectory + request.path);
+        if (path != null) {
+          //request.fileResponse(path);
+          //path = resourcesDirectory + path;
+          request.response(
+              type: "file",
+              filepath:
+                  path); //-----------------------------------------------------------------------------------------------
+          RestedResponse resp = new RestedResponse(request);
+          resp.respond();
         } else {
           console.debug("Resource not found at endpoint " + request.path);
           request.response(data: "404 error somethingsomething");
         }
+      } else {
+        console.debug("Resource not found at endpoint " + request.path);
+        request.response(data: "404 error somethingsomething");
       }
     }
   }
@@ -431,12 +417,12 @@ class RestedJWT {
       DateTime expires = DateTime.parse(decClaimSet['exp'].toString());
       Duration duration = DateTime.now().difference(issued_at);
       if (duration.inMinutes >= rsettings.jwt_duration) {
-        return (452); // "Token has expired"
+        return (401);
       } else {
         if (_custom_JWT_verification(token)) {
           return (200); // "OK"
         } else {
-          return (453);
+          return (401);
         }
       }
     } on JwtException {

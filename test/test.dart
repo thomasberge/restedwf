@@ -84,7 +84,7 @@ class JsonTest extends RestedResource {
 
 class Dump extends RestedResource {
   void post(RestedRequest request) {
-    request.response(data: request.body.toString());
+    request.response(data: request.text);
   }
 }
 
