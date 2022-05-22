@@ -270,7 +270,7 @@ Errors error_handler = Errors();
 
 class CrashTest extends RestedResource {
   void get(RestedRequest request) async {
-    errors.raise(request, 400);
+    error_handler.raise(request, 400);
     return;
   }
 }
