@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:yaml/yaml.dart';
 import 'restedrequesthandler.dart' show RestedResource;
+import 'restedsettings.dart';
 
 class OAPI3 {
 
@@ -60,7 +61,9 @@ class OAPI3 {
         resource.path = path;
 
         for(MapEntry e in yaml['paths'][path].entries) {
-            resource.operationId[e.key] = yaml['paths'][path][e.key]['operationId'];
+            if(rsettings.allowedMethods.contains(e.key.toLowerCase())) {
+                resource.operationId[e.key] = yaml['paths'][path][e.key]['operationId'];
+            }
         }
 
         resources.add(resource);

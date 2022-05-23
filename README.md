@@ -8,18 +8,9 @@ A word of caution: This framework is still very much in development. Structural 
 
 The source is being developed on a private repo. I will update this repo from time to time.
 
-### 0.5.0 Main changes
+### 0.5.1 Main changes
 
-- Limited support for generating endpoints based on OpenAPI 3.1 and YAML. This approach is aimed at creating APIs while the standard method is more for developing web pages. A combination can be used as long as the paths themselves adhere to one approach (/authenticate for the API and /login for the webpage, for instance).
-- Created a new internal http error handler. Simple to use and effective. Implemented in many calls. Will later be exposed and other, older error handling code cleaned or removed.
-- Added test server. To be used as test server on dev. No test script implemented yet.
-- Added temporary 404 reply for non-implemented methods on paths.
-- Added ignore_authorization_header server setting. Default obviously set to false.
-- RestedSchema created. Rather simple for the time being. Implemented on resource level.
-- Cleaned up unused dependencies and updated some of the used ones to latest version.
-- Bugfix: Expired token rendered no response.
-- Bugfix: Unsupported or malformed authorization header now returns 401 instead of 400.
-- Documentation updated quite heavily.
+- Bugfix: Now only tries to implement resource path methods that are defined in restedsettings allowedMethods array. This also filters out fields that aren't http methods, such as 'parameters'.
 
 ### Features
 
