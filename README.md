@@ -10,6 +10,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.0 Main changes
 
+- Limited support for generating endpoints based on OpenAPI 3.1 and YAML.
 - Created a new http error handler. Simple to use and effective.
 - Added test server. To be used as test server on dev. No test script implemented yet.
 - Added temporary 404 reply for non-implemented methods on paths.
@@ -24,6 +25,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 This is the core module that adds the basic functionality. Add-ons will give optional functionality. The main features in this module are:
 - Class-oriented code pattern. Each /resource is its own class with each HTTP method being a function.
+- OpenAPI 3.1 yaml import to create server endpoints. Supports external function calls based on operationId.
 - Sessions & Cookies. Who doesn't like cookies?
 - Automatic JSON Web Token implementation, seemlessly integrated with Session & Cookie support. JWT requirement per method in a /resource. Optional redirect if token doesn't validate.
 - Automatic parsing of incoming body for JSON and webforms.
@@ -47,7 +49,7 @@ In the example there is a server example that does the following:
 - Example of a database (in this case just a Map dictionary) login with JWT access_token, along with example of adding custom claim.
 - Example of creating a session and settings session variables.
 
-### Mini-documentation
+### No-longer-so-mini-documentation
 
 #### The basics
 
@@ -276,10 +278,66 @@ class CrashTest extends RestedResource {
 }
 ```
 
+#### Generating server from OpenAPI 3.1 YAML file
+
+Introduced in v0.5.0 is a long planned feature for generating a server based on a YAML file with OpenAPI 3.1 specifications. It can be used together with normal defined endpoints. Please keep in mind though that the YAML file is imported first. Any conflicting paths you try to add by code afterwards will get disregarded (though with an error at server startup).
+
+Currently the OpenAPI import approach is an alternative per-resource creation method. What that means is that if you already have coded the resource `/users` then importing a YAML with a specified `/users` path will render the original resource non-functional. The ability to combine imported paths and existing resources might get added in the future, but that is currently not within scope.
+
+To import a YAML file you need to point at the file in your environment:
+
+```
+YAML_IMPORT_FILE=/some/url/yourfile.yaml
+```
+
+The file will get imported and new resource endpoints will automatically be created. They will support the specified methods, but currently there is no schema validation.
+
+In order to link a specified endpoint method with a dart function you will need to create a file called `external.dart`. That file is the entrypoint to all your functions and will need to contain a list of your methods operationId (specified in the OpenAPI 3.1 YAML) and a reference to the function itself. These are linked in the `xfunctions` map. Here is an example of an `external.dart`:
+
+```
+import 'restedrequest.dart';
+
+Map<String, Function> xfunctions = {
+    "list-users": listusers
+};
+
+void listusers(RestedRequest request) {
+    request.response(data: "listing users ...");
+}
+```
+
+Each time someone calls the operationId `list-users` the `listuser` function will be called. Working with a single file however can get cumbersome, so imported files are supported. Here the function is moved to a different file. First, the `external.dart` file:
+
+```
+import 'otherfile.dart';
+
+Map<String, Function> xfunctions = {
+    "list-users": listusers
+};
+```
+
+Then, the `otherfile.dart`:
+
+```
+import 'restedrequest.dart';
+
+void listusers(RestedRequest request) {
+    request.response(data: "listing users ...");
+}
+```
+
+This way you can group related functions in their own files. Lastly, all the files needs to be put in the /src directory. That means you cannot overwrite any of the existing filenames there, so please keep that in mind. Take a look at the example Dockerfile so see how it is achieved there.
+
 ## Testing
 
 There is a test script included in /test that runs a server and tests some functions. A report is written to console. The accompanying Dockerfile in this repo root can be run in order to run the test server.
 
 ```bash
 docker build -t restedwf_test . && docker run --init -p 80:80 restedwf_test
+```
+
+Testing with import from /test/test.yaml.
+
+```bash
+docker build -t restedwf_test . && docker run --init -e yaml_import_file=/app/bin/test.yaml -p 80:80 restedwf_test
 ```

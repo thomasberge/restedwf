@@ -22,6 +22,8 @@ import 'mimetypes.dart';
 import 'restedvirtualdisk.dart';
 import 'restedschema.dart';
 import 'errors.dart';
+import 'openapi3.dart';
+import 'external.dart';
 
 Function _custom_JWT_verification;
 SessionManager manager;
@@ -68,6 +70,16 @@ class RestedRequestHandler {
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
       manager = new SessionManager();
     }
+
+    Map<String, String> _envVars = Platform.environment;
+    if (_envVars.containsKey("yaml_import_file")) {
+      OAPI3 oapi = OAPI3(_envVars["yaml_import_file"]);
+      resources = oapi.getResources();
+      for(RestedResource _res in resources) {
+        _res.setExternalFunctions();
+      }
+    }    
+    
   }
 
   // Validates the incoming request and passes it to the proper RestedResource object
@@ -445,208 +457,6 @@ class RestedJWT {
   }
 }
 
-class RestedResource {
-  String path = null;
-  String uri_parameters = null;
-  List<String> uri_parameters_list = new List();
-
-  void setPath(String resourcepath) {
-    path = resourcepath;
-    if (resourcepath.contains('{')) {
-      uri_parameters = PathParser.get_uri_parameters(path);
-    }
-    console.debug("uri_parameters for path '" +
-        path.toString() +
-        "' is " +
-        uri_parameters.toString());
-  }
-
-  bool pathMatch(String requested_path) {
-    if (path == requested_path) {
-      return true;
-    } else {
-      if (uri_parameters != null && requested_path != null) {
-        List<String> requested_path_segments = requested_path
-            .substring(1)
-            .split('/'); // substring in order to remove leading slash
-        List<String> uri_parameters_segments =
-            uri_parameters.substring(1).split('/');
-        if (requested_path_segments.length != uri_parameters_segments.length) {
-          return false;
-        } else {
-          int i = 0;
-          for (String segment in uri_parameters_segments) {
-            if (segment == '{var}') {
-              requested_path_segments[i] = '{var}';
-            }
-            i++;
-          }
-          if (uri_parameters_segments.join() ==
-              requested_path_segments.join()) {
-            return true;
-          }
-          return false;
-        }
-      } else {
-        return false; // returning false because paths are null
-      }
-    }
-  }
-
-  // Stores schemas for each HTTP method.
-  Map schemas = Map<String, RestedSchema>();
-
-  // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
-  Map functions = Map<String, Function>();
-
-  // Stored function for each HTTP error code. Returns standard error if not overridden with a function
-  Map onError = Map<int, Function>();
-
-  // Storage of bool determining if access_token is required for the http method (_functions). Use method
-  // instead of setting the variable directly.
-  Map _token_required = Map<String, bool>();
-
-  void require_token(String _method, {String redirect_url = null}) {
-    _token_required[_method] = true;
-  }
-
-  // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
-  // possible to return a redirect instead by setting the URL in this variable.
-  String protected_redirect = null;
-
-  void invalid_token_redirect(String _url) {
-    protected_redirect = _url;
-  }
-
-  RestedResource() {
-    //disk = new RestedVirtualDisk();
-    functions['get'] = get;
-    functions['post'] = post;
-    functions['put'] = put;
-    functions['patch'] = patch;
-    functions['delete'] = delete;
-    functions['copy'] = copy;
-    functions['head'] = head;
-    functions['options'] = options;
-    functions['link'] = link;
-    functions['unlink'] = unlink;
-    functions['purge'] = purge;
-    functions['lock'] = lock;
-    functions['unlock'] = unlock;
-    functions['propfind'] = propfind;
-    functions['view'] = view;
-
-    schemas['get'] = null;
-    schemas['post'] = null;
-    schemas['put'] = null;
-    schemas['patch'] = null;
-    schemas['delete'] = null;
-    schemas['copy'] = null;
-    schemas['head'] = null;
-    schemas['options'] = null;
-    schemas['link'] = null;
-    schemas['unlink'] = null;
-    schemas['purge'] = null;
-    schemas['lock'] = null;
-    schemas['unlock'] = null;
-    schemas['propfind'] = null;
-    schemas['view'] = null;
-
-    for (String value in rsettings.allowedMethods) {
-      _token_required[value] = false;
-    }
-  }
-
-  void setSchema(String method, RestedSchema schema) {
-    if(schemas.containsKey(method.toLowerCase())) {
-      schemas[method.toLowerCase()] = schema;
-    }
-  }
-
-  Map<String, dynamic> error404 = { "error": "not implemented" };
-
-  void get(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void post(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void put(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void patch(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void delete(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void copy(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void head(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void options(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void link(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void unlink(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void purge(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void lock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void unlock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void propfind(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void view(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-
-  void callback(RestedRequest request) {}
-
-  Map<String, dynamic> getRequestSchema = null;
-
-  void wrapper(String method, RestedRequest request) async {
-
-    // If the resource method has a schema requirement
-    if(schemas[method] != null) {
-      if(schemas[method].validate(request.body)) {
-        await functions[method](request);
-        await callback(request);
-      } else {
-        request.response(type: "error", status: 400);
-      }
-    } 
-    // If the resource method does NOT have a schema requirement
-    else {
-      await functions[method](request);
-      await callback(request);
-    }
-
-    if (request.session.containsKey('delete')) {
-      if (request.session['delete']) {
-        manager.deleteSession(request.session['id']);
-        request.request.response.headers
-            .add("Set-Cookie", "session=; Path=/; Max-Age=0; HttpOnly");
-      }
-    } else {
-      if (request.session.length > 0) {
-        saveSession(request);
-      }
-    }
-  }
-
-  // If the request contains an access_token then it has already been verified before this function
-  // is executed. If the corresponding http method protection variable is set to true then this
-  // function will check if access_token is set (and hence verified). If it is then it will allow
-  // the http method to execute. If access_token is null it will return an 401 Unathorized error
-  // response. If the http method protection variable is set to false however then it will execute
-  // the corresponding method without any checks.
-  void doMethod(String method, RestedRequest request) async {
-    method = method.toLowerCase();
-    if (_token_required[method]) {
-      if (request.access_token != null) {
-        await wrapper(method, request);
-        RestedResponse response = RestedResponse(request);
-        response.respond();
-      } else {
-        if (protected_redirect != null) {
-          console.debug("PROTECTED REDIRECT!");
-          request.response(type: "redirect", data: protected_redirect);
-          RestedResponse response = RestedResponse(request);
-          //request.request.response.statusCode = response.responsedata['status'];
-          response.respond();
-        } else {
-          request.response(data: "401 error somethingsomething");
-        }
-      }
-    } else {
-      await wrapper(method, request);
-      RestedResponse response = RestedResponse(request);
-      response.respond();
-    }
-  }
-}
-
 // ------------- RESTED RESPONSE ------------------------------------------------------//
 
 class RestedResponse {
@@ -789,5 +599,220 @@ class RestedResponse {
       await request.request.response.write(data);
     }
     request.request.response.close();
+  }
+}
+
+
+class RestedResource {
+  String path = null;
+  String uri_parameters = null;
+  List<String> uri_parameters_list = new List();
+
+  void setPath(String resourcepath) {
+    path = resourcepath;
+    if (resourcepath.contains('{')) {
+      uri_parameters = PathParser.get_uri_parameters(path);
+    }
+    console.debug("uri_parameters for path '" +
+        path.toString() +
+        "' is " +
+        uri_parameters.toString());
+  }
+
+  bool pathMatch(String requested_path) {
+    if (path == requested_path) {
+      return true;
+    } else {
+      if (uri_parameters != null && requested_path != null) {
+        List<String> requested_path_segments = requested_path
+            .substring(1)
+            .split('/'); // substring in order to remove leading slash
+        List<String> uri_parameters_segments =
+            uri_parameters.substring(1).split('/');
+        if (requested_path_segments.length != uri_parameters_segments.length) {
+          return false;
+        } else {
+          int i = 0;
+          for (String segment in uri_parameters_segments) {
+            if (segment == '{var}') {
+              requested_path_segments[i] = '{var}';
+            }
+            i++;
+          }
+          if (uri_parameters_segments.join() ==
+              requested_path_segments.join()) {
+            return true;
+          }
+          return false;
+        }
+      } else {
+        return false; // returning false because paths are null
+      }
+    }
+  }
+
+  // Stores schemas for each HTTP method.
+  Map schemas = Map<String, RestedSchema>();
+
+  // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
+  Map functions = Map<String, Function>();
+
+  // Stored function for each HTTP error code. Returns standard error if not overridden with a function
+  Map onError = Map<int, Function>();
+
+  // Storage of bool determining if access_token is required for the http method (_functions). Use method
+  // instead of setting the variable directly.
+  Map _token_required = Map<String, bool>();
+
+  // Stores operationId on resources imported from YAML. This is in order to link it to an external function.
+  Map operationId = Map<String, String>();
+
+  void require_token(String _method, {String redirect_url = null}) {
+    _token_required[_method] = true;
+  }
+
+  // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
+  // possible to return a redirect instead by setting the URL in this variable.
+  String protected_redirect = null;
+
+  void invalid_token_redirect(String _url) {
+    protected_redirect = _url;
+  }
+
+  RestedResource() {
+    //disk = new RestedVirtualDisk();
+    functions['get'] = get;
+    functions['post'] = post;
+    functions['put'] = put;
+    functions['patch'] = patch;
+    functions['delete'] = delete;
+    functions['copy'] = copy;
+    functions['head'] = head;
+    functions['options'] = options;
+    functions['link'] = link;
+    functions['unlink'] = unlink;
+    functions['purge'] = purge;
+    functions['lock'] = lock;
+    functions['unlock'] = unlock;
+    functions['propfind'] = propfind;
+    functions['view'] = view;
+
+    schemas['get'] = null;
+    schemas['post'] = null;
+    schemas['put'] = null;
+    schemas['patch'] = null;
+    schemas['delete'] = null;
+    schemas['copy'] = null;
+    schemas['head'] = null;
+    schemas['options'] = null;
+    schemas['link'] = null;
+    schemas['unlink'] = null;
+    schemas['purge'] = null;
+    schemas['lock'] = null;
+    schemas['unlock'] = null;
+    schemas['propfind'] = null;
+    schemas['view'] = null;
+
+    for (String value in rsettings.allowedMethods) {
+      _token_required[value] = false;
+    }
+  }
+
+  setExternalFunctions() {
+    for(MapEntry e in operationId.entries) {
+        Function _func = xfunctions[e.value];
+        functions[e.key] = _func;
+        print("Imported operationId " + e.value + " for " + e.key.toUpperCase() + " " + path);
+    }
+    //print(functions.toString());
+  }
+
+  void setSchema(String method, RestedSchema schema) {
+    if(schemas.containsKey(method.toLowerCase())) {
+      schemas[method.toLowerCase()] = schema;
+    }
+  }
+
+  Map<String, dynamic> error404 = { "error": "not implemented" };
+
+  void get(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void post(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void put(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void patch(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void delete(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void copy(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void head(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void options(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void link(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void unlink(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void purge(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void lock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void unlock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void propfind(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void view(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+
+  void callback(RestedRequest request) {}
+
+  Map<String, dynamic> getRequestSchema = null;
+
+  void wrapper(String method, RestedRequest request) async {
+
+    // If the resource method has a schema requirement
+    if(schemas[method] != null) {
+      if(schemas[method].validate(request.body)) {
+        await functions[method](request);
+        await callback(request);
+      } else {
+        request.response(type: "error", status: 400);
+      }
+    } 
+    // If the resource method does NOT have a schema requirement
+    else {
+      await functions[method](request);
+      await callback(request);
+    }
+
+    if (request.session.containsKey('delete')) {
+      if (request.session['delete']) {
+        manager.deleteSession(request.session['id']);
+        request.request.response.headers
+            .add("Set-Cookie", "session=; Path=/; Max-Age=0; HttpOnly");
+      }
+    } else {
+      if (request.session.length > 0) {
+        saveSession(request);
+      }
+    }
+  }
+
+  // If the request contains an access_token then it has already been verified before this function
+  // is executed. If the corresponding http method protection variable is set to true then this
+  // function will check if access_token is set (and hence verified). If it is then it will allow
+  // the http method to execute. If access_token is null it will return an 401 Unathorized error
+  // response. If the http method protection variable is set to false however then it will execute
+  // the corresponding method without any checks.
+  void doMethod(String method, RestedRequest request) async {
+    method = method.toLowerCase();
+    if (_token_required[method]) {
+      if (request.access_token != null) {
+        await wrapper(method, request);
+        RestedResponse response = RestedResponse(request);
+        response.respond();
+      } else {
+        if (protected_redirect != null) {
+          console.debug("PROTECTED REDIRECT!");
+          request.response(type: "redirect", data: protected_redirect);
+          RestedResponse response = RestedResponse(request);
+          //request.request.response.statusCode = response.responsedata['status'];
+          response.respond();
+        } else {
+          request.response(data: "401 error somethingsomething");
+        }
+      }
+    } else {
+      await wrapper(method, request);
+      RestedResponse response = RestedResponse(request);
+      response.respond();
+    }
   }
 }
