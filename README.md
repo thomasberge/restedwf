@@ -11,7 +11,7 @@ The source is being developed on a private repo. I will update this repo from ti
 ### 0.5.0 Main changes
 
 - Limited support for generating endpoints based on OpenAPI 3.1 and YAML.
-- Created a new http error handler. Simple to use and effective.
+- Created a new internal http error handler. Simple to use and effective. Implemented in many calls. Will later be exposed and other, older error handling code cleaned or removed.
 - Added test server. To be used as test server on dev. No test script implemented yet.
 - Added temporary 404 reply for non-implemented methods on paths.
 - Added ignore_authorization_header server setting. Default obviously set to false.
