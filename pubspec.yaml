@@ -1,5 +1,5 @@
 name: restedwf
-version: 0.4.1
+version: 0.5.0
 description: >-
   Rested Web Framework
 environment:
@@ -7,11 +7,14 @@ environment:
 dependencies:
   ansicolor: 1.0.2
   path: ^1.6.2
-  jaguar_jwt: ^2.1.6
-  encrypt: ^4.0.2
+  jaguar_jwt: ^3.0.0
   nanoid: ^1.0.0
-  mysql1: ^0.17.1
+  yaml: 3.1.1
   rested_script:
     git:
       url: https://github.com/thomasberge/rested_script
+      ref: dev
+  string_tools:
+    git:
+      url: https://github.com/thomasberge/string_tools
       ref: dev

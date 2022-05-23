@@ -10,7 +10,6 @@ import 'dart:math';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
-import 'package:encrypt/encrypt.dart';
 import 'package:string_tools/string_tools.dart';
 
 import 'src/consolemessages.dart';
@@ -27,10 +26,10 @@ import 'src/restedserver.dart';
 export 'src/restedserver.dart';
 import 'src/restedrequesthandler.dart';
 export 'src/restedrequesthandler.dart';
-import 'src/restedvirtualdisk.dart';
-export 'src/restedvirtualdisk.dart';
-import 'src/oas3.dart';
-export 'src/oas3.dart';
+import 'src/restedrequests.dart';
+export 'src/restedrequests.dart';
+import 'src/restedschema.dart';
+export 'src/restedschema.dart';
 
 RestedSettings rsettings = new RestedSettings();
 ConsoleMessages console =
@@ -38,21 +37,3 @@ ConsoleMessages console =
 
 Map responses = new Map();
 
-class RestedSchema {
-  List<String> mandatory_strings = new List();
-  List<String> mandatory_strings_label = new List();
-  List<String> strings = new List();
-  List<String> strings_label = new List();
-
-  RestedSchema();
-
-  void addString(String label, String data, {bool mandatory = false}) {
-    if (mandatory) {
-      mandatory_strings_label.add(label);
-      mandatory_strings.add(data);
-    } else {
-      strings_label.add(label);
-      strings.add(data);
-    }
-  }
-}

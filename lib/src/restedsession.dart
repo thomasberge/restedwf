@@ -3,29 +3,22 @@
 // © 2021 Thomas Sebastian Berge
 
 import 'dart:io';
-import 'package:encrypt/encrypt.dart';
 import 'package:nanoid/nanoid.dart';
 import 'dart:convert';
 import 'restedsettings.dart';
 import 'dart:math';
 import 'consolemessages.dart';
 
-RestedSettings rsettings = new RestedSettings();
-ConsoleMessages console2 = new ConsoleMessages(debug_level: rsettings.message_level);
-
 // New, simpler manager. Easier to migrate to Redis later.
 class SessionManager {
-  RestedSettings rsettings = null;
   Map<String, Map<String, dynamic>> sessions = new Map();
 
-  SessionManager(){
-    rsettings = new RestedSettings();
-  }
+  SessionManager();
 
   void printSessions() {
-    console2.debug("--- SESSIONS ---");
-    console2.debug(sessions.toString());
-    console2.debug("--- END ---");
+    console.debug("--- SESSIONS ---");
+    console.debug(sessions.toString());
+    console.debug("--- END ---");
   }
 
   // Takes whatever is stored in RestedRequest.session and creates a new session.
@@ -35,7 +28,7 @@ class SessionManager {
       sessions[data['id']] = data;
       return data['id'];
     } catch(e) {
-      console2.error(e.toString());
+      console.error(e.toString());
       return null;
     }
   }
@@ -46,7 +39,7 @@ class SessionManager {
         sessions[data['id']] = data;
       }
     } catch(e) {
-      console2.error(e.toString());
+      console.error(e.toString());
     }
   }
 
@@ -56,7 +49,7 @@ class SessionManager {
         sessions.remove(sessionid);
       }
     } catch(e) {
-      console2.error(e.toString());
+      console.error(e.toString());
     }
   }
 
@@ -66,7 +59,7 @@ class SessionManager {
         sessions[sessionid][key] = value;
       }
     } catch(e) {
-      console2.error(e.toString());
+      console.error(e.toString());
     }
   }
 
@@ -78,7 +71,7 @@ class SessionManager {
         return null;
       }
     } catch(e) {
-      console2.error(e.toString());
+      console.error(e.toString());
       return null;
     }
   }
@@ -89,7 +82,7 @@ class SessionManager {
         sessions[sessionid].remove(key);
       }
     } catch(e) {
-      console2.error(e.toString());
+      console.error(e.toString());
     }
   }
 
@@ -99,7 +92,7 @@ class SessionManager {
         return sessions[sessionid];
       }
     } catch(e) {
-      console2.error(e.toString());
+      console.error(e.toString());
       return null;
     }
   }

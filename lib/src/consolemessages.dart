@@ -2,6 +2,12 @@
 // www.restedwf.com
 // © 2021 Thomas Sebastian Berge
 
+library rested.console;
+
+import 'restedsettings.dart';
+
+ConsoleMessages console = ConsoleMessages(debug_level: rsettings.message_level);
+
 class ConsoleMessages {
 
   // 0 = silent
