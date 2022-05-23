@@ -30,6 +30,8 @@ import 'src/restedrequests.dart';
 export 'src/restedrequests.dart';
 import 'src/restedschema.dart';
 export 'src/restedschema.dart';
+import 'src/external.dart';
+export 'src/external.dart';
 
 RestedSettings rsettings = new RestedSettings();
 ConsoleMessages console =
