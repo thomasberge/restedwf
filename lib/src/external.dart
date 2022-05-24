@@ -1,4 +1,4 @@
 // Container for external functions
 library rested.external;
 
-Map<String, Function> xfunctions = {};
+Map<String, Function> operationId = {};

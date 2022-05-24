@@ -720,7 +720,7 @@ class RestedResource {
 
   setExternalFunctions() {
     for(MapEntry e in operationId.entries) {
-        Function _func = xfunctions[e.value];
+        Function _func = operationId[e.value];
         functions[e.key] = _func;
         print("Imported operationId " + e.value + " for " + e.key.toUpperCase() + " " + path);
     }

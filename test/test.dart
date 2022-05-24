@@ -31,7 +31,7 @@ class TestServer extends RestedRequestHandler {
 
 class SchemaTest extends RestedResource {
   void post(RestedRequest request) async {
-    request.response(data: globaltest.test);
+    request.response(data: "TEST");
   }
 }
 
