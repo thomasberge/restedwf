@@ -38,4 +38,3 @@ ConsoleMessages console =
     new ConsoleMessages(debug_level: rsettings.message_level);
 
 Map responses = new Map();
-

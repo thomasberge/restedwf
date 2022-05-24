@@ -8,6 +8,7 @@ import 'rested.dart';
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'src/restedsettings.dart';
 
+
 main() async {
     RestedServer admin_server = RestedServer(TestServer());
     admin_server.start("0.0.0.0", 80);
@@ -30,7 +31,7 @@ class TestServer extends RestedRequestHandler {
 
 class SchemaTest extends RestedResource {
   void post(RestedRequest request) async {
-    request.response(data: "test");
+    request.response(data: globaltest.test);
   }
 }
 
