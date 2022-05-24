@@ -720,8 +720,9 @@ class RestedResource {
 
   setExternalFunctions() {
     for(MapEntry e in operationId.entries) {
-        Function _func = operationId[e.value];
-        functions[e.key] = _func;
+        //Function _func = operationId[e.value];
+        //functions[e.key] = _func;
+        functions[e.key] = e.value(RestedRequest);
         print("Imported operationId " + e.value + " for " + e.key.toUpperCase() + " " + path);
     }
     //print(functions.toString());
@@ -756,6 +757,10 @@ class RestedResource {
   Map<String, dynamic> getRequestSchema = null;
 
   void wrapper(String method, RestedRequest request) async {
+
+    if(request == null) {
+      print("Error in wrapper(): request is null");
+    }
 
     // If the resource method has a schema requirement
     if(schemas[method] != null) {
