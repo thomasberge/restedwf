@@ -836,9 +836,11 @@ class RestedResource {
       } else {
         if (protected_redirect != null) {
           request.response(type: "redirect", data: protected_redirect);
+          RestedResponse response = RestedResponse(request);
           response.respond();
         } else {
           request.response(data: "401 error somethingsomething");
+          RestedResponse response = RestedResponse(request);
           response.respond();
         }
       }
