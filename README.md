@@ -8,11 +8,9 @@ A word of caution: This framework is still very much in development. Structural 
 
 The source is being developed on a private repo. I will update this repo from time to time.
 
-### 0.5.1 Main changes
+### 0.5.2 Main changes
 
-- Linking imported YAML paths with dart functions are now made a lot simpler. No need to import external.dart file. See documentation for details on the new, simplified approach.
-- Bugfix: Imported path parameters from YAML are now working properly. Documentation has been updated.
-- Bugfix: Now only tries to implement resource path methods that are defined in restedsettings allowedMethods array. This also filters out fields that aren't http methods, such as 'parameters'.
+- 
 
 ### Features
 

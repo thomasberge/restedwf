@@ -179,33 +179,34 @@ class RestedRequestHandler {
     // Example: application/json; charset=utf-8
     // Each bodymap conversion function should return NULL if conversion fails for some reason.
     // If the data is empty however it should return an empty map.
+    
     List<String> type = incomingRequest.headers.contentType.toString().split(';');
 
     if (type.contains("application/json")) {
-
+      Map jsonmap = {};
       String jsonstring = await utf8.decoder.bind(incomingRequest).join();
 
       // dirty trick to manually change a json sent as string to a parsable string. Unelegant af
-      if(jsonstring.substring(0,1) == '"') {
-        jsonstring = jsonstring.substring(1, jsonstring.length -1);
-        jsonstring = jsonstring.replaceAll(r'\"', '"');
+      if(jsonstring.length > 0) {
+        if(jsonstring.substring(0,1) == '"') {
+          jsonstring = jsonstring.substring(1, jsonstring.length -1);
+          jsonstring = jsonstring.replaceAll(r'\"', '"');
+        }
+
+        try {
+          jsonmap = json.decode(jsonstring);
+        } catch(e) {
+          error_handler.raise(request, 400);
+          return;
+        }
+
+        // some clients wrap body in a body-block. If this is the case here then the content of the
+        // body block is extracted to become the new body.
+        if (jsonmap.containsKey("body")) {
+          jsonmap = jsonmap['body'];
+        }        
       }
 
-      Map jsonmap = {};
-
-      try {
-        jsonmap = json.decode(jsonstring);
-      } catch(e) {
-        error_handler.raise(request, 400);
-        return;
-      }
-
-
-      // some clients wrap body in a body-block. If this is the case here then the content of the
-      // body block is extracted to become the new body.
-      if (jsonmap.containsKey("body")) {
-        jsonmap = jsonmap['body'];
-      }
       request.setBody(jsonmap);
 
     } else if (type.contains("application/x-www-form-urlencoded")) {
