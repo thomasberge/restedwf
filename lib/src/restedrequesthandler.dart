@@ -196,6 +196,7 @@ class RestedRequestHandler {
         try {
           jsonmap = json.decode(jsonstring);
         } catch(e) {
+          print("--- error:" + e.toString());
           error_handler.raise(request, 400);
           return;
         }
