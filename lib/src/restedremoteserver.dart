@@ -16,6 +16,52 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 
+class RemoteServer {
+  String address;
+  String port;
+
+  Future<dynamic> get(RemoteRequest _req) async {
+
+  }
+
+  Future<dynamic> post(RemoteRequest _req) async {
+    
+  }
+
+  Future<dynamic> put(RemoteRequest _req) async {
+
+  }
+
+  Future<dynamic> patch(RemoteRequest _req) async {
+
+  }
+
+  Future<dynamic> delete(RemoteRequest _req) async {
+
+  }
+
+  Future<dynamic> head(RemoteRequest _req) async {
+
+  }
+
+  Future<dynamic> options(RemoteRequest _req) async {
+
+  }
+
+  Future<dynamic> trace(RemoteRequest _req) async {
+  /*  if(_req.headers != null) {
+      for(MapEntry e in headers.entries) {
+        api_request.headers.add(e.key.toString(), e.value.toString());
+      }
+    }*/
+  }
+}
+
+class RemoteRequest {
+Map<String, String> headers = {};
+
+}
+
 class RestedRemoteServer {
   String protocol;
   String address;
@@ -59,7 +105,7 @@ class RestedRemoteServer {
       for(MapEntry e in headers.entries) {
         api_request.headers.add(e.key.toString(), e.value.toString());
       }
-    }    
+    }
 
     dynamic result;
     if(text != "") {
