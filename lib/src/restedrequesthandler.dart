@@ -835,13 +835,11 @@ class RestedResource {
         response.respond();
       } else {
         if (protected_redirect != null) {
-          console.debug("PROTECTED REDIRECT!");
           request.response(type: "redirect", data: protected_redirect);
-          RestedResponse response = RestedResponse(request);
-          //request.request.response.statusCode = response.responsedata['status'];
           response.respond();
         } else {
           request.response(data: "401 error somethingsomething");
+          response.respond();
         }
       }
     } else {
