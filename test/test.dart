@@ -10,6 +10,7 @@ import 'src/restedsettings.dart';
 
 
 main() async {
+    xfunctions['list-users'] = testing;
     RestedServer admin_server = RestedServer(TestServer());
     admin_server.start("0.0.0.0", 80);
 }
@@ -33,6 +34,10 @@ class SchemaTest extends RestedResource {
   void post(RestedRequest request) async {
     request.response(data: "TEST");
   }
+}
+
+void testing(RestedRequest request) {
+  print("This is a test");
 }
 
 class PathParam extends RestedResource {

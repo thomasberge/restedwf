@@ -719,11 +719,34 @@ class RestedResource {
   }
 
   setExternalFunctions() {
+    /*
+        All external functions are defined with operationId key 'string' and 'function' in xfunctions map in external.dart
+        
+        Map<String, Function(RestedRequest)> xfunctions = {
+          'list-users': listusers
+        };
+
+        When .yaml is read OAPI3 object defined in openapi3.dart, this Resource is created and returned to the requesthandler.
+        In that process, the operationId <String, String> map in this Resource is updated with http-method and xfunction key
+        references.
+
+        Map<String, String> operationId = {
+          'get': 'list-users'
+        }
+
+        All Resources have a functions<String, Function> map containing all of the http methods:
+
+        Map<String, Function> functions = {
+          'get': get,
+          'post': post,
+          ...
+        }
+
+        This setExternalFunctions will read through all of the operationId entries and set the function[key] = xfunctions[key]
+    */
     for(MapEntry e in operationId.entries) {
-        //Function _func = operationId[e.value];
-        //functions[e.key] = _func;
-        functions[e.key] = e.value(RestedRequest);
-        print("Imported operationId " + e.value + " for " + e.key.toUpperCase() + " " + path);
+      functions[e.key] = xfunctions[e.value];
+      print("Imported operationId " + e.value + " for " + e.key.toUpperCase() + " " + path);
     }
     //print(functions.toString());
   }
