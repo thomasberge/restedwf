@@ -750,8 +750,11 @@ class RestedResource {
     for(MapEntry e in operationId.entries) {
       functions[e.key] = xfunctions[e.value];
       print("Imported operationId " + e.value + " for " + e.key.toUpperCase() + " " + path);
+
+      if(xfunctions_require_token.containsKey(xfunctions[e.value])) {
+        _token_required[e.key] = xfunctions_require_token[e.value];
+      }
     }
-    //print(functions.toString());
   }
 
   void setSchema(String method, RestedSchema schema) {
