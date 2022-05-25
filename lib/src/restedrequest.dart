@@ -147,9 +147,6 @@ class RestedRequest {
   Map<String, String> uri_parameters = new Map();
 
   void createPathArgumentMap(String tagged_path, List<String> keys) {
-    print("keys=" + keys.toString());
-    print("tagged_path=" + tagged_path);
-
     List<String> path_segments = path.substring(1).split('/');
     List<String> tagged_path_segments = tagged_path.substring(1).split('/');
     int i = 0;
