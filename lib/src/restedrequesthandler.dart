@@ -605,6 +605,7 @@ class RestedResponse {
 
 class RestedResource {
   String path = null;
+  
   String uri_parameters = null;
   List<String> uri_parameters_list = new List();
 

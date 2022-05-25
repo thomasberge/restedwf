@@ -143,6 +143,17 @@ The response function has two named arguments; type and data. Type is default `t
 Redirecting is as easy as running the function name with the path as an argument.
 
 
+#### URI/Path Parameters
+
+Path Parameters are parsed from the URL. They can be created by defining them with curly braces within the url. Example:
+
+`/users/{user_id}`
+
+You can of course define multiple Path Parameters for each URL, and reusing the same variable name is not a problem as long as they represent the same value. There is currently no type definitions, so all Path Parameters are treated as strings.
+
+Each request received on a Resource will automatically contain a Map with the Path Parameters accessible by key. In the example above, the `user_id` value can be accessed from request.uri_parameters['user_id'].
+
+
 #### Protecting endpoints with JSON Web Tokens
 
 First of all, this require some light setup before it can be used. In your environment you need the following variables set:

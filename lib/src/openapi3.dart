@@ -6,6 +6,7 @@ import 'package:yaml/yaml.dart';
 import 'restedrequesthandler.dart' show RestedResource;
 import 'restedsettings.dart';
 
+
 class OAPI3 {
 
     Map yaml;
@@ -50,15 +51,20 @@ class OAPI3 {
     }
 
     List<RestedResource> getResources() {
-
         return resources;
     }
 
     void importPath(String path, Map value) {
         print("- Importing " + path);
 
+        // Created the Resource
         RestedResource resource = RestedResource();
-        resource.path = path;
+
+        // Populate the Resource fields
+        //resource.path = path;
+        resource.setPath(path);
+
+        //importPathParameters(yaml['paths'][path]);
 
         for(MapEntry e in yaml['paths'][path].entries) {
             if(rsettings.allowedMethods.contains(e.key.toLowerCase())) {
@@ -67,5 +73,11 @@ class OAPI3 {
         }
 
         resources.add(resource);
+    }
+
+    void importPathParameters(Map value) {
+        if(value.containsKey('parameters')) {
+            print(value['parameters'].toString());
+        }
     }
 }

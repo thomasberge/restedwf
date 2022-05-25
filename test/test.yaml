@@ -2,11 +2,36 @@ openapi: 3.1.0
 x-stoplight:
   id: yvmuw34jwk7sl
 info:
-  title: test
+  title: alpha2
   version: '1.0'
 servers:
   - url: 'http://localhost:3000'
 paths:
+  /authenticate:
+    post:
+      summary: Authenticate
+      operationId: authenticate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+      description: Authenticates the login information and returns a token.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
   /users:
     get:
       summary: List Users
@@ -24,7 +49,7 @@ paths:
       x-internal: false
       description: Lists all `Users`.
     post:
-      summary: ''
+      summary: Create User
       operationId: create-user
       responses:
         '200':
@@ -39,10 +64,62 @@ paths:
                 username:
                   type: string
                   format: email
+  '/users/{user_id}':
+    parameters:
+      - $ref: '#/components/parameters/user_id'
+    get:
+      summary: Delete User
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      operationId: get-user
+      description: Get `User` details.
+    put:
+      summary: Update User
+      operationId: update-user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      description: Update `User` details. Allows partial updates.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+    delete:
+      summary: Delete User
+      operationId: delete-user
+      responses:
+        '200':
+          description: OK
+      description: Deletes a `User`.
+  /service/init:
+    post:
+      summary: Initialize installation
+      operationId: initialize
+      responses:
+        '200':
+          description: OK
+      description: 'Deletes any database data, creates a new instance and populates with default data.'
 components:
   schemas:
     User:
       title: User
+      x-stoplight:
+        id: d27kok21ywqdd
       type: object
       properties:
         id:
@@ -50,3 +127,11 @@ components:
         username:
           type: string
           format: email
+  parameters:
+    user_id:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: UUID representing the user.
