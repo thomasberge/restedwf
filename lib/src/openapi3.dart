@@ -61,7 +61,6 @@ class OAPI3 {
         RestedResource resource = RestedResource();
 
         // Populate the Resource fields
-        //resource.path = path;
         resource.setPath(path);
 
         //importPathParameters(yaml['paths'][path]);

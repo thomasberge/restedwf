@@ -10,6 +10,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.1 Main changes
 
+- Linking imported YAML paths with dart functions are now made a lot simpler. No need to import external.dart file. See documentation for details on the new, simplified approach.
 - Bugfix: Now only tries to implement resource path methods that are defined in restedsettings allowedMethods array. This also filters out fields that aren't http methods, such as 'parameters'.
 
 ### Features
@@ -294,41 +295,46 @@ YAML_IMPORT_FILE=/some/url/yourfile.yaml
 
 The file will get imported and new resource endpoints will automatically be created. They will support the specified methods, but currently there is no schema validation.
 
-In order to link a specified endpoint method with a dart function you will need to create a file called `external.dart`. That file is the entrypoint to all your functions and will need to contain a list of your methods operationId (specified in the OpenAPI 3.1 YAML) and a reference to the function itself. These are linked in the `xfunctions` map. Here is an example of an `external.dart`:
+In order to link a specified endpoint method with a dart function you will need to do so within your main() function by linking operationId as specified in the YAML and the dart function:
 
 ```
-import 'restedrequest.dart';
-
-Map<String, Function> xfunctions = {
-    "list-users": listusers
-};
-
-void listusers(RestedRequest request) {
-    request.response(data: "listing users ...");
+main() async {
+    xfunctions['get-user'] = yourfunction;
+    RestedServer admin_server = RestedServer(TestServer());
+    admin_server.start("0.0.0.0", 80);
 }
+
+void yourfunction(RestedRequest request) {
+  // add your logic in here
+}
+
 ```
 
-Each time someone calls the operationId `list-users` the `listuser` function will be called. Working with a single file however can get cumbersome, so imported files are supported. Here the function is moved to a different file. First, the `external.dart` file:
+Each time someone calls the operationId `get-users` the `yourfunction` function will be called. Working with a single file however can get cumbersome, so imported files are supported. In the following example the function is moved to a different file. First, the `server.dart` file that contains the main():
 
 ```
+import 'package:restedwf/rested.dart';
 import 'otherfile.dart';
 
-Map<String, Function> xfunctions = {
-    "list-users": listusers
-};
+main() async {
+    xfunctions['get-user'] = yourfunction;
+    RestedServer admin_server = RestedServer(TestServer());
+    admin_server.start("0.0.0.0", 80);
+}
 ```
 
 Then, the `otherfile.dart`:
 
 ```
-import 'restedrequest.dart';
+import 'package:restedwf/rested.dart';
 
-void listusers(RestedRequest request) {
-    request.response(data: "listing users ...");
+void yourfunction(RestedRequest request) {
+  // add your logic in here
 }
 ```
 
-This way you can group related functions in their own files. Lastly, all the files needs to be put in the /src directory. That means you cannot overwrite any of the existing filenames there, so please keep that in mind. Take a look at the example Dockerfile so see how it is achieved there.
+This way you can group related functions in their own files.
+
 
 ## Testing
 
