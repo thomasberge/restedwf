@@ -751,8 +751,9 @@ class RestedResource {
       functions[e.key] = xfunctions[e.value];
       print("Imported operationId " + e.value + " for " + e.key.toUpperCase() + " " + path);
 
-      if(xfunctions_require_token.containsKey(e.value)) {
-        _token_required[e.key] = xfunctions_require_token[e.value];
+      if(xfunctions_require_token.contains(e.value)) {
+        print("Token required on " + e.key + " " + path);
+        require_token(e.key);
       }
     }
   }
