@@ -11,6 +11,7 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'package:rested_script/rested_script.dart';
+import 'package:string_tools/string_tools.dart';
 
 import 'responses.dart';
 import 'restedsettings.dart';
@@ -70,6 +71,7 @@ class RestedRequest {
   String text = "";
   CookieCollection cookies = null;
   Map<String, dynamic> session = new Map();
+  Map<String, String> headers = {};
 
   String toString() {
     Map<String, dynamic> restedrequest = new Map();
@@ -85,6 +87,30 @@ class RestedRequest {
     restedrequest['body'] = body.toString();
     restedrequest['HttpRequest'] = httprequest;
     return restedrequest.toString();
+  }
+
+  void setHeaders() {
+    Map<String, String> headers = {};
+    LineSplitter ls = new LineSplitter();
+    List<String> lines = ls.convert(request.headers.toString());
+    for(String line in lines) {
+      StringTools cursor = new StringTools(line);
+      cursor.moveTo(':');
+      String key = cursor.getAllBeforePosition();
+      if(cursor.getAfterPosition() == ' ') {
+        cursor.move();
+      }
+
+      // If key is already present, append the value to existing value as comma separated string
+      // IMPROVEMENT: Check each header type and append accordingly. See https://stackoverflow.com/questions/29549299/how-to-split-header-values
+      if(headers.containsKey(key)) {
+        headers[key] = headers[key] + "," + cursor.getAllAfterPosition();
+      } else {
+        headers[key] = cursor.getAllAfterPosition();
+      }
+
+      print("headers = " + headers.toString());
+    }
   }
 
   void setBody(Map bodymap) {
@@ -141,6 +167,7 @@ class RestedRequest {
     //List temp = request.requestedUri.toString().split(request.headers.host);
     path = request.requestedUri.path;
     method = request.method.toString().toUpperCase();
+    setHeaders();
     print(method + " " + path);
   }
 

@@ -491,10 +491,13 @@ class RestedResponse {
 
       case "redirect":
       {
-        String host = request.request.requestedUri.host + ":" + request.hostPort.toString();
-        String path = request.restedresponse['data'];
+        String host = request.request.requestedUri.host;
 
-        print(request.request.requestedUri.toString());
+        // Overwrite if host is specified in the http header
+        if(request.headers.containsKey('host')) {
+          host = request.headers['host'];
+        }
+        String path = request.restedresponse['data'];
 
         // If path contains :// then assume external host and use the entire path as redirect url
         if(path.contains('://')) {
