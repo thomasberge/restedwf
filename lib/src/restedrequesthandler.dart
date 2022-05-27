@@ -213,7 +213,7 @@ class RestedRequestHandler {
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
       String urldecoded = Uri.decodeComponent(urlencoded);
-      Map body = queryParametersToBodyMap(urlencoded);
+      Map body = queryParametersToBodyMap(urldecoded);
       request.setBody(body);
 
     } else if (type.contains("multipart/form-data")) {
