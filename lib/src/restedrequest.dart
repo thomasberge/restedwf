@@ -109,7 +109,7 @@ class RestedRequest {
         headers[key] = cursor.getAllAfterPosition();
       }
 
-      print("headers = " + headers.toString());
+      //print("headers = " + headers.toString());
     }
   }
 

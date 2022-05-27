@@ -495,7 +495,10 @@ class RestedResponse {
 
         // Overwrite if host is specified in the http header
         if(request.headers.containsKey('host')) {
+          print("Found in headers array");
           host = request.headers['host'];
+        } else {
+          print("Did not find in headers array, using " + host);
         }
         String path = request.restedresponse['data'];
 
