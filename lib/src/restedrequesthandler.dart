@@ -494,6 +494,8 @@ class RestedResponse {
         String host = request.request.requestedUri.host + ":" + request.hostPort.toString();
         String path = request.restedresponse['data'];
 
+        print(request.request.requestedUri.toString());
+
         // If path contains :// then assume external host and use the entire path as redirect url
         if(path.contains('://')) {
           request.request.response.redirect(Uri.parse(path));
