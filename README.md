@@ -10,6 +10,8 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.2 Main changes
 
+- RestedRequest now contains an automatically parsed and split `headers<String, String>` map. You can now access the headers easier instead of going to sub-request object, simply use `request.headers['key']`. Multiple incoming headers are automatically joined to single, comma-separated header.
+- Redirect will respect `Host` header if present in request.
 - Added xfunctions_require_token List that take operationId as arguments. Allows for temporarily setting valid JWT token required on path methods before this is implemented in OAPI3 YAML import. See documentation for more details.
 
 ### Features
