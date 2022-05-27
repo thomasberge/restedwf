@@ -90,7 +90,6 @@ class RestedRequest {
   }
 
   void setHeaders() {
-    Map<String, String> headers = {};
     LineSplitter ls = new LineSplitter();
     List<String> lines = ls.convert(request.headers.toString());
     for(String line in lines) {
