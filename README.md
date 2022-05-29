@@ -14,6 +14,7 @@ The source is being developed on a private repo. I will update this repo from ti
 - Redirect will respect `Host` header if present in request.
 - Added xfunctions_require_token List that take operationId as arguments. Allows for temporarily setting valid JWT token required on path methods before this is implemented in OAPI3 YAML import. See documentation for more details.
 - Request of type `application/x-www-form-urlencoded` now gets urldecoded automatically.
+- RestedRequest now has a `Map<String, dynamic> claims`map that contains all additional JWT claims for easy access.
 
 ### Features
 
