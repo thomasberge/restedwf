@@ -1,11 +1,23 @@
 class RestedSchema {
     
-    Map<String, String> _fields = {};
-    Map<String, String> _requiredFields = {};
-
+    bool active = false;
+    Map<String, dynamic> _fields = {};
+    
     RestedSchema();
 
-    void setField(String key, String type, {bool requiredField = false}) {
+    void setFields(Map<String, dynamic> _incomingFields) {
+        if(active) {
+            print("Error setting schema fields, ignoring. Schema already set. Incoming data: " + _incomingFields.toString());
+        } else {
+            _fields = _incomingFields;
+            active = true;
+        }
+    }
+
+    //Map<String, String> _fields = {};
+    //Map<String, String> _requiredFields = {};
+
+    /*void setField(String key, String type, {bool requiredField = false}) {
         if(_requiredFields.containsKey(key) == false && _fields.containsKey(key) == false) {
             if(requiredField) {
                 _requiredFields[key] = type;
@@ -15,9 +27,9 @@ class RestedSchema {
         } else {
             print("Error: Tried adding duplicate key " + key + " to schema.");
         }
-    }
+    }*/
 
-    bool validate(Map<String, dynamic> body) {
+    /*bool validate(Map<String, dynamic> body) {
         bool valid = true;
 
         for(MapEntry field in _fields.entries) {
@@ -35,5 +47,5 @@ class RestedSchema {
         }
 
         return valid;
-    }
+    }*/
 }

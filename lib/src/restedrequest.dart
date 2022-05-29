@@ -70,8 +70,9 @@ class RestedRequest {
   Map body = Map<String, dynamic>();
   String text = "";
   CookieCollection cookies = null;
-  Map<String, dynamic> session = new Map();
+  Map<String, dynamic> session = {};
   Map<String, String> headers = {};
+  Map<String, dynamic> claims = {};
 
   String toString() {
     Map<String, dynamic> restedrequest = new Map();

@@ -13,6 +13,7 @@ The source is being developed on a private repo. I will update this repo from ti
 - RestedRequest now contains an automatically parsed and split `headers<String, String>` map. You can now access the headers easier instead of going to sub-request object, simply use `request.headers['key']`. Multiple incoming headers are automatically joined to single, comma-separated header.
 - Redirect will respect `Host` header if present in request.
 - Added xfunctions_require_token List that take operationId as arguments. Allows for temporarily setting valid JWT token required on path methods before this is implemented in OAPI3 YAML import. See documentation for more details.
+- Request of type `application/x-www-form-urlencoded` now gets urldecoded automatically.
 
 ### Features
 
@@ -204,6 +205,22 @@ To create a token you simply let the jwt_handler generate it. You also have the 
 Map claims = {"role": "administrator"};
 Map token = jwt_handler.generate_token(additional_claims: claims);
 ```
+
+Any additional claims added to the token will be available each time a request is made using that token. The additional claims are then present in the `request.claims['key']` map which is of type `Map<String, Dynamic>`.
+
+```
+class Resource_Adminpage extends RestedResource {
+
+  Resource_Adminpage() {
+    require_token("get");
+  }
+
+  get(RestedRequest request) {
+    if(request.claims['role'] == 'administrator') {
+      ...
+    }
+  }
+}
 
 You can also add custom verification of JWT tokens by overriding the `custom_JWT_verification` function on the requesthandler. It needs to have a ´String token´ argument and return a bool signaling if its verified or not.
 

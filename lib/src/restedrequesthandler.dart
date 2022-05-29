@@ -163,6 +163,7 @@ class RestedRequestHandler {
             return;
           } else {
             access_token = unverified_access_token;
+            request.claims = RestedJWT.getClaims(access_token);
           }
         }
 
@@ -457,6 +458,20 @@ class RestedJWT {
       print("error: " + e.toString());
       return null;
     }
+  }
+
+  static Map<String, dynamic> getClaims(String token) {
+    Map<String, dynamic> claims = {};
+    try {
+      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.jwt_key);        
+        for(String name in decClaimSet.claimNames(includeRegisteredClaims: false)) {
+          claims[name] = decClaimSet[name];
+        }
+      }
+     catch(e) {
+      print("error extracting claims from JWT: " + e.toString());
+    }
+    return claims;
   }
 }
 

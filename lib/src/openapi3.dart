@@ -67,7 +67,18 @@ class OAPI3 {
 
         for(MapEntry e in yaml['paths'][path].entries) {
             if(rsettings.allowedMethods.contains(e.key.toLowerCase())) {
-                resource.operationId[e.key] = yaml['paths'][path][e.key]['operationId'];
+
+                if(yaml['paths'][path][e.key].containsKey('operationId')) {
+                    resource.operationId[e.key] = yaml['paths'][path][e.key]['operationId'];
+                }
+
+                if(yaml['paths'][path][e.key].containsKey('requestBody')) {
+                    if(yaml['paths'][path][e.key]['requestBody'].containsKey('content')) {
+                        if(yaml['paths'][path][e.key]['requestBody']['content'].containsKey('application/json')) {
+
+                        }
+                    }
+                }                
             }
         }
 

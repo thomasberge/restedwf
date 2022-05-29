@@ -27,6 +27,8 @@ class TestServer extends RestedRequestHandler {
     this.addResource(SettingsTest(), "/settings");
     this.addResource(PathParam(), "/t/{test}");
     this.addResource(SchemaTest(), "/validate");
+    this.addResource(JWTClaims(), "/allclaims");
+    this.addResource(GETJWTClaims(), "/getclaims");
   }
 }
 
@@ -64,6 +66,22 @@ class Claims extends RestedResource {
     String tokenstring = result["access_token"];
     String somevariable = RestedJWT.getClaim(tokenstring, "somevariable");
     request.response(data: somevariable);
+  }
+}
+
+class GETJWTClaims extends RestedResource {
+  void get(RestedRequest request) {
+    RestedJWT jwthandler = RestedJWT();
+    Map claims = { "somevariable": "somevalue" };
+    Map token = jwthandler.generate_token(additional_claims: claims);
+    Map result = json.decode(json.encode(token));
+    request.response(data: result.toString());
+  }
+}
+
+class JWTClaims extends RestedResource {
+  void get(RestedRequest request) async {
+    request.response(data: request.claims.toString());
   }
 }
 
