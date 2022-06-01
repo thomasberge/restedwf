@@ -1,7 +1,7 @@
 // Rested Web Framework
-// Version: 0.4.2-alpha
+// Version: 0.5.2-alpha
 // www.restedwf.com
-// © 2021 Thomas Sebastian Berge
+// © 2022 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'dart:async';
@@ -32,6 +32,8 @@ import 'src/restedschema.dart';
 export 'src/restedschema.dart';
 import 'src/external.dart';
 export 'src/external.dart';
+import 'src/resteddatabase.dart';
+export 'src/resteddatabase.dart';
 
 RestedSettings rsettings = new RestedSettings();
 ConsoleMessages console =
