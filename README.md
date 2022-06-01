@@ -224,6 +224,7 @@ class Resource_Adminpage extends RestedResource {
     }
   }
 }
+```
 
 You can also add custom verification of JWT tokens by overriding the `custom_JWT_verification` function on the requesthandler. It needs to have a ´String token´ argument and return a bool signaling if its verified or not.
 
