@@ -10,6 +10,7 @@ dependencies:
   jaguar_jwt: ^3.0.0
   nanoid: ^1.0.0
   yaml: 3.1.1
+  postgres: 2.4.3
   rested_script:
     git:
       url: https://github.com/thomasberge/rested_script

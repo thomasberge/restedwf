@@ -5,6 +5,22 @@ class RestedSchema {
     
     RestedSchema();
 
+    static bool isUUID(String _inc) {
+        return RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$').hasMatch(_inc);
+    }
+
+    static bool isEmail(String _inc) {
+        return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(_inc);
+    }
+
+    static bool isAlphanumeric(String _inc) {
+        return RegExp(r'^[a-zA-Z0-9]+$').hasMatch(_inc);
+    }
+
+    static bool isNumeric(String _inc) {
+        return RegExp(r'^[0-9]+$').hasMatch(_inc);
+    }
+
     void setFields(Map<String, dynamic> _incomingFields) {
         if(active) {
             print("Error setting schema fields, ignoring. Schema already set. Incoming data: " + _incomingFields.toString());
