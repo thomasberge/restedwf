@@ -10,11 +10,13 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.2 Main changes
 
+- Started on RestedDatabase. Will try to make a uniform integration where you in RestedWF only use the same methods no matter if its Postgres, MySQL or Oracle. The queries themselves can differ though, but the functions will return the same data structure. Currently only supports Postgres. See docs for info on how to set up and use.
 - RestedRequest now contains an automatically parsed and split `headers<String, String>` map. You can now access the headers easier instead of going to sub-request object, simply use `request.headers['key']`. Multiple incoming headers are automatically joined to single, comma-separated header.
 - Redirect will respect `Host` header if present in request.
 - Added xfunctions_require_token List that take operationId as arguments. Allows for temporarily setting valid JWT token required on path methods before this is implemented in OAPI3 YAML import. See documentation for more details.
 - Request of type `application/x-www-form-urlencoded` now gets urldecoded automatically.
 - RestedRequest now has a `Map<String, dynamic> claims`map that contains all additional JWT claims for easy access.
+- RestedSchema now has pattern matching for email, uuid, alphanumeric and numeric through static functions returning boolean for match. See documentation.
 
 ### Features
 
@@ -365,6 +367,50 @@ main() async {
     RestedServer admin_server = RestedServer(TestServer());
     admin_server.start("0.0.0.0", 80);
 }
+```
+
+#### Connection to databases
+
+All database settings need to be in your environment, and not set directly in code. Here is an example using a .env file:
+
+```
+db_integration="postgres"
+db_hostname="localhost"
+db_port="5432"
+db_database="mydb"
+db_username="postgres"
+db_password="copythatfloppy!"
+```
+
+In code you need to instantiate a RestedDatabase. No need for any arguments as all will be read from env. With a RestedDatabase object you can use either the exists or query functions. Exists is a shorthand for a select count(*) and will return true if the result is more than 0. Query is a standard database query in its full.
+
+```
+RestedDatabaseConnection db = RestedDatabaseConnection();
+
+void create_user(RestedRequest request) async {
+  String username = request.body['username'];
+
+  // Check if user exists
+  if(await db.exists("users WHERE username='" + username + "'")) {
+      request.response(data: "409 Conflict");
+      return;
+  }
+
+  // Returns nested lists by default, so the below could for example return [[1,admin]]
+  List<List<dynamic>> results = await db.query("INSERT INTO users (username) VALUES ('" + username + "') RETURNING id, username");
+}
+```
+
+#### Pattern-matching with RestedSchema
+
+RestedSchema will eventually deal with all type of field and schema verification, and some of its internal functions are usefull outside of the class as well. These four static methods are currently available:
+
+```
+bool RestedSchema.isUUID(String inputvalue);
+bool RestedSchema.isEmail(String inputvalue);
+bool RestedSchema.isAlphanumeric(String inputvalue);
+bool RestedSchema.isNumeric(String inputvalue);
+
 ```
 
 
