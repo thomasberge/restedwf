@@ -21,11 +21,11 @@ class RestedSchema {
         return isEmail(_inc);
     }
 
-    bool isAlphanumeric(String _inc) {
+    static bool isAlphanumeric(String _inc) {
         return isAlphanumeric(_inc);
     }
 
-    bool isNumeric(String _inc) {
+    static bool isNumeric(String _inc) {
         return isNumeric(_inc);
     }
 
