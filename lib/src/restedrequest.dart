@@ -73,6 +73,8 @@ class RestedRequest {
   Map<String, dynamic> session = {};
   Map<String, String> headers = {};
   Map<String, dynamic> claims = {};
+  Map<String, String> uri_parameters = new Map();
+  Map<String, dynamic> restedresponse = new Map();
 
   String toString() {
     Map<String, dynamic> restedrequest = new Map();
@@ -173,8 +175,6 @@ class RestedRequest {
     print(method + " " + path);
   }
 
-  Map<String, String> uri_parameters = new Map();
-
   void createPathArgumentMap(String tagged_path, List<String> keys) {
     List<String> path_segments = path.substring(1).split('/');
     List<String> tagged_path_segments = tagged_path.substring(1).split('/');
@@ -188,8 +188,6 @@ class RestedRequest {
       i++;
     }
   }
-
-  Map<String, dynamic> restedresponse = new Map();
 
   void response({
     String type = "text",

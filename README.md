@@ -1,6 +1,6 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.5.2
+# Alpha release 0.5.3
 
 A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and even Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
@@ -8,15 +8,9 @@ A word of caution: This framework is still very much in development. Structural 
 
 The source is being developed on a private repo. I will update this repo from time to time.
 
-### 0.5.2 Main changes
+### 0.5.3 Main changes
 
-- Started on RestedDatabase. Will try to make a uniform integration where you in RestedWF only use the same methods no matter if its Postgres, MySQL or Oracle. The queries themselves can differ though, but the functions will return the same data structure. Currently only supports Postgres. See docs for info on how to set up and use.
-- RestedRequest now contains an automatically parsed and split `headers<String, String>` map. You can now access the headers easier instead of going to sub-request object, simply use `request.headers['key']`. Multiple incoming headers are automatically joined to single, comma-separated header.
-- Redirect will respect `Host` header if present in request.
-- Added xfunctions_require_token List that take operationId as arguments. Allows for temporarily setting valid JWT token required on path methods before this is implemented in OAPI3 YAML import. See documentation for more details.
-- Request of type `application/x-www-form-urlencoded` now gets urldecoded automatically.
-- RestedRequest now has a `Map<String, dynamic> claims`map that contains all additional JWT claims for easy access.
-- RestedSchema now has pattern matching for email, uuid, alphanumeric and numeric through static functions returning boolean for match. See documentation.
+- 
 
 ### Features
 
@@ -25,6 +19,7 @@ This is the core module that adds the basic functionality. Add-ons will give opt
 - OpenAPI 3.1 yaml import to create server endpoints. Supports external function calls based on operationId.
 - Sessions & Cookies. Who doesn't like cookies?
 - Automatic JSON Web Token implementation, seemlessly integrated with Session & Cookie support. JWT requirement per method in a /resource. Optional redirect if token doesn't validate.
+- Easy implementation to database.
 - Automatic parsing of incoming body for JSON and webforms.
 - Text/binary file server support, although with limited streaming capabilities.
 - Settings from either code, environment or json file.

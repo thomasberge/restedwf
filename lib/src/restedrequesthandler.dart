@@ -46,6 +46,45 @@ void saveSession(RestedRequest request) {
   }
 }
 
+/*
+
+The idea of the resource collection is to have a nice structure as such:
+
+Map<String, RestedResource> pathmap = {
+  "root": {
+    "resource": RestedResource()
+    "admin": {
+      "resource": RestedResource()
+    }
+  }
+};
+
+pathmap["root"]["admin"].resource
+*/  
+/*
+class RestedResourceCollection {
+  Map<String, RestedResource> site = {};
+
+  // Example:   /users/{user_id}/repos/{repo_id}
+  void addPath(String path, RestedResource resource) {
+
+    // [users,{user_id},repos,{repo_id}]
+    List<String> elements = path.split('/');  
+
+    for(String element in elements) {
+      MapEntry e = getElement(site.entries);
+
+      //if(site["root"].containsKey(element) == false) {
+      //  site["root"][element] = {};
+      }
+    }
+  }
+
+  MapEntry getElement(List<MapEntry> map, String element) {
+
+  }
+}*/
+
 class RestedRequestHandler {
   bool ignoreAuthorizationHeaders = false;
   String address = "127.0.0.1";
@@ -478,6 +517,7 @@ class RestedJWT {
 // ------------- RESTED RESPONSE ------------------------------------------------------//
 
 class RestedResponse {
+ 
   Responses error_responses = new Responses();
   Mimetypes mimetypes = new Mimetypes();
 
@@ -628,22 +668,71 @@ class RestedResponse {
   }
 }
 
-
 class RestedResource {
   String path = null;
-  
+
+  // Only used for pattern matching in pathMatch function
   String uri_parameters = null;
-  List<String> uri_parameters_list = new List();
+
+  // Used by setUriParametersSchema to store path parameter schemas.
+  Map<String, dynamic> _uri_parameters_schemas = {};
+
+  // Stores schemas for each HTTP method.
+  Map schemas = Map<String, RestedSchema>();
+
+  // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
+  Map functions = Map<String, Function>();
+
+  // Stored function for each HTTP error code. Returns standard error if not overridden with a function
+  Map onError = Map<int, Function>();
+
+  // Storage of bool determining if access_token is required for the http method (_functions). Use method
+  // instead of setting the variable directly.
+  Map _token_required = Map<String, bool>();
+
+  // Stores operationId on resources imported from YAML. This is in order to link it to an external function.
+  Map operationId = Map<String, String>();
+
+
+  Map<String, dynamic> getRequestSchema = null;
+
+  String validateUriParameters(Map<String, String> params) {
+    for(MapEntry e in params.entries) {
+      if(_uri_parameters_schemas.containsKey(e.key)) {
+        String result = _uri_parameters_schemas[e.key].validate(e.value);
+        if(result != "OK") {
+          return result;
+        }
+      }
+    }
+    return "OK";
+  }
+
+  void require_token(String _method, {String redirect_url = null}) {
+    _token_required[_method] = true;
+  }
+
+  // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
+  // possible to return a redirect instead by setting the URL in this variable.
+  String protected_redirect = null;
+
+  void setUriParameterSchema(dynamic schema) {
+    _uri_parameters_schemas[schema.name] = schema;
+  }
+
+  void invalid_token_redirect(String _url) {
+    protected_redirect = _url;
+  }
 
   void setPath(String resourcepath) {
     path = resourcepath;
     if (resourcepath.contains('{')) {
       uri_parameters = PathParser.get_uri_parameters(path);
     }
-    console.debug("uri_parameters for path '" +
+    /*console.debug("uri_parameters for path '" +
         path.toString() +
         "' is " +
-        uri_parameters.toString());
+        uri_parameters.toString());*/
   }
 
   bool pathMatch(String requested_path) {
@@ -676,34 +765,6 @@ class RestedResource {
         return false; // returning false because paths are null
       }
     }
-  }
-
-  // Stores schemas for each HTTP method.
-  Map schemas = Map<String, RestedSchema>();
-
-  // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
-  Map functions = Map<String, Function>();
-
-  // Stored function for each HTTP error code. Returns standard error if not overridden with a function
-  Map onError = Map<int, Function>();
-
-  // Storage of bool determining if access_token is required for the http method (_functions). Use method
-  // instead of setting the variable directly.
-  Map _token_required = Map<String, bool>();
-
-  // Stores operationId on resources imported from YAML. This is in order to link it to an external function.
-  Map operationId = Map<String, String>();
-
-  void require_token(String _method, {String redirect_url = null}) {
-    _token_required[_method] = true;
-  }
-
-  // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
-  // possible to return a redirect instead by setting the URL in this variable.
-  String protected_redirect = null;
-
-  void invalid_token_redirect(String _url) {
-    protected_redirect = _url;
   }
 
   RestedResource() {
@@ -808,8 +869,6 @@ class RestedResource {
 
   void callback(RestedRequest request) {}
 
-  Map<String, dynamic> getRequestSchema = null;
-
   void wrapper(String method, RestedRequest request) async {
 
     if(request == null) {
@@ -851,6 +910,14 @@ class RestedResource {
   // response. If the http method protection variable is set to false however then it will execute
   // the corresponding method without any checks.
   void doMethod(String method, RestedRequest request) async {
+    String result = validateUriParameters(request.uri_parameters);
+    if(result != "OK") {
+      request.response(data: "400 " + result.toString());
+      RestedResponse response = RestedResponse(request);
+      response.respond();
+      return;
+    }
+
     method = method.toLowerCase();
     if (_token_required[method]) {
       if (request.access_token != null) {

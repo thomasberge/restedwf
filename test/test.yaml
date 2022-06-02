@@ -2,7 +2,7 @@ openapi: 3.1.0
 x-stoplight:
   id: yvmuw34jwk7sl
 info:
-  title: alpha2
+  title: alpha3
   version: '1.0'
 servers:
   - url: 'http://localhost:3000'
@@ -28,8 +28,9 @@ paths:
             schema:
               type: object
               properties:
-                email:
+                identity:
                   type: string
+                  description: Can be either email or username.
                 password:
                   type: string
   /users:
@@ -61,14 +62,24 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                email:
                   type: string
                   format: email
-  '/users/{user_id}':
+                username:
+                  type: string
+                password:
+                  type: string
+        description: ''
+  '/users/{user_id}/{other_id}':
     parameters:
       - $ref: '#/components/parameters/user_id'
+      - schema:
+          type: string
+        name: other_id
+        in: path
+        required: true
     get:
-      summary: Delete User
+      summary: Get User
       tags: []
       responses:
         '200':
@@ -99,6 +110,8 @@ paths:
                 email:
                   type: string
                   format: email
+                password:
+                  type: string
     delete:
       summary: Delete User
       operationId: delete-user
@@ -114,6 +127,70 @@ paths:
         '200':
           description: OK
       description: 'Deletes any database data, creates a new instance and populates with default data.'
+  '/users/{user_id}/repositories':
+    get:
+      summary: List Repositories
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Repository'
+      operationId: list-repositories
+      description: Lists all of the `Users` `Repository`.
+    parameters:
+      - $ref: '#/components/parameters/user_id'
+    post:
+      summary: Create Repository
+      operationId: create-repository
+      responses:
+        '200':
+          description: OK
+      description: Creates a new `Repository` for the `User`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                visibility:
+                  type: string
+                  enum:
+                    - PUBLIC
+                    - PRIVATE
+                  default: PUBLIC
+                github_url:
+                  type: string
+  '/users/{user_id}/repositories/{repository_id}':
+    parameters:
+      - $ref: '#/components/parameters/user_id'
+      - $ref: '#/components/parameters/repository_id'
+    get:
+      summary: Get Repository
+      tags: []
+      responses: {}
+      operationId: get-repository
+      description: Get `Repository` details.
+    put:
+      summary: Update Repository
+      operationId: update-repository
+      responses:
+        '200':
+          description: OK
+      description: Updates `Repository` details.
+    delete:
+      summary: Delete Repository
+      operationId: delete-repository
+      responses:
+        '200':
+          description: OK
+      description: Deletes a `Repository`.
 components:
   schemas:
     User:
@@ -123,10 +200,32 @@ components:
       type: object
       properties:
         id:
-          type: string
-        username:
+          type: integer
+        email:
           type: string
           format: email
+        username:
+          type: string
+    Repository:
+      title: Repository
+      x-stoplight:
+        id: xr9wmdzso5glo
+      type: object
+      examples: []
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        visibility:
+          type: string
+          enum:
+            - PUBLIC
+            - PRIVATE
+          default: PUBLIC
+        github_url:
+          type: string
+          description: Link to public github repository.
   parameters:
     user_id:
       name: user_id
@@ -134,4 +233,17 @@ components:
       required: true
       schema:
         type: string
-      description: UUID representing the user.
+        format: uuid
+      description: UUID representing a `User`.
+    repository_id:
+      name: repository_id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Integer representing a `Repository`.
+  securitySchemes:
+    access_token:
+      type: http
+      scheme: bearer
+      description: ''

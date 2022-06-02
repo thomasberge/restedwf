@@ -85,9 +85,17 @@ class OAPI3 {
         resources.add(resource);
     }
 
+    /*
     void importPathParameters(Map value) {
+        print(value['parameters']);
         if(value.containsKey('parameters')) {
-            print(value['parameters'].toString());
+            print("------------------------------------");
+            for(Map m in value['parameters']) {
+                print(m['name']);
+                print(m['schema']);
+            }
         }
+        //print(">" + value['parameters']['schema']);
     }
+    */
 }

@@ -1,3 +1,9 @@
+import 'schema/stringparameter.dart';
+export 'schema/stringparameter.dart';
+import 'schema/patterns.dart';
+
+//Map<String, dynamic> pathparams = {};
+
 class RestedSchema {
     
     bool active = false;
@@ -6,19 +12,19 @@ class RestedSchema {
     RestedSchema();
 
     static bool isUUID(String _inc) {
-        return RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$').hasMatch(_inc);
+        return isUUID(_inc);
     }
 
     static bool isEmail(String _inc) {
-        return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(_inc);
+        return isEmail(_inc);
     }
 
-    static bool isAlphanumeric(String _inc) {
-        return RegExp(r'^[a-zA-Z0-9]+$').hasMatch(_inc);
+    bool isAlphanumeric(String _inc) {
+        return isAlphanumeric(_inc);
     }
 
-    static bool isNumeric(String _inc) {
-        return RegExp(r'^[0-9]+$').hasMatch(_inc);
+    bool isNumeric(String _inc) {
+        return isNumeric(_inc);
     }
 
     void setFields(Map<String, dynamic> _incomingFields) {

@@ -44,8 +44,14 @@ void testing(RestedRequest request) {
 }
 
 class PathParam extends RestedResource {
+  PathParam() {
+    StringParameter test = StringParameter("test");
+    //test.format = "uuid";
+    test.maxLength = 7;
+    this.setUriParameterSchema(test);
+  }
+
   void get(RestedRequest request) async {
-    
     request.response(data: request.uri_parameters["test"].toString());
   }
 }
