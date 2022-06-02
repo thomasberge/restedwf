@@ -10,7 +10,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.3 Main changes
 
-- 
+- URI/PathParameter validation implementation now in place. See documentation for usage. Support made for Strings.
 
 ### Features
 
@@ -408,6 +408,35 @@ bool RestedSchema.isAlphanumeric(String inputvalue);
 bool RestedSchema.isNumeric(String inputvalue);
 
 ```
+
+#### URI/PathParameter validation
+
+URI parameters are made from objects for each specific type (string/integer/number etc.) although currently only String are implemented. You start by creating a `StringParameter` object with a name (key). You can then set various properties to this object before passing it to one or more RestedResources through the `setUriParameterSchema(dynamic schema)` function. You may call the object whatever you want, but the `.name` property of the object used when instantiating it must be equal to the PathParam. Below you can see a user_id StringParameter being created with uuid format constrains and passed to the RestedResource.
+
+```
+StringParameter user_id_param = StringParameter('user_id');
+user_id_param.format = "uuid";
+
+class Resource_User extends RestedResource {
+
+  Resource_User() {
+    this.setUriParameterSchema(user_id_param);
+  }
+
+  void get(RestedRequest request) async {
+    request.response(data: request.uri_parameters["user_id"].toString());
+  }
+}
+```
+
+You may update the UriParameterSchema at any time, but the recommended pattern is to do it in the constructor function of the RestedResource object. If you do it within a method (get, post etc.) then it is already too late as the validation would have been run already.
+
+StringParameter have the following properties and functions:
+`String format` - allowed values currently are `none`, `email` and `uuid`. Default is `none`. Example: `user_id_param.format = "uuid";`
+`addEnum(String enum)` - Add a new enum parameter. These will automatically get set to uppercase. The validation will also set the input to uppercase as well, so the validation check is case-insensitive. Example: `repo_visibility_param.addEnum('PUBLIC');`
+`int minLength` - Minimum number of characters.
+`int maxLength` - Maximum number of characters.
+`String pattern` - You can set regex pattern for pattern matching. This is set then the format validations will not be checked. Remember to pass the string as a raw string. Example: `some_alphanumeric_param.pattern = r'^[a-zA-Z0-9]+$';`
 
 
 ## Testing

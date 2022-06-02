@@ -4,7 +4,6 @@ class StringParameter {
     String _name;
     String _style = "none";
     String _format = "none";
-    String defaultValue = "";
     List<String> enums = [];
     String example = "";
     String pattern;
@@ -33,6 +32,10 @@ class StringParameter {
         return _style;
     }
 
+    void addEnum(String input) {
+        enums.add(input.toUpperCase());
+    }
+
     void set format(String input) {
         if(_implemented_formats.contains(input)) {
             _format = input;
@@ -52,28 +55,28 @@ class StringParameter {
         // --
 
         // format
-        if(format == 'email') {
-            if(isEmail(input) == false) {
-                return("Validation error for StringParameter " + _name + ": input is not matching format 'email'.");
+        if(pattern == null) {
+            if(format == 'email') {
+                if(isEmail(input) == false) {
+                    return("Validation error for StringParameter " + _name + ": input is not matching format 'email'.");
+                }
             }
-        }
 
-        if(format == 'uuid') {
-            if(isUUID(input) == false) {
-                return("Validation error for StringParameter " + _name + ": input is not matching format 'uuid'.");
+            if(format == 'uuid') {
+                if(isUUID(input) == false) {
+                    return("Validation error for StringParameter " + _name + ": input is not matching format 'uuid'.");
+                }
             }
-        }
-
         // pattern
-        if(pattern != null) {
+        } else {
             if(RegExp(pattern).hasMatch(input) == false) {
                 return("Validation error for StringParameter " + _name + ": input is not matching pattern " + pattern + ".");
-            }
+            }            
         }
 
         // enums
         if(enums.length > 0) {
-            if(enums.contains(input) == false) {
+            if(enums.contains(input.toUpperCase()) == false) {
                 return("Validation error for StringParameter " + _name + ": input is not matching enum criteria. Valid input is " + enums.toString());
             }
         }
