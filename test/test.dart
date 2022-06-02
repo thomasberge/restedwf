@@ -25,7 +25,7 @@ class TestServer extends RestedRequestHandler {
     this.addResource(JsonTest(), "/json");
     this.addResource(Claims(), "/claims");
     this.addResource(SettingsTest(), "/settings");
-    this.addResource(PathParam(), "/t/{test}");
+    this.addResource(PathParam(), "/t/{test}/{test2}");
     this.addResource(SchemaTest(), "/validate");
     this.addResource(JWTClaims(), "/allclaims");
     this.addResource(GETJWTClaims(), "/getclaims");
@@ -46,9 +46,11 @@ void testing(RestedRequest request) {
 class PathParam extends RestedResource {
   PathParam() {
     StringParameter test = StringParameter("test");
-    //test.format = "uuid";
     test.maxLength = 7;
-    this.setUriParameterSchema(test);
+    IntegerParameter test2 = IntegerParameter("test2");
+
+    this.addUriParameterSchema(test);
+    this.addUriParameterSchema(test2);
   }
 
   void get(RestedRequest request) async {

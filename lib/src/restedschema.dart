@@ -1,5 +1,7 @@
 import 'schema/stringparameter.dart';
 export 'schema/stringparameter.dart';
+import 'schema/integerparameter.dart';
+export 'schema/integerparameter.dart';
 import 'schema/patterns.dart';
 
 //Map<String, dynamic> pathparams = {};

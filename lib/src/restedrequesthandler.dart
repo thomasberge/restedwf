@@ -716,7 +716,7 @@ class RestedResource {
   // possible to return a redirect instead by setting the URL in this variable.
   String protected_redirect = null;
 
-  void setUriParameterSchema(dynamic schema) {
+  void addUriParameterSchema(dynamic schema) {
     _uri_parameters_schemas[schema.name] = schema;
   }
 

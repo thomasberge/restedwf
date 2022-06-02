@@ -10,7 +10,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.3 Main changes
 
-- URI/PathParameter validation implementation now in place. See documentation for usage. Support made for Strings.
+- URI/PathParameter validation implementation now in place. See documentation for usage. Support made for Strings and Integers.
 
 ### Features
 
@@ -411,7 +411,7 @@ bool RestedSchema.isNumeric(String inputvalue);
 
 #### URI/PathParameter validation
 
-URI parameters are made from objects for each specific type (string/integer/number etc.) although currently only String are implemented. You start by creating a `StringParameter` object with a name (key). You can then set various properties to this object before passing it to one or more RestedResources through the `setUriParameterSchema(dynamic schema)` function. You may call the object whatever you want, but the `.name` property of the object used when instantiating it must be equal to the PathParam. Below you can see a user_id StringParameter being created with uuid format constrains and passed to the RestedResource.
+URI parameters are made from objects for each specific type (string/integer/number etc.) although currently only String and Integers are implemented. You start by creating a `StringParameter` og `IntegerParameter` object with a name (key). You can then set various properties to this object before passing it to one or more RestedResources through the `addUriParameterSchema(dynamic schema)` function. You may call the object whatever you want, but the `.name` property of the object used when instantiating it must be equal to the PathParam. Below you can see a user_id StringParameter being created with uuid format constrains and passed to the RestedResource.
 
 ```
 StringParameter user_id_param = StringParameter('user_id');
@@ -420,7 +420,7 @@ user_id_param.format = "uuid";
 class Resource_User extends RestedResource {
 
   Resource_User() {
-    this.setUriParameterSchema(user_id_param);
+    this.addUriParameterSchema(user_id_param);
   }
 
   void get(RestedRequest request) async {
@@ -438,6 +438,11 @@ StringParameter have the following properties and functions:
 `int maxLength` - Maximum number of characters.
 `String pattern` - You can set regex pattern for pattern matching. This is set then the format validations will not be checked. Remember to pass the string as a raw string. Example: `some_alphanumeric_param.pattern = r'^[a-zA-Z0-9]+$';`
 
+IntegerParameter have the following properties and functions:
+`int minimum` - Minimum value of the integer.
+`int maximum` - Maximum value of the integer.
+`bool exclusiveMin` - The minimum value needs to be exceeded to validate. Default is `false`.
+`bool exclusiveMaxn` - The value needs to be below maximum to validate. Default is `false`.
 
 ## Testing
 
