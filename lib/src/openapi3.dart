@@ -11,7 +11,7 @@ import 'restedschema.dart';
 class OAPI3 {
 
     Map yaml;
-    Map<String, dynamic> path_parameters = {};
+    Map<String, dynamic> global_parameters = {};
     List<RestedResource> resources = List<RestedResource>();
 
     OAPI3(String filepath) {
@@ -47,7 +47,7 @@ class OAPI3 {
                 }
             }
 
-            for(MapEntry e in path_parameters.entries) {
+            for(MapEntry e in global_parameters.entries) {
                 print("Imported global path parameter <" + e.value.type + "> " + e.value.name);
             }
 
@@ -76,7 +76,9 @@ class OAPI3 {
         // Populate the Resource fields
         resource.setPath(path);
 
-        //importPathParameters(yaml['paths'][path]);
+        if(yaml['paths'][path].containsKey('parameters')) {
+            resource.addUriParameters(importPathParameters(yaml['paths'][path]['parameters']));
+        }
 
         for(MapEntry e in yaml['paths'][path].entries) {
             if(rsettings.allowedMethods.contains(e.key.toLowerCase())) {
@@ -98,6 +100,34 @@ class OAPI3 {
         resources.add(resource);
     }
 
+    Map<String, dynamic> importPathParameters(List<dynamic> params) {
+        Map<String, dynamic> path_parameters = {};
+
+        for(Map e in params) {
+            if(e.containsKey(r'$ref')) {
+                List<String> elements = e[r'$ref'].split('/');
+                String param_key = elements[elements.length-1];
+                if(global_parameters.containsKey(param_key)) {
+                    path_parameters[param_key] = global_parameters[param_key];
+                }
+            } else {
+                if(e.containsKey('schema') && e.containsKey('name')) {
+                    if(e['schema'].containsKey('type')) {
+                        if(e['schema']['type'] == 'string') {
+                            StringParameter new_param = buildStringPathParameter(e);
+                            path_parameters[e['name']] = new_param;
+                        } else if(e['schema']['type'] == 'string') {
+                            IntegerParameter new_param = buildIntegerPathParameter(e);
+                            path_parameters[e['name']] = new_param;
+                        }
+                    }
+                }
+            }
+        }
+
+        return path_parameters;
+    }
+
     void importGlobalParameters(Map params) {
         for(MapEntry e in params.entries) {
             if(e.value.containsKey('schema')) {
@@ -110,7 +140,7 @@ class OAPI3 {
                         if(e.value.containsKey('in')) {
                             if(e.value['in'].toLowerCase() == 'path') {
                                 StringParameter param = buildStringPathParameter(e.value);
-                                path_parameters[param.name] = param;
+                                global_parameters[param.name] = param;
                             }
                         }
                     
@@ -121,7 +151,7 @@ class OAPI3 {
                         if(e.value.containsKey('in')) {
                             if(e.value['in'].toLowerCase() == 'path') {
                                 IntegerParameter param = buildIntegerPathParameter(e.value);
-                                path_parameters[param.name] = param;
+                                global_parameters[param.name] = param;
                             }
                         }
                     }
