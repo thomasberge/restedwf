@@ -11,6 +11,7 @@ The source is being developed on a private repo. I will update this repo from ti
 ### 0.5.3 Main changes
 
 - URI/PathParameter validation implementation now in place. See documentation for usage. Support made for Strings and Integers.
+- Both Global and Path URI parameters of type String and Integer are now imported from OpenAPI 3.1.
 
 ### Features
 
