@@ -34,6 +34,7 @@ class TestServer extends RestedRequestHandler {
 
 class SchemaTest extends RestedResource {
   void post(RestedRequest request) async {
+    print(RestedSchema.isEmail('test@test.no').toString());
     request.response(data: "TEST");
   }
 }

@@ -2,7 +2,7 @@ import 'schema/stringparameter.dart';
 export 'schema/stringparameter.dart';
 import 'schema/integerparameter.dart';
 export 'schema/integerparameter.dart';
-import 'schema/patterns.dart';
+import 'schema/patterns.dart' as patterns;
 
 //Map<String, dynamic> pathparams = {};
 
@@ -14,19 +14,19 @@ class RestedSchema {
     RestedSchema();
 
     static bool isUUID(String _inc) {
-        return isUUID(_inc);
+        return patterns.isUUID(_inc);
     }
 
     static bool isEmail(String _inc) {
-        return isEmail(_inc);
+        return patterns.isEmail(_inc);
     }
 
     static bool isAlphanumeric(String _inc) {
-        return isAlphanumeric(_inc);
+        return patterns.isAlphanumeric(_inc);
     }
 
     static bool isNumeric(String _inc) {
-        return isNumeric(_inc);
+        return patterns.isNumeric(_inc);
     }
 
     void setFields(Map<String, dynamic> _incomingFields) {
