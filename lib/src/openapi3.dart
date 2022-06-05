@@ -5,11 +5,13 @@ import 'dart:convert';
 import 'package:yaml/yaml.dart';
 import 'restedrequesthandler.dart' show RestedResource;
 import 'restedsettings.dart';
+import 'restedschema.dart';
 
 
 class OAPI3 {
 
     Map yaml;
+    Map<String, dynamic> path_parameters = {};
     List<RestedResource> resources = List<RestedResource>();
 
     OAPI3(String filepath) {
@@ -39,6 +41,17 @@ class OAPI3 {
         try {
             yaml = loadYaml(data) as Map;
 
+            if(yaml.containsKey('components')) {
+                if(yaml['components'].containsKey('parameters')) {
+                    importGlobalParameters(yaml['components']['parameters']);
+                }
+            }
+
+            for(MapEntry e in path_parameters.entries) {
+                print("Imported global path parameter <" + e.value.type + "> " + e.value.name);
+            }
+
+            // Paths
             if(yaml.containsKey('paths')) {
                 for(MapEntry e in yaml['paths'].entries) {
                     importPath(e.key, e.value);
@@ -85,17 +98,87 @@ class OAPI3 {
         resources.add(resource);
     }
 
-    /*
-    void importPathParameters(Map value) {
-        print(value['parameters']);
-        if(value.containsKey('parameters')) {
-            print("------------------------------------");
-            for(Map m in value['parameters']) {
-                print(m['name']);
-                print(m['schema']);
+    void importGlobalParameters(Map params) {
+        for(MapEntry e in params.entries) {
+            if(e.value.containsKey('schema')) {
+                if(e.value['schema'].containsKey('type')) {
+
+                    // String parameters
+                    if(e.value['schema']['type'].toLowerCase() == 'string') {
+
+                        // String Path Parameters
+                        if(e.value.containsKey('in')) {
+                            if(e.value['in'].toLowerCase() == 'path') {
+                                StringParameter param = buildStringPathParameter(e.value);
+                                path_parameters[param.name] = param;
+                            }
+                        }
+                    
+                    // Integer parameters
+                    } else if(e.value['schema']['type'].toLowerCase() == 'integer') {
+
+                        // Integer Path Parameters
+                        if(e.value.containsKey('in')) {
+                            if(e.value['in'].toLowerCase() == 'path') {
+                                IntegerParameter param = buildIntegerPathParameter(e.value);
+                                path_parameters[param.name] = param;
+                            }
+                        }
+                    }
+                }
             }
         }
-        //print(">" + value['parameters']['schema']);
     }
-    */
+
+    StringParameter buildStringPathParameter(Map params) {
+
+        StringParameter new_param = StringParameter(params['name']);
+
+        if(params['schema'].containsKey('format')) {
+            new_param.format = params['schema']['format'];
+        }
+
+        if(params['schema'].containsKey('enum')) {
+            for(String val in params['schema']['enum']) {
+                new_param.addEnum(val);
+            }
+        }
+
+        if(params['schema'].containsKey('minLength')) {
+            new_param.minLength = params['schema']['minLength'];
+        }
+
+        if(params['schema'].containsKey('maxLength')) {
+            new_param.maxLength = params['schema']['maxLength'];
+        }
+
+        if(params['schema'].containsKey('pattern')) {
+            new_param.pattern = r"" + params['schema']['pattern'];
+        }
+
+        return new_param;
+    }
+
+    IntegerParameter buildIntegerPathParameter(Map params) {
+
+        IntegerParameter new_param = IntegerParameter(params['name']);
+
+        if(params['schema'].containsKey('minimum')) {
+            new_param.minimum = params['schema']['minimum'];
+        }
+
+        if(params['schema'].containsKey('maximum')) {
+            new_param.maximum = params['schema']['maximum'];
+        }
+
+        if(params['schema'].containsKey('exclusiveMinimum')) {
+            new_param.exclusiveMin = params['schema']['exclusiveMinimum'];
+        }
+
+        if(params['schema'].containsKey('exclusiveMaximum')) {
+            new_param.exclusiveMax = params['schema']['exclusiveMaximum'];
+        }
+
+        return new_param;
+    }
 }

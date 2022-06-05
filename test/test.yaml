@@ -33,6 +33,7 @@ paths:
                   description: Can be either email or username.
                 password:
                   type: string
+    parameters: []
   /users:
     get:
       summary: List Users
@@ -242,6 +243,60 @@ components:
       schema:
         type: integer
       description: Integer representing a `Repository`.
+    int_param:
+      name: int_param
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: integer parameter
+    abc:
+      name: abc
+      in: path
+      required: true
+      schema:
+        type: string
+        format: email
+    bcd:
+      name: bcd
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - ENUM1
+          - ENUM2
+          - enum3
+    cde:
+      name: cde
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 5
+        maxLength: 10
+    def:
+      name: def
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-zA-Z0-9.a-zA-Z0-9.!#$%&''*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+'
+    efg:
+      name: efg
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 12
+    feg:
+      name: feg
+      in: path
+      required: true
+      schema:
+        type: integer
+        maximum: 123
+        exclusiveMaximum: true
   securitySchemes:
     access_token:
       type: http

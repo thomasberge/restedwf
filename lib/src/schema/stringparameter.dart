@@ -2,6 +2,7 @@ import 'patterns.dart';
 
 class StringParameter {
     String _name;
+    String _type = "string";
     String _style = "none";
     String _format = "none";
     List<String> enums = [];
@@ -19,6 +20,10 @@ class StringParameter {
 
     StringParameter(this._name);
 
+    String get type {
+        return _type;
+    }
+
     void set style(String stringStyle) {
         if(_implemented_styles.contains(stringStyle)) {
             _style = stringStyle;
@@ -30,6 +35,12 @@ class StringParameter {
 
     String get style {
         return _style;
+    }
+
+    void addEnums(List<String> enums) {
+        for(String val in enums) {
+            addEnum(val);
+        }
     }
 
     void addEnum(String input) {

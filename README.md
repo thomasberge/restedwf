@@ -434,6 +434,7 @@ You may update the UriParameterSchema at any time, but the recommended pattern i
 StringParameter have the following properties and functions:
 `String format` - allowed values currently are `none`, `email` and `uuid`. Default is `none`. Example: `user_id_param.format = "uuid";`
 `addEnum(String enum)` - Add a new enum parameter. These will automatically get set to uppercase. The validation will also set the input to uppercase as well, so the validation check is case-insensitive. Example: `repo_visibility_param.addEnum('PUBLIC');`
+`addEnums(List<String> enums)` - Receives a String list and uses `addEnum()` internally to add them.
 `int minLength` - Minimum number of characters.
 `int maxLength` - Maximum number of characters.
 `String pattern` - You can set regex pattern for pattern matching. This is set then the format validations will not be checked. Remember to pass the string as a raw string. Example: `some_alphanumeric_param.pattern = r'^[a-zA-Z0-9]+$';`

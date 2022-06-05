@@ -2,6 +2,7 @@ import 'patterns.dart';
 
 class IntegerParameter {
     String _name;
+    String _type = "integer";
     String _style = "none";
     String _format = "none";
     int minimum;
@@ -25,6 +26,10 @@ class IntegerParameter {
             print("Error setting StringParameter style. " + stringStyle + " is not supported. Reverting to 'none'.");
             _style = "none";
         }
+    }
+
+    String get type {
+        return _type;
     }
 
     String get style {
