@@ -83,6 +83,8 @@ class RestedRequest {
       } else {
         return false;
       }
+    } else {
+      return false;
     }
   }
 
@@ -93,6 +95,8 @@ class RestedRequest {
       } else {
         return false;
       }
+    } else {
+      return false;
     }
   }
 
@@ -103,6 +107,8 @@ class RestedRequest {
       } else {
         return false;
       }
+    } else {
+      return false;
     }
   }
 
@@ -113,6 +119,8 @@ class RestedRequest {
       } else {
         return false;
       }
+    } else {
+      return false;
     }
   }
 
