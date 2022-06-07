@@ -194,7 +194,7 @@ class RestedRequestHandler {
         }
 
         if (unverified_access_token != null) {
-          // Verify that the token is valid. Raise exception it it is not.
+          // Verify that the token is valid. Raise exception if it is not.
           RestedJWT jwt_handler = new RestedJWT();
           int verify_result = jwt_handler.verify_token(unverified_access_token);
           if (verify_result == 401) {

@@ -12,7 +12,8 @@ The source is being developed on a private repo. I will update this repo from ti
 
 - URI/PathParameter validation implementation now in place. See documentation for usage. Support made for Strings and Integers.
 - Both Global and Path URI parameters of type String and Integer are now imported from OpenAPI 3.1.
-- Bugdfix: StackOverflow in RestedSchema pattern functions fixed.
+- RestedRequest now has a handy check method for claims, session, header and URI Parameters. See documentation for details.
+- Bugfix: StackOverflow in RestedSchema pattern functions fixed.
 
 ### Features
 
@@ -49,7 +50,7 @@ In the example there is a server example that does the following:
 
 Link this repo as a requirement in the `pubspec.yaml` file. If you leave out `ref: dev` then you will get the main, stable(ish) release.
 
-```
+```yaml
   restedwf:
     git:
       url: https://github.com/thomasberge/restedwf
@@ -58,13 +59,13 @@ Link this repo as a requirement in the `pubspec.yaml` file. If you leave out `re
 
 Import the package to get access to all of its objects. There should be no need to reference other files internal to RestedWF.
 
-```
+```dart
 import 'package:restedwf/rested.dart';
 ```
 
 You define a resource as a `RestedResource` class. Supports all standard HTTP methods as functions within the class (yes, `get` as well even though its a reserved word).
 
-```
+```dart
 class Resource_Root extends RestedResource {
   void get(RestedRequest request) {
     request.response(type: 'html', data: "<html>I am a glorious website!</html>");
@@ -78,7 +79,7 @@ class Resource_Root extends RestedResource {
 
 All resource classes are instantiated and added to a single `RestedRequestHandler` class and given a path.
 
-```
+```dart
 class Rested extends RestedRequestHandler {
   
   Rested() {
@@ -90,7 +91,7 @@ class Rested extends RestedRequestHandler {
 
 Once you have a `RestedRequestHandler` clas defined you can start a `RestedServer` with the requesthandler as an argument. Start the server by specifying its address and port.
 
-```
+```dart
 main() async {
   RestedServer server = RestedServer(Rested());
   server.start("127.0.0.1", 80);
@@ -110,7 +111,7 @@ request.text is of type String and contains text data if the incoming request ha
 
 There is currently no proper way to handle incoming binary stream nor XML.
 
-```
+```dart
 class Resource_Login extends RestedResource {
   void post(RestedRequest request) {
     String login_username = request.body['username'];
@@ -126,7 +127,7 @@ class Resource_Login extends RestedResource {
 
 Normally you will either respond to a request with some data, or you will redirect the user somewhere else.
 
-```
+```dart
 class Resource_Login extends RestedResource {
   void get(RestedRequest request) {
     request.response(type: "html", data: "<html>Website goes here</html>");    
@@ -161,11 +162,11 @@ Each request received on a Resource will automatically contain a Map with the Pa
 
 First of all, this require some light setup before it can be used. In your environment you need the following variables set:
 
-```
-      - jwt_key=C4NN0NB477S!!!!?
-      - jwt_issuer=yourwebsitegoeshere
-      - jwt_duration=5000
-      - cookies_max_age=1200
+```yaml
+- jwt_key=C4NN0NB477S!!!!?
+- jwt_issuer=yourwebsitegoeshere
+- jwt_duration=5000
+- cookies_max_age=1200
 ```
 
 `jwt_key` need to be 16 characters. Any JWT created with this `jwt_key` by this `jwt_issuer` will validate. If you create a separate API server then those two values needs to be identical for the JWT token issued by the API to resolve on the website (or vice versa).
@@ -174,7 +175,7 @@ All JWT tokens have a server and a client expiration time. `jwt_duration` is che
 
 Once this is set up then you need to instantiate the RestedJWT class in the root of the application (outside main).
 
-```
+```dart
 import 'package:restedwf/rested.dart';
 
 RestedJWT jwt_handler = new RestedJWT();
@@ -187,7 +188,7 @@ A RestedResource can be protected by requiring a valid JWT. This is just about t
 
 The default behavior of a protected resource method is to return 403 Forbidden if the token is not valid or expired. You can however set a default forwarding URL as an alternative. This is set per resource however and will therefor work the same for all of the resource methods that are protected.
 
-```
+```dart
 class Resource_Root extends RestedResource {
   String protected_redirect = "/login";
 
@@ -201,14 +202,14 @@ class Resource_Root extends RestedResource {
 
 To create a token you simply let the jwt_handler generate it. You also have the option of adding custom claims to the token. Note that these are not encrypted claims. You can later extract claims for other purposes.
 
-```
+```dart
 Map claims = {"role": "administrator"};
 Map token = jwt_handler.generate_token(additional_claims: claims);
 ```
 
 Any additional claims added to the token will be available each time a request is made using that token. The additional claims are then present in the `request.claims['key']` map which is of type `Map<String, Dynamic>`.
 
-```
+```dart
 class Resource_Adminpage extends RestedResource {
 
   Resource_Adminpage() {
@@ -225,7 +226,7 @@ class Resource_Adminpage extends RestedResource {
 
 You can also add custom verification of JWT tokens by overriding the `custom_JWT_verification` function on the requesthandler. It needs to have a ´String token´ argument and return a bool signaling if its verified or not.
 
-```
+```dart
 class Rested extends RestedRequestHandler {
   
   Rested() {
@@ -246,20 +247,45 @@ class Rested extends RestedRequestHandler {
 ... to be documented. Basically add a SessionManager and return session id in a cookie instead of JWT token. The requesthandler will automatically identify the session, look up the token and try to verify it. Examples to come.
 
 
+#### RestedRequest data check
+
+The RestedRequest object contains lots of pre-parsed information for the incoming request. To reduce boilerplate in your application some handy check functions are available. They take key and value as input and returns a boolean if the request contains the key with the specified value. If you need to check if the key exists and not its value then simply use the containsKey method on the appropriate map instead.
+
+```dart
+void yourfunction(RestedRequest request) {
+  if(request.checkHeaders('', '')) {
+    // do something
+  }
+
+  if(request.checkClaims('username', request.uri_parameters['username'])) {
+    // do something
+  }
+
+  if(request.checkSession('isAdmin', 'true')) {
+    // do something important
+  }
+
+  if(request.checkUriParameters('username', someVariable)) {
+    // do something important
+  }
+}
+```
+
+
 #### Implementing restedscript for templating and scripting
 
 ... to be better documented. Here is a simple example:
 
 Add to pubspec.yaml
 
-```
+```yaml
   rested_script:
     git:
       url: https://github.com/thomasberge/rested_script
       ref: dev
 ```
 
-```
+```dart
 // Instantiate this on root level (or per dart file)
 RestedScript rscript = RestedScript(root: "/app/bin/resources/", debug: true);
 
@@ -279,7 +305,7 @@ RestedScript is documented here: https://github.com/thomasberge/rested_script
 
 ... to be documented properly. Here is a short example:
 
-```
+```dart
 Map<String, String> _headers = { "Content-Type": "application/json" };
 Map<String, dynamic> _data = { "username": login_username, "password": login_password };
 String result = await RestedRequests.post('http://api.something.com/login', headers: _headers, data: json.encode(_data));
@@ -289,7 +315,7 @@ String result = await RestedRequests.post('http://api.something.com/login', head
 
 In case you want to raise a HTTP error from within a HTTP method you need to have instantiated an Errors object. Pass the request object as well as the error code, and a response will be sent back to the client. It is imperative that you then use the return statement, or else the rest of your code will be run.
 
-```
+```dart
 Errors error_handler = Errors();
 
 class CrashTest extends RestedResource {
@@ -316,7 +342,7 @@ The file will get imported and new resource endpoints will automatically be crea
 
 In order to link a specified endpoint method with a dart function you will need to do so within your main() function by linking operationId as specified in the YAML and the dart function:
 
-```
+```dart
 main() async {
     xfunctions['get-user'] = yourfunction;
     RestedServer admin_server = RestedServer(TestServer());
@@ -331,7 +357,7 @@ void yourfunction(RestedRequest request) {
 
 Each time someone calls the operationId `get-users` the `yourfunction` function will be called. Working with a single file however can get cumbersome, so imported files are supported. In the following example the function is moved to a different file. First, the `server.dart` file that contains the main():
 
-```
+```dart
 import 'package:restedwf/rested.dart';
 import 'otherfile.dart';
 
@@ -344,7 +370,7 @@ main() async {
 
 Then, the `otherfile.dart`:
 
-```
+```dart
 import 'package:restedwf/rested.dart';
 
 void yourfunction(RestedRequest request) {
@@ -358,7 +384,7 @@ This way you can group related functions in their own files.
 
 In your main method, add the operationId to the `xfunctions_require_token` for it to enable valid JWT requirement for that method. Keep in mind that any JWT generated by the API will be valid on for example a webpage server as long as the JWT_KEY environment variable is the same on both servers. This will allow you to have a separate authorization server that will produce valid JWT tokens for your application server.
 
-```
+```dart
 main() async {
     xfunctions['get-user'] = yourfunction;
     xfunctions_require_token.add('get-user');
@@ -371,7 +397,7 @@ main() async {
 
 All database settings need to be in your environment, and not set directly in code. Here is an example using a .env file:
 
-```
+```bash
 db_integration="postgres"
 db_hostname="localhost"
 db_port="5432"
@@ -382,7 +408,7 @@ db_password="copythatfloppy!"
 
 In code you need to instantiate a RestedDatabase. No need for any arguments as all will be read from env. With a RestedDatabase object you can use either the exists or query functions. Exists is a shorthand for a select count(*) and will return true if the result is more than 0. Query is a standard database query in its full.
 
-```
+```dart
 RestedDatabaseConnection db = RestedDatabaseConnection();
 
 void create_user(RestedRequest request) async {
@@ -403,7 +429,7 @@ void create_user(RestedRequest request) async {
 
 RestedSchema will eventually deal with all type of field and schema verification, and some of its internal functions are usefull outside of the class as well. These four static methods are currently available:
 
-```
+```dart
 bool RestedSchema.isUUID(String inputvalue);
 bool RestedSchema.isEmail(String inputvalue);
 bool RestedSchema.isAlphanumeric(String inputvalue);
@@ -415,7 +441,7 @@ bool RestedSchema.isNumeric(String inputvalue);
 
 URI parameters are made from objects for each specific type (string/integer/number etc.) although currently only String and Integers are implemented. You start by creating a `StringParameter` og `IntegerParameter` object with a name (key). You can then set various properties to this object before passing it to one or more RestedResources through the `addUriParameterSchema(dynamic schema)` function. You may call the object whatever you want, but the `.name` property of the object used when instantiating it must be equal to the PathParam. Below you can see a user_id StringParameter being created with uuid format constrains and passed to the RestedResource.
 
-```
+```dart
 StringParameter user_id_param = StringParameter('user_id');
 user_id_param.format = "uuid";
 

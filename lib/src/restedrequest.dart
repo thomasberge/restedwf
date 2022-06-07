@@ -76,6 +76,46 @@ class RestedRequest {
   Map<String, String> uri_parameters = new Map();
   Map<String, dynamic> restedresponse = new Map();
 
+  bool checkSession(String key, dynamic value) {
+    if(session.containsKey('key')) {
+      if(session[key] == value) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  bool checkHeaders(String key, String value) {
+    if(headers.containsKey('key')) {
+      if(headers[key] == value) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  bool checkClaims(String key, dynamic value) {
+    if(claims.containsKey('key')) {
+      if(claims[key] == value) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  bool checkUriParameters(String key, String value) {
+    if(uri_parameters.containsKey('key')) {
+      if(uri_parameters[key] == value) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
   String toString() {
     Map<String, dynamic> restedrequest = new Map();
     Map<String, dynamic> httprequest = new Map();
