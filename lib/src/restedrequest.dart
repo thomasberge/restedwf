@@ -102,6 +102,9 @@ class RestedRequest {
 
   bool checkClaims(String key, dynamic value) {
     if(claims.containsKey('key')) {
+      print("key=" + key);
+      print("value=" + value.toString());
+      print("claims[" + key + "]=" + claims[key]);
       if(claims[key] == value) {
         return true;
       } else {
