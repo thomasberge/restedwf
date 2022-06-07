@@ -52,9 +52,6 @@ class RestedRequests {
         }
 
         HttpClientResponse response = await request.close();
-        
-        print("----RESPONSE HEADERS----");
-        print(response.headers.toString());
 
         var data = await _readResponse(response);
         return data;
