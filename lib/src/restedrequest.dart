@@ -77,7 +77,7 @@ class RestedRequest {
   Map<String, dynamic> restedresponse = new Map();
 
   bool checkSession(String key, dynamic value) {
-    if(session.containsKey('key')) {
+    if(session.containsKey(key)) {
       if(session[key] == value) {
         return true;
       } else {
@@ -89,7 +89,7 @@ class RestedRequest {
   }
 
   bool checkHeaders(String key, String value) {
-    if(headers.containsKey('key')) {
+    if(headers.containsKey(key)) {
       if(headers[key] == value) {
         return true;
       } else {
@@ -101,10 +101,7 @@ class RestedRequest {
   }
 
   bool checkClaims(String key, dynamic value) {
-    if(claims.containsKey('key')) {
-      print("key=" + key);
-      print("value=" + value.toString());
-      print("claims[" + key + "]=" + claims[key]);
+    if(claims.containsKey(key)) {
       if(claims[key] == value) {
         return true;
       } else {
@@ -116,7 +113,7 @@ class RestedRequest {
   }
 
   bool checkUriParameters(String key, String value) {
-    if(uri_parameters.containsKey('key')) {
+    if(uri_parameters.containsKey(key)) {
       if(uri_parameters[key] == value) {
         return true;
       } else {
