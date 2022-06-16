@@ -181,13 +181,14 @@ class RestedRequestHandler {
           unverified_access_token =
               incomingRequest.headers.value(HttpHeaders.authorizationHeader);
 
+          // Checks that the authorization header is formatted correctly.
           if (unverified_access_token != null) {
             List<String> authtype = unverified_access_token.split(' ');
             List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
             if (valid_auths.contains(authtype[0].toUpperCase())) {
               unverified_access_token = authtype[1];
             } else {
-              error_handler.raise(request, 401);
+              error_handler.raise(request, 400);
               return;
             }
           }
@@ -198,8 +199,10 @@ class RestedRequestHandler {
           RestedJWT jwt_handler = new RestedJWT();
           int verify_result = jwt_handler.verify_token(unverified_access_token);
           if (verify_result == 401) {
-            error_handler.raise(request, 401);
-            return;
+            //error_handler.raise(request, 401);
+            //return;
+            // REFACTORING: instead of returning 401, let the user pass until it
+            // gets handled by the resource token requirement instead
           } else {
             access_token = unverified_access_token;
             request.claims = RestedJWT.getClaims(access_token);

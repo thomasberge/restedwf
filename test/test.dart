@@ -40,8 +40,7 @@ class SchemaTest extends RestedResource {
 }
 
 void testing(RestedRequest request) {
-  //print(request.uri_parameters["user_id"]);
-  request.response(data: request.text.toString());
+  request.response(data: "test");
 }
 
 class PathParam extends RestedResource {

@@ -72,14 +72,9 @@ paths:
                 password:
                   type: string
         description: ''
-  '/users/{user_id}/{other_id}':
+  '/users/{username}':
     parameters:
-      - $ref: '#/components/parameters/user_id'
-      - schema:
-          type: string
-        name: other_id
-        in: path
-        required: true
+      - $ref: '#/components/parameters/username'
     get:
       summary: Get User
       tags: []
@@ -129,7 +124,7 @@ paths:
         '200':
           description: OK
       description: 'Deletes any database data, creates a new instance and populates with default data.'
-  '/users/{user_id}/repositories':
+  '/users/{username}/repositories':
     get:
       summary: List Repositories
       tags: []
@@ -145,7 +140,7 @@ paths:
       operationId: list-repositories
       description: Lists all of the `Users` `Repository`.
     parameters:
-      - $ref: '#/components/parameters/user_id'
+      - $ref: '#/components/parameters/username'
     post:
       summary: Create Repository
       operationId: create-repository
@@ -245,6 +240,14 @@ components:
         type: string
         format: uuid
       description: UUID representing a `Repository`.
+    username:
+      name: username
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 4
+        maxLength: 64
   securitySchemes:
     access_token:
       type: http
