@@ -13,6 +13,7 @@ The source is being developed on a private repo. I will update this repo from ti
 - URI/PathParameter validation implementation now in place. See documentation for usage. Support made for Strings and Integers.
 - Both Global and Path URI parameters of type String and Integer are now imported from OpenAPI 3.1.
 - RestedRequest now has a handy check method for claims, session, header and URI Parameters. See documentation for details.
+- JWT tokens that are not valid will just be removed from the request instead of returning 401 directly. Now the request is sent to the resource (or stopped just before if there is a valid token required).
 - Bugfix: StackOverflow in RestedSchema pattern functions fixed.
 
 ### Features

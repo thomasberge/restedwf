@@ -63,6 +63,53 @@ class RestedDatabaseConnection {
     }    
 }
 
+class RestedTableSchema {
+    List<String> columnNames = [];
+
+    RestedTableSchema(this.columnNames);
+
+    Map<String, dynamic> columnToMap(List<dynamic> resultColumn, {List<String> returning, List<String> excluding}) {
+        Map<String, dynamic> result = {};
+
+        // checking if null on both optional parameters - unelegant but effective
+        if(returning == null) {
+            for(String key in columnNames) {
+                if(excluding != null) {
+                    if(excluding.contains(key) == false) {
+                        result[key] = resultColumn[columnNames.indexOf(key)];
+                    }
+                } else {
+                    result[key] = resultColumn[columnNames.indexOf(key)];
+                }
+            }
+        } else {
+            for(String key in columnNames) {
+                if(returning.contains(key)) {
+                    if(excluding != null) {
+                        if(excluding.contains(key) == false) {
+                            result[key] = resultColumn[columnNames.indexOf(key)];
+                        }
+                    } else {
+                        result[key] = resultColumn[columnNames.indexOf(key)];
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    Map<String, dynamic> getSingleObject(List<List<dynamic>> query_result, {List<String> returning, List<String> excluding}) {
+        return columnToMap(query_result[0], returning: returning, excluding: excluding);
+    }
+
+    List<Map<String, dynamic>> getArray(List<List<dynamic>> query_result, {List<String> returning, List<String> excluding}) {
+        List<Map<String, dynamic>> result = [];
+        for(List<dynamic> element in query_result) {
+            result.add(columnToMap(element, returning: returning, excluding: excluding));
+        }
+        return result;
+    }
+}
 /*
 class QueryResults {
     List<Map<String, Map<String, dynamic>>> result = [];
