@@ -73,8 +73,9 @@ class RestedRequest {
   Map<String, dynamic> session = {};
   Map<String, String> headers = {};
   Map<String, dynamic> claims = {};
-  Map<String, String> uri_parameters = new Map();
-  Map<String, dynamic> restedresponse = new Map();
+  Map<String, String> uri_parameters = {};
+  Map<String, dynamic> query_parameters = {};
+  Map<String, dynamic> restedresponse = {};
 
   bool checkSession(String key, dynamic value) {
     if(session.containsKey(key)) {
@@ -220,6 +221,7 @@ class RestedRequest {
     path = request.requestedUri.path;
     method = request.method.toString().toUpperCase();
     setHeaders();
+    extractQueryParameters();
     print(method + " " + path);
   }
 
@@ -234,6 +236,20 @@ class RestedRequest {
         x++;
       }
       i++;
+    }
+  }
+
+  void extractQueryParameters() {
+    if(this.request.uri.toString().contains('?')) {
+      List<String> qparams = (this.request.uri.toString().split('?')[1]).split('&');
+      for(String param in qparams) {
+        if(param.contains('=')) {
+          String key = Uri.decodeComponent(param.split('=')[0]);
+          String value = Uri.decodeComponent(param.split('=')[1]);
+          query_parameters[key] = value;
+        }
+      }
+      print("query_parameters=" + query_parameters.toString());
     }
   }
 

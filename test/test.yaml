@@ -51,6 +51,8 @@ paths:
       operationId: list-users
       x-internal: false
       description: Lists all `Users`.
+      parameters:
+        - $ref: '#/components/parameters/api-key'
     post:
       summary: Create User
       operationId: create-user
@@ -124,9 +126,9 @@ paths:
         '200':
           description: OK
       description: 'Deletes any database data, creates a new instance and populates with default data.'
-  '/users/{username}/repositories':
+  '/users/{username}/mutations':
     get:
-      summary: List Repositories
+      summary: List Mutations
       tags: []
       responses:
         '200':
@@ -136,18 +138,18 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Repository'
-      operationId: list-repositories
-      description: Lists all of the `Users` `Repository`.
+                  $ref: '#/components/schemas/Mutation'
+      operationId: list-mutations
+      description: Lists all of this `Users` `Mutations`.
     parameters:
       - $ref: '#/components/parameters/username'
     post:
-      summary: Create Repository
-      operationId: create-repository
+      summary: Create Mutation
+      operationId: create-mutation
       responses:
         '200':
           description: OK
-      description: Creates a new `Repository` for the `User`.
+      description: Creates a new `Mutation` for the `User`.
       requestBody:
         content:
           application/json:
@@ -164,30 +166,65 @@ paths:
                   default: PUBLIC
                 github_url:
                   type: string
-  '/users/{user_id}/repositories/{repository_id}':
+  '/users/{username}/mutations/{mutation}':
     parameters:
-      - $ref: '#/components/parameters/user_id'
-      - $ref: '#/components/parameters/repository_id'
+      - $ref: '#/components/parameters/username'
+      - $ref: '#/components/parameters/mutation'
     get:
-      summary: Get Repository
+      summary: Get Mutation
       tags: []
       responses: {}
-      operationId: get-repository
-      description: Get `Repository` details.
+      operationId: get-mutation
+      description: Get `Mutation` details.
     put:
-      summary: Update Repository
-      operationId: update-repository
+      summary: Update Mutation
+      operationId: update-mutation
       responses:
         '200':
           description: OK
-      description: Updates `Repository` details.
+      description: Updates `Mutation` details.
     delete:
-      summary: Delete Repository
-      operationId: delete-repository
+      summary: Delete Mutation
+      operationId: delete-mutation
       responses:
         '200':
           description: OK
-      description: Deletes a `Repository`.
+      description: Deletes a `Mutation`.
+  '/users/{username}/routes':
+    parameters:
+      - $ref: '#/components/parameters/username'
+    get:
+      summary: List Routes
+      tags: []
+      responses: {}
+      operationId: list-routes
+    post:
+      summary: Create Route
+      operationId: create-route
+      responses:
+        '200':
+          description: OK
+  '/users/{username}/routes/{route}':
+    parameters:
+      - $ref: '#/components/parameters/username'
+      - $ref: '#/components/parameters/route'
+    get:
+      summary: Get Route
+      tags: []
+      responses: {}
+      operationId: get-route
+    put:
+      summary: Update Route
+      operationId: update-route
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete Route
+      operationId: delete-route
+      responses:
+        '200':
+          description: OK
 components:
   schemas:
     User:
@@ -197,21 +234,30 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         email:
           type: string
           format: email
         username:
           type: string
-    Repository:
-      title: Repository
+        api-key:
+          type: string
+          format: uuid
+        mutations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Mutation'
+    Mutation:
+      title: Mutation
       x-stoplight:
         id: xr9wmdzso5glo
       type: object
       examples: []
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         name:
           type: string
         visibility:
@@ -224,22 +270,6 @@ components:
           type: string
           description: Link to public github repository.
   parameters:
-    user_id:
-      name: user_id
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: UUID representing a `User`.
-    repository_id:
-      name: repository_id
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: UUID representing a `Repository`.
     username:
       name: username
       in: path
@@ -248,6 +278,28 @@ components:
         type: string
         minLength: 4
         maxLength: 64
+    mutation:
+      name: mutation
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 4
+        maxLength: 64
+    route:
+      name: route
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 4
+        maxLength: 64
+    api-key:
+      name: api-key
+      in: query
+      schema:
+        type: string
+        format: uuid
   securitySchemes:
     access_token:
       type: http

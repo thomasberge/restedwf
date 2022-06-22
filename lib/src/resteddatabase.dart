@@ -21,6 +21,7 @@ class RestedDatabaseConnection {
     String _password;
     Function _query;
     Function _exists;
+    Function _describe;
     
     RestedDatabaseConnection() {
         _integration = envVars['db_integration'];
@@ -33,6 +34,7 @@ class RestedDatabaseConnection {
         if(_integration.toLowerCase() == 'postgres') {
             _query = postgres_query;
             _exists = postgres_exists;
+            _describe = postgres_describe;
         }
     }
 
@@ -52,7 +54,13 @@ class RestedDatabaseConnection {
             return true;
         }
 
-    }    
+    }
+
+    Future<List<List<dynamic>>> postgres_describe(String querystring) async {
+        var connection = PostgreSQLConnection(_hostname, _port, _database, username: _username, password: _password);
+        await connection.open();
+        return await connection.query(querystring);
+    }
 
     Future<List<List<dynamic>>> query(String querystring) async {
         return await _query(querystring);
@@ -60,7 +68,11 @@ class RestedDatabaseConnection {
 
     Future<bool> exists(String querystring) async {
         return await _exists(querystring);
-    }    
+    }
+
+    Future<Map<String, dynamic>> describe(String table) async {
+        return await _describe(table);
+    }
 }
 
 class RestedTableSchema {

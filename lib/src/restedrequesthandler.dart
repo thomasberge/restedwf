@@ -256,7 +256,7 @@ class RestedRequestHandler {
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
       String urldecoded = Uri.decodeComponent(urlencoded);
-      Map body = queryParametersToBodyMap(urldecoded);
+      Map body = urlencodedFormToBodyMap(urldecoded);
       request.setBody(body);
 
     } else if (type.contains("multipart/form-data")) {
@@ -372,7 +372,7 @@ class RestedRequestHandler {
   // most likely the structure is body { <data> }. Extract the data and set it as body.
   // This can potentially lead to &/¤#-ups so a method to check if there is a singular
   // root element "body" should replace this garbage.
-  Map queryParametersToBodyMap(String urlencoded) {
+  Map urlencodedFormToBodyMap(String urlencoded) {
     Map bodymap = new Map();
     if (urlencoded == null || urlencoded == "") {
       return bodymap;

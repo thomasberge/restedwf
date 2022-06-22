@@ -14,6 +14,7 @@ The source is being developed on a private repo. I will update this repo from ti
 - Both Global and Path URI parameters of type String and Integer are now imported from OpenAPI 3.1.
 - RestedRequest now has a handy check method for claims, session, header and URI Parameters. See documentation for details.
 - JWT tokens that are not valid will just be removed from the request instead of returning 401 directly. Now the request is sent to the resource (or stopped just before if there is a valid token required).
+- Added automatic parsing of simple key/value query parameters in RestedRequest. Simply access them directly from the request.query_parameters map (Map<String, dynamic>). See documentation for details.
 - Bugfix: StackOverflow in RestedSchema pattern functions fixed.
 
 ### Features
@@ -158,6 +159,17 @@ You can of course define multiple Path Parameters for each URL, and reusing the 
 
 Each request received on a Resource will automatically contain a Map with the Path Parameters accessible by key. In the example above, the `user_id` value can be accessed from request.uri_parameters['user_id'].
 
+#### Query Parameters
+
+Simple query parameters will be automatically parsed and URL decoded. They are available in the Map<String, dynamic> called query_parameters on the RestedRequest object. They are formatted as such: `https://www.yourmoviedb.com/movies?genre=action&year=1990`
+
+```dart
+get(RestedRequest request) {
+  if(request.query_parameters['genre'] == 'action') {
+    // do something
+  }
+}
+```
 
 #### Protecting endpoints with JSON Web Tokens
 
