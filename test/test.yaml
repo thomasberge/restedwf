@@ -2,7 +2,7 @@ openapi: 3.1.0
 x-stoplight:
   id: yvmuw34jwk7sl
 info:
-  title: alpha3
+  title: alpha4
   version: '1.0'
 servers:
   - url: 'http://localhost:3000'
@@ -52,7 +52,7 @@ paths:
       x-internal: false
       description: Lists all `Users`.
       parameters:
-        - $ref: '#/components/parameters/api-key'
+        - $ref: '#/components/parameters/api_key'
     post:
       summary: Create User
       operationId: create-user
@@ -294,8 +294,8 @@ components:
         type: string
         minLength: 4
         maxLength: 64
-    api-key:
-      name: api-key
+    api_key:
+      name: api_key
       in: query
       schema:
         type: string

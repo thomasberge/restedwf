@@ -74,7 +74,7 @@ class RestedRequest {
   Map<String, String> headers = {};
   Map<String, dynamic> claims = {};
   Map<String, String> uri_parameters = {};
-  Map<String, dynamic> query_parameters = {};
+  Map<String, String> query_parameters = {};
   Map<String, dynamic> restedresponse = {};
 
   bool checkSession(String key, dynamic value) {

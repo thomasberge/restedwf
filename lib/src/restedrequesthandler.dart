@@ -677,8 +677,8 @@ class RestedResource {
   // Only used for pattern matching in pathMatch function
   String uri_parameters = null;
 
-  // Used by setUriParametersSchema to store path parameter schemas.
   Map<String, dynamic> _uri_parameters_schemas = {};
+  Map<String, dynamic> _query_parameters_schemas = {};
 
   // Stores schemas for each HTTP method.
   Map schemas = Map<String, RestedSchema>();
@@ -711,6 +711,18 @@ class RestedResource {
     return "OK";
   }
 
+  String validateQueryParameters(Map<String, String> params) {
+    for(MapEntry e in params.entries) {
+      if(_query_parameters_schemas.containsKey(e.key)) {
+        String result = _query_parameters_schemas[e.key].validate(e.value);
+        if(result != "OK") {
+          return result;
+        }
+      }
+    }
+    return "OK";
+  }
+
   void require_token(String _method, {String redirect_url = null}) {
     _token_required[_method] = true;
   }
@@ -725,6 +737,14 @@ class RestedResource {
 
   void addUriParameterSchema(dynamic schema) {
     _uri_parameters_schemas[schema.name] = schema;
+  }
+
+  void addQueryParameters(Map<String, dynamic> new_schemas) {
+    _query_parameters_schemas = new_schemas;
+  }
+
+  void addQueryParameterSchema(dynamic schema) {
+    _query_parameters_schemas[schema.name] = schema;
   }
 
   void invalid_token_redirect(String _url) {
@@ -856,23 +876,21 @@ class RestedResource {
     }
   }
 
-  Map<String, dynamic> error404 = { "error": "not implemented" };
-
-  void get(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void post(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void put(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void patch(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void delete(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void copy(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void head(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void options(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void link(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void unlink(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void purge(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void lock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void unlock(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void propfind(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
-  void view(RestedRequest request) { request.response(type: "json", data: json.encode(error404)); }
+  void get(RestedRequest request) { request.response(status: 501); }
+  void post(RestedRequest request) { request.response(status: 501); }
+  void put(RestedRequest request) { request.response(status: 501); }
+  void patch(RestedRequest request) { request.response(status: 501); }
+  void delete(RestedRequest request) { request.response(status: 501); }
+  void copy(RestedRequest request) { request.response(status: 501); }
+  void head(RestedRequest request) { request.response(status: 501); }
+  void options(RestedRequest request) { request.response(status: 501); }
+  void link(RestedRequest request) { request.response(status: 501); }
+  void unlink(RestedRequest request) { request.response(status: 501); }
+  void purge(RestedRequest request) { request.response(status: 501); }
+  void lock(RestedRequest request) { request.response(status: 501); }
+  void unlock(RestedRequest request) { request.response(status: 501); }
+  void propfind(RestedRequest request) { request.response(status: 501); }
+  void view(RestedRequest request) { request.response(status: 501); }
 
   void callback(RestedRequest request) {}
 
@@ -893,7 +911,11 @@ class RestedResource {
     } 
     // If the resource method does NOT have a schema requirement
     else {
-      await functions[method](request);
+      if(functions[method] == null) {
+        request.response(status: 501);
+      } else {
+        await functions[method](request);
+      }
       await callback(request);
     }
 
@@ -918,6 +940,10 @@ class RestedResource {
   // the corresponding method without any checks.
   void doMethod(String method, RestedRequest request) async {
     String result = validateUriParameters(request.uri_parameters);
+    if(result == "OK") {
+      result = validateQueryParameters(request.query_parameters);
+    }
+
     if(result != "OK") {
       request.response(data: "400 " + result.toString());
       RestedResponse response = RestedResponse(request);
