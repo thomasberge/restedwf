@@ -672,6 +672,8 @@ class RestedResponse {
 }
 
 class RestedResource {
+  bool validateAllQueryParameters = false;
+
   String path = null;
 
   // Only used for pattern matching in pathMatch function
@@ -723,6 +725,10 @@ class RestedResource {
         String result = _query_parameters_schemas[method][e.key].validate(e.value);
         if(result != "OK") {
           return result;
+        }
+      } else {
+        if(validateAllQueryParameters) {
+          return "UNDEFINED QUERY PARAMETER";
         }
       }
     }
@@ -836,6 +842,13 @@ class RestedResource {
 
     for (String value in rsettings.allowedMethods) {
       _token_required[value] = false;
+    }
+
+    Map<String, String> _envVars = Platform.environment;
+    if(_envVars.containsKey('VALIDATE_ALL_QUERY_PARAMETERS')) {
+      if(_envVars['VALIDATE_ALL_QUERY_PARAMETERS'].toUpperCase() == 'TRUE') {
+        validateAllQueryParameters = true;
+      }
     }
   }
 

@@ -249,7 +249,6 @@ class RestedRequest {
           query_parameters[key] = value;
         }
       }
-      print("query_parameters=" + query_parameters.toString());
     }
   }
 
