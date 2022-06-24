@@ -11,8 +11,13 @@ import 'src/restedsettings.dart';
 
 main() async {
     xfunctions['authenticate'] = testing;
+    xfunctions['list-users'] = listusers;
     RestedServer admin_server = RestedServer(TestServer());
     admin_server.start("0.0.0.0", 80);
+}
+
+void listusers(RestedRequest request) async {
+  request.response(data: "list users here");
 }
 
 class TestServer extends RestedRequestHandler {

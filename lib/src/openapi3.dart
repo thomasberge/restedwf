@@ -37,6 +37,20 @@ class OAPI3 {
         }
     }
 
+    /*
+     *  Start for the import
+
+        1. File is loaded
+        2. Globals are imported to their respective global dicts in this file, in case they are
+            referenced on a path.
+        3. importPath is run on each path in the file, which builds a single resource for each
+            iteration and adds to the resources map.
+            1.  if path has parameters they are imported to the resource
+
+        4. The resources map is returned.
+
+
+     */
     void import(String data) {
 
         try {
@@ -87,6 +101,11 @@ class OAPI3 {
         for(MapEntry e in yaml['paths'][path].entries) {
             if(rsettings.allowedMethods.contains(e.key.toLowerCase())) {
 
+                if(yaml['paths'][path][e.key].containsKey('parameters')) {
+                    Map<String,dynamic> queryparams = importQueryParameters(yaml['paths'][path][e.key]['parameters']);
+                    resource.addQueryParameters(e.key, queryparams);
+                }
+
                 if(yaml['paths'][path][e.key].containsKey('operationId')) {
                     resource.operationId[e.key] = yaml['paths'][path][e.key]['operationId'];
                 }
@@ -118,10 +137,10 @@ class OAPI3 {
                 if(e.containsKey('schema') && e.containsKey('name')) {
                     if(e['schema'].containsKey('type')) {
                         if(e['schema']['type'] == 'string') {
-                            StringParameter new_param = buildStringPathParameter(e);
+                            StringParameter new_param = buildStringParameter(e);
                             path_parameters[e['name']] = new_param;
                         } else if(e['schema']['type'] == 'string') {
-                            IntegerParameter new_param = buildIntegerPathParameter(e);
+                            IntegerParameter new_param = buildIntegerParameter(e);
                             path_parameters[e['name']] = new_param;
                         }
                     }
@@ -132,9 +151,41 @@ class OAPI3 {
         return path_parameters;
     }
 
+    Map<String, dynamic> importQueryParameters(List<dynamic> params) {
+        //print("importQueryParameters()");
+        Map<String, dynamic> query_parameters = {};
+        if(params == null) {
+            return query_parameters;
+        }
+
+        for(Map e in params) {
+            if(e.containsKey(r'$ref')) {
+                List<String> elements = e[r'$ref'].split('/');
+                String param_key = elements[elements.length-1];
+                if(global_query_parameters.containsKey(param_key)) {
+                    query_parameters[param_key] = global_query_parameters[param_key];
+                }
+            } else {
+                if(e.containsKey('schema') && e.containsKey('name')) {
+                    if(e['schema'].containsKey('type')) {
+                        if(e['schema']['type'] == 'string') {
+                            StringParameter new_param = buildStringParameter(e);
+                            query_parameters[e['name']] = new_param;
+                        } else if(e['schema']['type'] == 'string') {
+                            IntegerParameter new_param = buildIntegerParameter(e);
+                            query_parameters[e['name']] = new_param;
+                        }
+                    }
+                }
+            }
+        }
+        //print("query_parameters=" + query_parameters.toString());
+
+        return query_parameters;
+    }
+
     void importGlobalParameters(Map params) {
         for(MapEntry e in params.entries) {
-            //print(">>>" + e.value.toString());
             if(e.value.containsKey('schema')) {
                 if(e.value['schema'].containsKey('type')) {
 
@@ -144,11 +195,11 @@ class OAPI3 {
                         // String Path Parameters
                         if(e.value.containsKey('in')) {
                             if(e.value['in'].toLowerCase() == 'path') {
-                                StringParameter param = buildStringPathParameter(e.value);
+                                StringParameter param = buildStringParameter(e.value);
                                 global_path_parameters[param.name] = param;
                             }
                             else if(e.value['in'].toLowerCase() == 'query') {
-                                StringParameter param = buildStringPathParameter(e.value);
+                                StringParameter param = buildStringParameter(e.value);
                                 global_query_parameters[param.name] = param;
                             }
                         }
@@ -159,11 +210,11 @@ class OAPI3 {
                         // Integer Path Parameters
                         if(e.value.containsKey('in')) {
                             if(e.value['in'].toLowerCase() == 'path') {
-                                IntegerParameter param = buildIntegerPathParameter(e.value);
+                                IntegerParameter param = buildIntegerParameter(e.value);
                                 global_path_parameters[param.name] = param;
                             }
                             else if(e.value['in'].toLowerCase() == 'query') {
-                                IntegerParameter param = buildIntegerPathParameter(e.value);
+                                IntegerParameter param = buildIntegerParameter(e.value);
                                 global_query_parameters[param.name] = param;
                             }
                         }
@@ -173,7 +224,7 @@ class OAPI3 {
         }
     }
 
-    StringParameter buildStringPathParameter(Map params) {
+    StringParameter buildStringParameter(Map params) {
 
         StringParameter new_param = StringParameter(params['name']);
 
@@ -202,7 +253,7 @@ class OAPI3 {
         return new_param;
     }
 
-    IntegerParameter buildIntegerPathParameter(Map params) {
+    IntegerParameter buildIntegerParameter(Map params) {
 
         IntegerParameter new_param = IntegerParameter(params['name']);
 

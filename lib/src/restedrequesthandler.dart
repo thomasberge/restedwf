@@ -678,7 +678,7 @@ class RestedResource {
   String uri_parameters = null;
 
   Map<String, dynamic> _uri_parameters_schemas = {};
-  Map<String, dynamic> _query_parameters_schemas = {};
+  Map<String, Map<String, dynamic>> _query_parameters_schemas = {};
 
   // Stores schemas for each HTTP method.
   Map schemas = Map<String, RestedSchema>();
@@ -699,6 +699,10 @@ class RestedResource {
 
   Map<String, dynamic> getRequestSchema = null;
 
+  Map<String, Map<String, dynamic>> getQueryParams() {
+    return _query_parameters_schemas;
+  }
+
   String validateUriParameters(Map<String, String> params) {
     for(MapEntry e in params.entries) {
       if(_uri_parameters_schemas.containsKey(e.key)) {
@@ -711,10 +715,12 @@ class RestedResource {
     return "OK";
   }
 
-  String validateQueryParameters(Map<String, String> params) {
+  String validateQueryParameters(String method, Map<String, String> params) {
+    method = method.toLowerCase();
     for(MapEntry e in params.entries) {
-      if(_query_parameters_schemas.containsKey(e.key)) {
-        String result = _query_parameters_schemas[e.key].validate(e.value);
+      print(e.key);
+      if(_query_parameters_schemas[method].containsKey(e.key)) {
+        String result = _query_parameters_schemas[method][e.key].validate(e.value);
         if(result != "OK") {
           return result;
         }
@@ -739,12 +745,12 @@ class RestedResource {
     _uri_parameters_schemas[schema.name] = schema;
   }
 
-  void addQueryParameters(Map<String, dynamic> new_schemas) {
-    _query_parameters_schemas = new_schemas;
+  void addQueryParameters(String method, Map<String, dynamic> new_schemas) {
+    _query_parameters_schemas[method] = new_schemas;
   }
 
-  void addQueryParameterSchema(dynamic schema) {
-    _query_parameters_schemas[schema.name] = schema;
+  void addQueryParameterSchema(String method, dynamic schema) {
+    _query_parameters_schemas[method][schema.name] = schema;
   }
 
   void invalid_token_redirect(String _url) {
@@ -941,8 +947,9 @@ class RestedResource {
   void doMethod(String method, RestedRequest request) async {
     String result = validateUriParameters(request.uri_parameters);
     if(result == "OK") {
-      result = validateQueryParameters(request.query_parameters);
+      result = validateQueryParameters(method, request.query_parameters);
     }
+    
 
     if(result != "OK") {
       request.response(data: "400 " + result.toString());
