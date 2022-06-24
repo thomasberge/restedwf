@@ -163,6 +163,10 @@ Each request received on a Resource will automatically contain a Map with the Pa
 
 Simple query parameters will be automatically parsed and URL decoded. They are available in the Map<String, dynamic> called query_parameters on the RestedRequest object. They are formatted as such: `https://www.yourmoviedb.com/movies?genre=action&year=1990`
 
+There is currently not support for Required Query Parameters. The endpoint will not yield bad request if query parameters that are not validated are sent, only when a key actually corresponds to the variable.
+
+For information on how to specify the parameters, look at the `URI/Path/Query Parameter validation` section further down in this document.
+
 ```dart
 get(RestedRequest request) {
   if(request.query_parameters['genre'] == 'action') {
@@ -450,7 +454,7 @@ bool RestedSchema.isNumeric(String inputvalue);
 
 ```
 
-#### URI/PathParameter validation
+#### URI/Path/Query Parameter validation
 
 URI parameters are made from objects for each specific type (string/integer/number etc.) although currently only String and Integers are implemented. You start by creating a `StringParameter` og `IntegerParameter` object with a name (key). You can then set various properties to this object before passing it to one or more RestedResources through the `addUriParameterSchema(dynamic schema)` function. You may call the object whatever you want, but the `.name` property of the object used when instantiating it must be equal to the PathParam. Below you can see a user_id StringParameter being created with uuid format constrains and passed to the RestedResource.
 
