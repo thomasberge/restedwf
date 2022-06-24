@@ -1,3 +1,5 @@
+library rested.database;
+
 import 'package:postgres/postgres.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -9,6 +11,34 @@ Future<QueryResults> qr_query(String querystring) async {
     return QueryResults(result);
 }
 */
+
+DatabaseManager rdb = DatabaseManager();
+
+class DatabaseManager {
+
+    RestedDatabaseConnection con = RestedDatabaseConnection();
+    DatabaseManager();
+
+    Map<String, RestedTableSchema> tables = {};
+
+    void addTable(String name, RestedTableSchema schema) {
+        tables[name] = schema;
+    }
+
+    void loadTable() {
+
+    }
+
+    Future<List<Map<String, dynamic>>> getRow(String table, String where) async {
+        if(tables.containsKey(table) == false) {
+            print("Error, tried to access table '" + table + "' which isn't loaded.");
+            return [{}];
+        }
+
+        List<List<dynamic>> db_response = await con.query('SELECT * FROM ' + table + " WHERE " + where);
+        return tables[table].getArray(db_response);
+    }
+}
 
 Map<String, String> envVars = Platform.environment;
 
