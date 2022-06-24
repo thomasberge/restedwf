@@ -10,11 +10,11 @@ The source is being developed on a private repo. I will update this repo from ti
 
 ### 0.5.3 Main changes
 
-- URI/PathParameter validation implementation now in place. See documentation for usage. Support made for Strings and Integers.
+- URI/Path/Query Parameter validation implementation now in place. See documentation for usage. Support made for Strings and Integers.
 - Both Global and Path URI parameters of type String and Integer are now imported from OpenAPI 3.1.
+- Both Global and Method Query parameters of type String and Integer are now imported from OpenAPI 3.1.
 - RestedRequest now has a handy check method for claims, session, header and URI Parameters. See documentation for details.
 - JWT tokens that are not valid will just be removed from the request instead of returning 401 directly. Now the request is sent to the resource (or stopped just before if there is a valid token required).
-- Added automatic parsing of simple key/value query parameters in RestedRequest. Simply access them directly from the request.query_parameters map (Map<String, dynamic>). See documentation for details.
 - Bugfix: StackOverflow in RestedSchema pattern functions fixed.
 
 ### Features
