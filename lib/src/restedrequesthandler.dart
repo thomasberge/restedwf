@@ -332,8 +332,9 @@ class RestedRequestHandler {
   // Multipart formdata
   // file not supported yet, only works on text
   // https://ec.haxx.se/http/http-multipart
-  Map<String, dynamic> multipartFormDataToBodyMap(
-      String typeHeader, String data) {
+  Map<String, dynamic> multipartFormDataToBodyMap(String typeHeader, String data) {
+    print("typeHeader=" + typeHeader.toString());
+    print("data=" + data.toString());
     Map<String, dynamic> bodymap = new Map();
 
     String boundary = typeHeader.split('boundary=')[1];

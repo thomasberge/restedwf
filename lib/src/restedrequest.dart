@@ -76,6 +76,7 @@ class RestedRequest {
   Map<String, String> uri_parameters = {};
   Map<String, String> query_parameters = {};
   Map<String, dynamic> restedresponse = {};
+  Map<String, dynamic> form = {};
 
   bool checkSession(String key, dynamic value) {
     if(session.containsKey(key)) {
