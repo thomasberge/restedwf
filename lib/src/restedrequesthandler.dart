@@ -256,7 +256,8 @@ class RestedRequestHandler {
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
       String urldecoded = Uri.decodeComponent(urlencoded);
-      Map body = urlencodedFormToBodyMap(urldecoded);
+      Map<String, dynamic> body = urlencodedFormToBodyMap(urldecoded);
+      request.form = body;
       request.setBody(body);
 
     } else if (type.contains("multipart/form-data")) {
@@ -374,8 +375,7 @@ class RestedRequestHandler {
   // This can potentially lead to &/¤#-ups so a method to check if there is a singular
   // root element "body" should replace this garbage.
   Map urlencodedFormToBodyMap(String urlencoded) {
-    print("urlencodedForm=" + urlencoded.toString());
-    Map bodymap = new Map();
+    Map<String, dynamic> bodymap = {};
     if (urlencoded == null || urlencoded == "") {
       return bodymap;
     } else {
