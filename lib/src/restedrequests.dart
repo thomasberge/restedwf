@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:async';
 
 class RestedRequests {
+
     RestedRequests();
 
     static Future<dynamic> get(String _url, { Map<String, String> headers = const {}, String data = ""}) async {
@@ -22,7 +23,10 @@ class RestedRequests {
     }
 
     static Future<dynamic> _doRequest(String _method, String _url, Map<String, String> _headers, String _data) async {
+
         HttpClient client = new HttpClient();
+        Map<String, dynamic> responseobj = {};
+        
         if(_url.substring(0,4) != "http") {
             _url = "http://" + _url;
         } 
@@ -54,7 +58,9 @@ class RestedRequests {
         HttpClientResponse response = await request.close();
 
         var data = await _readResponse(response);
-        return data;
+        responseobj["data"] = data;
+        responseobj["status"] = response.statusCode;
+        return responseobj;
         //});
         //data = data + result;
         //return data;
