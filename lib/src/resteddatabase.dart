@@ -19,15 +19,20 @@ class DatabaseManager {
     RestedDatabaseConnection con = RestedDatabaseConnection();
     DatabaseManager();
 
-    Map<String, RestedTableSchema> tables = {};
+    Map<String, RestedTable> tables = {};
 
-    void addTable(String name, RestedTableSchema schema) {
+    void addTable(String name, RestedTable schema) {
         tables[name] = schema;
     }
 
     void loadTable() {
 
     }
+
+    Future<List<List<dynamic>>> query(String querystring) async {
+        return await con.query(querystring);
+    }
+
 
     Future<List<Map<String, dynamic>>> getRow(String table, String where) async {
         if(tables.containsKey(table) == false) {
@@ -105,10 +110,10 @@ class RestedDatabaseConnection {
     }
 }
 
-class RestedTableSchema {
+class RestedTable {
     List<String> columnNames = [];
 
-    RestedTableSchema(this.columnNames);
+    RestedTable(this.columnNames);
 
     Map<String, dynamic> columnToMap(List<dynamic> resultColumn, {List<String> returning, List<String> excluding}) {
         Map<String, dynamic> result = {};
