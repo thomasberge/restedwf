@@ -76,13 +76,16 @@ class RestedDatabaseConnection {
     Future<List<List<dynamic>>> postgres_query(String querystring) async {
         var connection = PostgreSQLConnection(_hostname, _port, _database, username: _username, password: _password);
         await connection.open();
-        return await connection.query(querystring);
+        List<List<dynamic>> result = await connection.query(querystring);
+        connection.close();
+        return result;
     }
 
     Future<bool> postgres_exists(String querystring) async {
         var connection = PostgreSQLConnection(_hostname, _port, _database, username: _username, password: _password);
         await connection.open();
         List<List<dynamic>> result = await connection.query("SELECT COUNT(*) FROM " + querystring);
+        connection.close();
         if(result[0][0] == 0) {
             return false;
         } else {
