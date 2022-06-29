@@ -720,6 +720,9 @@ class RestedResource {
   }
 
   String validateQueryParameters(String method, Map<String, String> params) {
+    if(_query_parameters_schemas.length < 1) {
+      return "NO QUERY PARAMETERS DEFINED";
+    }
     method = method.toLowerCase();
     for(MapEntry e in params.entries) {
       print(e.key);
