@@ -16,6 +16,7 @@ The source is being developed on a private repo. I will update this repo from ti
 - RestedRequest now has a handy check method for claims, session, header and URI Parameters. See documentation for details.
 - JWT tokens that are not valid will just be removed from the request instead of returning 401 directly. Now the request is sent to the resource (or stopped just before if there is a valid token required).
 - Bugfix: StackOverflow in RestedSchema pattern functions fixed.
+- Bugfix: Validation crash if _query_parameter_schemas were empty.
 
 ### Features
 
