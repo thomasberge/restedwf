@@ -44,10 +44,18 @@ class RestedRequests {
                 if(_headers["Content-Type"].contains("application/json")) {
                     String jsondata = json.encode(_data);
                     List<int> bytes = utf8.encode(jsondata);
-                    request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);                                
+                    request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
                     await request.write(jsondata);
 
+                } else if (_headers["Content-Type"].contains("text/plain")) {
+                    print("RestedRequests text/plain data=" + _data.toString());
+                    List<int> bytes = utf8.encode(_data);
+                    request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
+                    await request.write(_data);    
                 } else {
+                    print("RestedRequests defaulting to text/plain data=" + _data.toString());
+                    List<int> bytes = utf8.encode(_data);
+                    request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
                     await request.write(_data);    
                 }
             } else {
