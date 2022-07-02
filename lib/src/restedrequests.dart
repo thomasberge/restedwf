@@ -45,21 +45,21 @@ class RestedRequests {
                     String jsondata = json.encode(_data);
                     List<int> bytes = utf8.encode(jsondata);
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
-                    String encoded_data = Uri.encodeFull(jsondata);
-                    await request.write(encoded_data);
+                    //String encoded_data = Uri.encodeFull(jsondata);
+                    await request.write(jsondata);
 
                 } else if (_headers["Content-Type"].contains("text/plain")) {
                     print("RestedRequests text/plain data=" + _data.toString());
                     List<int> bytes = utf8.encode(_data);
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
-                    String encoded_data = Uri.encodeFull(_data);
-                    await request.write(encoded_data);    
+                    //String encoded_data = Uri.encodeFull(_data);
+                    await request.write(_data);    
                 } else {
                     print("RestedRequests defaulting to text/plain data=" + _data.toString());
                     List<int> bytes = utf8.encode(_data);
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
-                    String encoded_data = Uri.encodeFull(_data);
-                    await request.write(encoded_data);    
+                    //String encoded_data = Uri.encodeFull(_data);
+                    await request.write(_data);    
                 }
             } else {
                 await request.write(_data);
