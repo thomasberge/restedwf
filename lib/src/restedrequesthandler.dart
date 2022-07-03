@@ -255,8 +255,9 @@ class RestedRequestHandler {
 
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
+      request.raw = urlencoded;
       print(":::: URLENCODED " + urlencoded.toString());
-      String urldecoded = Uri.decodeComponent(urlencoded);
+      String urldecoded = Uri.decodeFull(urlencoded);
       print(":::: URLDECODED " + urldecoded.toString());
       Map<String, dynamic> body = urlencodedFormToBodyMap(urldecoded);
       request.form = body;
