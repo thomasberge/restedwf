@@ -228,6 +228,7 @@ class RestedRequestHandler {
     if (type.contains("application/json")) {
       Map jsonmap = {};
       String jsonstring = await utf8.decoder.bind(incomingRequest).join();
+      request.raw = jsonstring;
 
       // dirty trick to manually change a json sent as string to a parsable string. Unelegant af
       if(jsonstring.length > 0) {
@@ -265,12 +266,14 @@ class RestedRequestHandler {
 
     } else if (type.contains("multipart/form-data")) {
       String data = await utf8.decoder.bind(incomingRequest).join();
+      request.raw = data;
       Map body = multipartFormDataToBodyMap(type.toString(), data);
       request.text = data;
       request.setBody(body);
 
     } else if (type.contains("text/plain")) {
       String data = await utf8.decoder.bind(incomingRequest).join();
+      request.raw = data;
       request.text = data;
 
     } else {
@@ -378,6 +381,7 @@ class RestedRequestHandler {
   // This can potentially lead to &/¤#-ups so a method to check if there is a singular
   // root element "body" should replace this garbage.
   Map urlencodedFormToBodyMap(String urlencoded) {
+    print("SPLITTING URLENCODED:" + urlencoded);
     Map<String, dynamic> bodymap = {};
     if (urlencoded == null || urlencoded == "") {
       return bodymap;
