@@ -255,7 +255,9 @@ class RestedRequestHandler {
 
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
+      print(":::: URLENCODED " + urlencoded.toString());
       String urldecoded = Uri.decodeComponent(urlencoded);
+      print(":::: URLDECODED " + urldecoded.toString());
       Map<String, dynamic> body = urlencodedFormToBodyMap(urldecoded);
       request.form = body;
       request.setBody(body);
@@ -334,15 +336,12 @@ class RestedRequestHandler {
   // file not supported yet, only works on text
   // https://ec.haxx.se/http/http-multipart
   Map<String, dynamic> multipartFormDataToBodyMap(String typeHeader, String data) {
-    print("___________________________________________________");
     print("typeHeader=" + typeHeader.toString());
     print("data=" + data.toString());
     Map<String, dynamic> bodymap = new Map();
 
     String boundary = typeHeader.split('boundary=')[1];
     boundary = boundary.substring(0, boundary.length - 1);
-
-    print("boundary >" + boundary + "<");
 
     List<String> form = data.split(boundary);
     for (String item in form) {
@@ -370,7 +369,6 @@ class RestedRequestHandler {
         bodymap[name] = value;
       }
     }
-    print("bodymap=" + bodymap.toString());
     return bodymap;
   }
 
