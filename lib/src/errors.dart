@@ -54,7 +54,7 @@ class Errors {
         511: "Network Authentication Required"
     };
 
-    void raise(RestedRequest request, int statuscode) async {
+    static void raise(RestedRequest request, int statuscode) async {
     request.request.response.statusCode = statuscode;
     await request.request.response.write(errorjson[statuscode].toString());
     request.request.response.close();

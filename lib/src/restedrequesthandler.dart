@@ -24,12 +24,13 @@ import 'restedschema.dart';
 import 'errors.dart';
 import 'openapi3.dart';
 import 'external.dart';
+import 'contenttype.dart';
 
 Function _custom_JWT_verification;
 SessionManager manager;
 String rootDirectory = null;
 String resourcesDirectory = null;
-Errors error_handler = Errors();
+//Errors error_handler = Errors();
 
 void saveSession(RestedRequest request) {
   if (request.session.containsKey('id')) {
@@ -188,7 +189,7 @@ class RestedRequestHandler {
             if (valid_auths.contains(authtype[0].toUpperCase())) {
               unverified_access_token = authtype[1];
             } else {
-              error_handler.raise(request, 400);
+              Errors.raise(request, 400);
               return;
             }
           }
@@ -211,7 +212,7 @@ class RestedRequestHandler {
 
       } on Exception catch (e) {
         console.error(e.toString());
-        error_handler.raise(request, 400);
+        Errors.raise(request, 400);
         return;
       }
     }
@@ -226,41 +227,15 @@ class RestedRequestHandler {
     List<String> type = incomingRequest.headers.contentType.toString().split(';');
 
     if (type.contains("application/json")) {
-      Map jsonmap = {};
-      String jsonstring = await utf8.decoder.bind(incomingRequest).join();
-      request.raw = jsonstring;
-
-      // dirty trick to manually change a json sent as string to a parsable string. Unelegant af
-      if(jsonstring.length > 0) {
-        if(jsonstring.substring(0,1) == '"') {
-          jsonstring = jsonstring.substring(1, jsonstring.length -1);
-          jsonstring = jsonstring.replaceAll(r'\"', '"');
-        }
-
-        try {
-          jsonmap = json.decode(jsonstring);
-        } catch(e) {
-          print("--- error:" + e.toString());
-          error_handler.raise(request, 400);
-          return;
-        }
-
-        // some clients wrap body in a body-block. If this is the case here then the content of the
-        // body block is extracted to become the new body.
-        if (jsonmap.containsKey("body")) {
-          jsonmap = jsonmap['body'];
-        }        
-      }
-
-      request.setBody(jsonmap);
+      request = await receive_application_json(request);
 
     } else if (type.contains("application/x-www-form-urlencoded")) {
       String urlencoded = await utf8.decoder.bind(incomingRequest).join();
       request.raw = urlencoded;
       print(":::: URLENCODED " + urlencoded.toString());
-      String urldecoded = Uri.decodeComponent(urlencoded);
-      print(":::: URLDECODED " + urldecoded.toString());
-      Map<String, dynamic> body = urlencodedFormToBodyMap(urldecoded);
+      //String urldecoded = Uri.decodeComponent(urlencoded);
+      //print(":::: URLDECODED " + urldecoded.toString());
+      Map<String, dynamic> body = urlencodedFormToBodyMap(urlencoded);
       request.form = body;
       request.setBody(body);
 
@@ -286,7 +261,7 @@ class RestedRequestHandler {
     }
 
     if (request.body == null) {
-        error_handler.raise(request, 400);
+        Errors.raise(request, 400);
         return;
     }
 
@@ -386,6 +361,9 @@ class RestedRequestHandler {
     if (urlencoded == null || urlencoded == "") {
       return bodymap;
     } else {
+      //List<String>
+
+      
       List<String> pairs = urlencoded.split('&');
       pairs.forEach((pair) {
         List<String> variable = pair.split('=');
