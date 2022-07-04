@@ -59,7 +59,7 @@ class CookieCollection {
 class RestedRequest {
   String hostAddress;
   int hostPort;
-  
+  String content_type = "text";   // text, json, xml, form, binary
   int status = 0;
   String error = "";
   bool deleteSession = false;
@@ -325,3 +325,4 @@ class RestedRequest {
     }
   }
 }
+

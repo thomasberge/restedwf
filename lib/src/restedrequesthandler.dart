@@ -217,54 +217,14 @@ class RestedRequestHandler {
       }
     }
 
-    // 3 --- Identify the contentType so we can create the body map of the request correctly.
-
-    // Splitting as a list in order to check each element instead of doing a literal.
-    // Example: application/json; charset=utf-8
-    // Each bodymap conversion function should return NULL if conversion fails for some reason.
-    // If the data is empty however it should return an empty map.
+    // 3 ---  Download whatever data is related to the Content-Type and parse it to their respective
+    //        request data fields. If an error was raised (meaning the response has already been sent)
+    //        then we simply return.
+    request = await receive_content(request);
+    if(request.status > 399) {
+      return;
+    }
     
-    List<String> type = incomingRequest.headers.contentType.toString().split(';');
-
-    if (type.contains("application/json")) {
-      request = await receive_application_json(request);
-
-    } else if (type.contains("application/x-www-form-urlencoded")) {
-      String urlencoded = await utf8.decoder.bind(incomingRequest).join();
-      request.raw = urlencoded;
-      print(":::: URLENCODED " + urlencoded.toString());
-      //String urldecoded = Uri.decodeComponent(urlencoded);
-      //print(":::: URLDECODED " + urldecoded.toString());
-      Map<String, dynamic> body = urlencodedFormToBodyMap(urlencoded);
-      request.form = body;
-      request.setBody(body);
-
-    } else if (type.contains("multipart/form-data")) {
-      String data = await utf8.decoder.bind(incomingRequest).join();
-      request.raw = data;
-      Map body = multipartFormDataToBodyMap(type.toString(), data);
-      request.text = data;
-      request.setBody(body);
-
-    } else if (type.contains("text/plain")) {
-      String data = await utf8.decoder.bind(incomingRequest).join();
-      request.raw = data;
-      request.text = data;
-
-    } else {
-      if (type.toString() != "[null]") {
-      String data = await utf8.decoder.bind(incomingRequest).join();
-      Map body = {};
-      request.setBody(body);
-        console.alert("UNSUPPORTED HEADER TYPE: " + type.toString());
-      }
-    }
-
-    if (request.body == null) {
-        Errors.raise(request, 400);
-        return;
-    }
-
     // 4 --- ?
 
     // Creates the RestedRequest first. If the exception error code is set to 401 Token Expired
@@ -308,73 +268,6 @@ class RestedRequestHandler {
         console.debug("Resource not found at endpoint " + request.path);
         request.response(data: "404 error somethingsomething");
       }
-    }
-  }
-
-  // Multipart formdata
-  // file not supported yet, only works on text
-  // https://ec.haxx.se/http/http-multipart
-  Map<String, dynamic> multipartFormDataToBodyMap(String typeHeader, String data) {
-    print("typeHeader=" + typeHeader.toString());
-    print("data=" + data.toString());
-    Map<String, dynamic> bodymap = new Map();
-
-    String boundary = typeHeader.split('boundary=')[1];
-    boundary = boundary.substring(0, boundary.length - 1);
-
-    List<String> form = data.split(boundary);
-    for (String item in form) {
-      if (item.contains("Content-Disposition")) {
-        List<String> split = item.split('name="');
-        List<String> split2 = split[1].split('"');
-        String name = split2[0];
-
-        LineSplitter ls = new LineSplitter();
-        List<String> lines = ls.convert(split2[1]);
-
-        // First two are always blank. Last is always two dashes. We remove those and
-        // are left with a multiline-supported thingamajiggy
-        lines.removeAt(0);
-        lines.removeAt(0);
-        lines.removeLast();
-        String value = "";
-        if (lines.length > 1) {
-          for (String line in lines) {
-            value = value + line + '\n';
-          }
-        } else {
-          value = lines[0];
-        }
-        bodymap[name] = value;
-      }
-    }
-    return bodymap;
-  }
-
-  // Grab urlencoded variables and convert to Map. If it contains a key 'body' then
-  // most likely the structure is body { <data> }. Extract the data and set it as body.
-  // This can potentially lead to &/¤#-ups so a method to check if there is a singular
-  // root element "body" should replace this garbage.
-  Map urlencodedFormToBodyMap(String urlencoded) {
-    print("SPLITTING URLENCODED:" + urlencoded);
-    Map<String, dynamic> bodymap = {};
-    if (urlencoded == null || urlencoded == "") {
-      return bodymap;
-    } else {
-      //List<String>
-
-      
-      List<String> pairs = urlencoded.split('&');
-      pairs.forEach((pair) {
-        List<String> variable = pair.split('=');
-        bodymap[variable[0]] = variable[1];
-      });
-
-      if (bodymap.containsKey("body")) {
-        bodymap = bodymap['body'];
-      }
-
-      return bodymap;
     }
   }
 

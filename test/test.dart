@@ -140,7 +140,13 @@ class Root extends RestedResource {
 
 class Login extends RestedResource {
   void get(RestedRequest request) async {
-      request.response(data: "login");
+      String loginpage = '<html><form action="/login" method="POST"><label for="username">Username:</label><br><input type="text" id="username" name="username"><br><label for="password">Password:</label><br><input type="password" id="password" name="password"><br><br><input type="submit" value="Submit"></form></html>';
+      request.response(type: "html", data: loginpage);
+  }
+
+  void post(RestedRequest request) async {
+    print(request.form.toString());
+    request.redirect('/login');
   }
 }
 
