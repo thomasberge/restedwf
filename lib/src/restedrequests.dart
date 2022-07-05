@@ -53,9 +53,10 @@ class RestedRequests {
         }
 
         if(_data != "") {
+
             if(_headers.containsKey("Content-Type")) {
                 if(_headers["Content-Type"].contains("application/json")) {
-                    String jsondata = json.encode(_json);
+                    String jsondata = json.encode(_data);
                     List<int> bytes = utf8.encode(jsondata);
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
                     await request.write(jsondata);
