@@ -6,23 +6,23 @@ class RestedRequests {
 
     RestedRequests();
 
-    static Future<dynamic> get(String _url, { Map<String, String> headers = const {}, String data = ""}) async {
-        return await _doRequest("GET", _url, headers, data);
+    static Future<dynamic> get(String _url, { Map<String, String> headers = const {}, String data = "", String json = "", String text = "", String auth = ""}) async {
+        return await _doRequest("GET", _url, headers, data, json, text, auth);
     }
 
-    static Future<dynamic> post(String _url, { Map<String, String> headers = const {}, String data = ""}) async {
-        return await _doRequest("POST", _url, headers, data);
+    static Future<dynamic> post(String _url, { Map<String, String> headers = const {}, String data = "", String json = "", String text = "", String auth = ""}) async {
+        return await _doRequest("POST", _url, headers, data, json, text, auth);
     }
 
-    static Future<dynamic> put(String _url, { Map<String, String> headers = const {}, String data = ""}) async {
-        return await _doRequest("PUT", _url, headers, data);
+    static Future<dynamic> put(String _url, { Map<String, String> headers = const {}, String data = "", String json = "", String text = "", String auth = ""}) async {
+        return await _doRequest("PUT", _url, headers, data, json, text, auth);
     }
 
-    static Future<dynamic> delete(String _url, { Map<String, String> headers = const {}, String data = ""}) async {
-        return await _doRequest("DELETE", _url, headers, data);
+    static Future<dynamic> delete(String _url, { Map<String, String> headers = const {}, String data = "", String json = "", String text = "", String auth = ""}) async {
+        return await _doRequest("DELETE", _url, headers, data, json, text, auth);
     }
 
-    static Future<dynamic> _doRequest(String _method, String _url, Map<String, String> _headers, String _data) async {
+    static Future<dynamic> _doRequest(String _method, String _url, Map<String, String> _headers, String _data, String _json, String _text, String _auth) async {
 
         HttpClient client = new HttpClient();
         Map<String, dynamic> responseobj = {};
@@ -37,18 +37,24 @@ class RestedRequests {
             request.headers.add(header.key, header.value);
         }
 
-        // Currently only writes JSON format or defaults to standard text
-        if(_data != "") {
+        if(_auth != "") {
+            if(_headers.containsKey('Authorization') == false) {
+                _headers['Authorization'] = _auth;
+            }
+        }
+
+        if(json != "") {
+            if(_headers.containsKey('Content-Type') == false) {
+                _headers['Content-Type'] = 'application/json';
+            }
+            String jsondata = json.encode(_json);
+            List<int> bytes = utf8.encode(jsondata);
+            request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
+            await request.write(jsondata);
+        } else if(_data != "") {
             if(_headers.containsKey("Content-Type")) {
 
-                if(_headers["Content-Type"].contains("application/json")) {
-                    String jsondata = json.encode(_data);
-                    List<int> bytes = utf8.encode(jsondata);
-                    request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
-                    //String encoded_data = Uri.encodeFull(jsondata);
-                    await request.write(jsondata);
-
-                } else if (_headers["Content-Type"].contains("text/plain")) {
+                if(_headers["Content-Type"].contains("text/plain")) {
                     print("RestedRequests text/plain data=" + _data.toString());
                     List<int> bytes = utf8.encode(_data);
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
@@ -123,6 +129,14 @@ class RestedRequests {
         
 
         return "";
+    }
+
+    static Map<String, String> _copyHeaders(Map<String, String> headers) {
+        Map<String, String> modified_headers = {};
+        for(MapEntry e in headers.entries) {
+            modified_headers[e.key] = e.value.toString();
+        }
+        return modified_headers;
     }
 
     static String _getResponseHandling(String _contentType) {

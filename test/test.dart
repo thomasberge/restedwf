@@ -107,10 +107,9 @@ class GetPage extends RestedResource {
 
 class JsonTest extends RestedResource {
   void get(RestedRequest request) async {
-    Map<String, String> _headers = { "Content-Type": "application/json" };
     Map<String, dynamic> _data = { "SomeKey": "SomeValue", "AnotherKey": 14, "YetAnotherKey": true };
-    String result = await RestedRequests.post("http://0.0.0.0/json", headers: _headers, data: json.encode(_data));
-    Map resultmap = json.decode(result);
+    Map result = await RestedRequests.post("http://0.0.0.0/json", json: json.encode(_data));
+    Map resultmap = json.decode(result['data']);
     request.response(data: resultmap["AnotherKey"].toString());
   }
 
