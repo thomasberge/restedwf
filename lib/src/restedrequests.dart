@@ -52,7 +52,7 @@ class RestedRequests {
             }
             _data = _json;
         }
-
+        print("_data 1:-->" + _data.toString());
         if(_data != "") {
             if(_headers.containsKey("Content-Type")) {
                 if(_headers["Content-Type"].contains("application/json")) {
@@ -62,6 +62,7 @@ class RestedRequests {
                     request.headers.add(HttpHeaders.contentTypeHeader, 'application/json');
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
                     print("writing " + jsondata.toString());
+                    print("jsondata 1:-->" + jsondata.toString());
                     await request.write(jsondata);
                 } else if(_headers["Content-Type"].contains("text/plain")) {
                     print("RestedRequests text/plain data=" + _data.toString());
