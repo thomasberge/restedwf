@@ -55,10 +55,12 @@ class RestedRequests {
         if(_data != "") {
             if(_headers.containsKey("Content-Type")) {
                 if(_headers["Content-Type"].contains("application/json")) {
+                    print("preparing to send " + _data.toString());
                     String jsondata = json.encode(_data);
                     List<int> bytes = utf8.encode(jsondata);
                     request.headers.add(HttpHeaders.contentTypeHeader, 'application/json');
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
+                    print("writing " + jsondata.toString());
                     await request.write(jsondata);
                 } else if(_headers["Content-Type"].contains("text/plain")) {
                     print("RestedRequests text/plain data=" + _data.toString());
