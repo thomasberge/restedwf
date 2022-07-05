@@ -67,7 +67,8 @@ Future<RestedRequest> receive_content(RestedRequest request) async {
 }
 
 Future<RestedRequest> receive_application_json(RestedRequest request) async {
-    String jsonstring = await utf8.decoder.bind(request.request).join();
+    //String jsonstring = await utf8.decoder.bind(request.request).join();
+    String jsonstring = "";
     request.raw = jsonstring;
     print("1: " + jsonstring.toString());
     
