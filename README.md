@@ -329,6 +329,9 @@ Map<String, dynamic> _data = { "username": login_username, "password": login_pas
 String result = await RestedRequests.post('http://api.something.com/login', headers: _headers, data: json.encode(_data));
 ```
 
+Use `json` instead of `data` and the content-type header is set automatically. Add whatever data to the `auth` named parameter and it will be set in the Authorization header.
+
+
 #### Handling HTTP errors
 
 In case you want to raise a HTTP error from within a HTTP method you need to have instantiated an Errors object. Pass the request object as well as the error code, and a response will be sent back to the client. It is imperative that you then use the return statement, or else the rest of your code will be run.
