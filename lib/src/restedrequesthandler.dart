@@ -220,11 +220,12 @@ class RestedRequestHandler {
     // 3 ---  Download whatever data is related to the Content-Type and parse it to their respective
     //        request data fields. If an error was raised (meaning the response has already been sent)
     //        then we simply return.
+    request.dump();
     request = await receive_content(request);
     if(request.status > 399) {
       return;
     }
-    
+
     // 4 --- ?
 
     // Creates the RestedRequest first. If the exception error code is set to 401 Token Expired

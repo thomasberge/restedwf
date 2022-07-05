@@ -79,6 +79,30 @@ class RestedRequest {
   Map<String, dynamic> form = {};
   String raw = "";
 
+  void dump() {
+    print("hostAddress:" + hostAddress.toString());
+    print("hostPort:" + hostPort.toString());
+    print("content_type:" + content_type.toString());
+    print("status:" + status.toString());
+    print("error:" + error.toString());
+    print("deleteSession:" + deleteSession.toString());
+    print("request:" + request.toString());
+    print("method:" + method.toString());
+    print("path:" + path.toString());
+    print("access_token:" + access_token.toString());
+    print("body:" + body.toString());
+    print("text:" + text.toString());
+    print("cookies:" + cookies.toString());
+    print("session:" + session.toString());
+    print("headers:" + headers.toString());
+    print("claims:" + claims.toString());
+    print("uri_parameters:" + uri_parameters.toString());
+    print("query_parameters:" + query_parameters.toString());
+    print("restedresponse:" + restedresponse.toString());
+    print("form:" + form.toString());
+    print("raw:" + raw.toString());
+  }
+
   bool checkSession(String key, dynamic value) {
     if(session.containsKey(key)) {
       if(session[key] == value) {
