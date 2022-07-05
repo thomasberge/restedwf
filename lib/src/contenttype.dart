@@ -53,6 +53,8 @@ Map<String, Function> content_types = {
 };
 
 Future<RestedRequest> receive_content(RestedRequest request) async {
+    String jsonstring = await utf8.decoder.bind(request.request).join();
+    print("0:" + jsonstring.toString());
     List<String> temp = request.request.headers.contentType.toString().split(';');
     String type = temp[0].toString();
     if(content_types.containsKey(type)) {
