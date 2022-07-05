@@ -11,6 +11,7 @@ class RestedRequests {
     }
 
     static Future<dynamic> post(String _url, { Map<String, String> headers = const {}, String data = "", String json = "", String text = "", String auth = ""}) async {
+        print("POST-->" + data.toString());
         return await _doRequest("POST", _url, headers, data, json, text, auth);
     }
 
@@ -23,7 +24,7 @@ class RestedRequests {
     }
 
     static Future<dynamic> _doRequest(String _method, String _url, Map<String, String> _const_headers, String _data, String _json, String _text, String _auth) async {
-
+        print("_doRequest-->" + _data.toString());
         Map<String, String> _headers = _copyHeaders(_const_headers);
 
         HttpClient client = new HttpClient();
