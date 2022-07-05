@@ -22,7 +22,9 @@ class RestedRequests {
         return await _doRequest("DELETE", _url, headers, data, json, text, auth);
     }
 
-    static Future<dynamic> _doRequest(String _method, String _url, Map<String, String> _headers, String _data, String _json, String _text, String _auth) async {
+    static Future<dynamic> _doRequest(String _method, String _url, Map<String, String> _const_headers, String _data, String _json, String _text, String _auth) async {
+
+        Map<String, String> _headers = _copyHeaders(_const_headers);
 
         HttpClient client = new HttpClient();
         Map<String, dynamic> responseobj = {};
@@ -43,18 +45,20 @@ class RestedRequests {
             }
         }
 
-        if(json != "") {
-            if(_headers.containsKey('Content-Type') == false) {
+        if(json != null) {
+            if(_headers.containsValue('application/json') == false) {
                 _headers['Content-Type'] = 'application/json';
             }
-            String jsondata = json.encode(_json);
-            List<int> bytes = utf8.encode(jsondata);
-            request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
-            await request.write(jsondata);
-        } else if(_data != "") {
-            if(_headers.containsKey("Content-Type")) {
+        }
 
-                if(_headers["Content-Type"].contains("text/plain")) {
+        if(_data != "") {
+            if(_headers.containsKey("Content-Type")) {
+                if(_headers["Content-Type"].contains("application/json")) {
+                    String jsondata = json.encode(_json);
+                    List<int> bytes = utf8.encode(jsondata);
+                    request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
+                    await request.write(jsondata);
+                } else if(_headers["Content-Type"].contains("text/plain")) {
                     print("RestedRequests text/plain data=" + _data.toString());
                     List<int> bytes = utf8.encode(_data);
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
