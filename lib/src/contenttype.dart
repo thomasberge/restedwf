@@ -67,6 +67,7 @@ Future<RestedRequest> receive_content(RestedRequest request) async {
 Future<RestedRequest> receive_application_json(RestedRequest request) async {
     String jsonstring = await utf8.decoder.bind(request.request).join();
     request.raw = jsonstring;
+    print("1: " + jsonstring.toString());
     
     // dirty trick to manually change a json sent as string to a parsable string. Unelegant af
     Map jsonmap = {};
@@ -90,7 +91,7 @@ Future<RestedRequest> receive_application_json(RestedRequest request) async {
           jsonmap = jsonmap['body'];
         }        
     }
-
+        print("2: " + jsonmap.toString());
       request.setBody(jsonmap);
     return request;
 }
