@@ -48,6 +48,7 @@ class RestedRequests {
         if(json != null) {
             if(_headers.containsValue('application/json') == false) {
                 _headers['Content-Type'] = 'application/json';
+                request.headers.add(HttpHeaders.contentTypeHeader, 'application/json');
             }
             _data = _json;
         }
@@ -56,8 +57,9 @@ class RestedRequests {
 
             if(_headers.containsKey("Content-Type")) {
                 if(_headers["Content-Type"].contains("application/json")) {
-                    String jsondata = json.encode(_data);
-                    List<int> bytes = utf8.encode(jsondata);
+                    //String jsondata = json.encode(_data);
+                    print("_data=" + _data.toString());
+                    List<int> bytes = utf8.encode(_data);
                     request.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
                     await request.write(jsondata);
                 } else if(_headers["Content-Type"].contains("text/plain")) {
