@@ -50,7 +50,7 @@ class RestedRequests {
             if(_headers.containsValue('application/json') == false) {
                 _headers['Content-Type'] = 'application/json';
             }
-            _data = _json;
+            //_data = _json;
         }
         print("_data 1:-->" + _data.toString());
         if(_data != "") {

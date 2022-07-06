@@ -133,7 +133,6 @@ class RestedRequestHandler {
 
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
     RestedRequest request = new RestedRequest(incomingRequest, address, port);
-    request.dump();
 
     // Decrypts the session id and sets the session data in the request
     if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
