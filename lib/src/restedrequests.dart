@@ -24,7 +24,6 @@ class RestedRequests {
     }
 
     static Future<dynamic> _doRequest(String _method, String _url, Map<String, String> _const_headers, String _data, String _json, String _text, String _auth) async {
-        print("_doRequest-->" + _data.toString());
         Map<String, String> _headers = _copyHeaders(_const_headers);
 
         HttpClient client = new HttpClient();
@@ -46,13 +45,12 @@ class RestedRequests {
             }
         }
 
-        if(json != "") {
+        /*if(json != "") {
             if(_headers.containsValue('application/json') == false) {
                 _headers['Content-Type'] = 'application/json';
             }
-            //_data = _json;
-        }
-        print("_data 1:-->" + _data.toString());
+        }*/
+        
         if(_data != "") {
             if(_headers.containsKey("Content-Type")) {
                 if(_headers["Content-Type"].contains("application/json")) {
@@ -88,9 +86,6 @@ class RestedRequests {
         responseobj["data"] = data;
         responseobj["status"] = response.statusCode;
         return responseobj;
-        //});
-        //data = data + result;
-        //return data;
     }
 
     static Future<dynamic> _readResponse(HttpClientResponse response) async {
