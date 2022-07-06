@@ -493,7 +493,7 @@ class RestedResponse {
             //print("lastElem=" + pathElements[pathElements.length-1]);
             String filetype = "." + pathElements[pathElements.length-1];
 
-            if(fileype == ".br") {
+            if(filetype == ".br") {
               filetype = "." + pathElements[pathElements.length-2];
             }
             //String filetype = p.extension(filepath);
