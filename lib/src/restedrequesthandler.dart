@@ -481,7 +481,6 @@ class RestedResponse {
 
       case "file":
       {
-        print("IN HERE!!!");
         if (request.restedresponse['filepath'] != null) {
           String filepath =
               resourcesDirectory + request.restedresponse['filepath'];

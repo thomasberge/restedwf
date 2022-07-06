@@ -24,6 +24,7 @@ class Mimetypes {
     contentTypes['.jpeg'] = new ContentType("image", "jpeg");
     contentTypes['.png'] = new ContentType("image", "png");
     contentTypes['.gif'] = new ContentType("image", "gif");
+    contentTypes['.js'] = new ContentType("application", "javascript");
     binary['.html'] = false;
     binary['.css'] = false;
     binary['.txt'] = false;
