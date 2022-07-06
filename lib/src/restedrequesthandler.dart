@@ -489,9 +489,14 @@ class RestedResponse {
           bool fileExists = await File(filepath).exists();
           if (fileExists) {
             List<String> pathElements = filepath.split('.');
-            print("lastElem=" + pathElements[pathElements.length-1]);
+            
+            //print("lastElem=" + pathElements[pathElements.length-1]);
+            String filetype = "." + pathElements[pathElements.length-1];
 
-            String filetype = p.extension(filepath);
+            if(fileype == ".br") {
+              filetype = "." + pathElements[pathElements.length-2]
+            }
+            //String filetype = p.extension(filepath);
             console.debug(":: Filetype is " + filetype);
 
             // Set headers
