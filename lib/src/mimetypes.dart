@@ -11,6 +11,7 @@ class Mimetypes {
   Mimetypes() {
     contentTypes['.html'] = new ContentType("text", "html", charset: "utf-8");
     contentTypes['.css'] = new ContentType("text", "css", charset: "utf-8");
+    contentTypes['.css.br'] = new ContentType("text", "css", charset: "utf-8");
     contentTypes['.txt'] = new ContentType("text", "text", charset: "utf-8");
     contentTypes['.text'] = new ContentType("text", "text", charset: "utf-8");
     contentTypes['.json'] =

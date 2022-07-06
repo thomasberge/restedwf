@@ -488,6 +488,9 @@ class RestedResponse {
 
           bool fileExists = await File(filepath).exists();
           if (fileExists) {
+            List<String> pathElements = filepath.split('.');
+            print("lastElem=" + pathElements[pathElements.length].toString());
+
             String filetype = p.extension(filepath);
             console.debug(":: Filetype is " + filetype);
 
