@@ -494,6 +494,7 @@ class RestedResponse {
             String filetype = "." + pathElements[pathElements.length-1];
 
             if(filetype == ".br") {
+              request.request.response.headers.add("Content-Encoding", "br");
               filetype = "." + pathElements[pathElements.length-2];
             }
             //String filetype = p.extension(filepath);
