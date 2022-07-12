@@ -45,7 +45,6 @@ class Files extends RestedResource {
 
   void get(RestedRequest request) async {
     request.response(data: "filedir");
-    //print(getFiles("GET").toString());
   }
 }
 

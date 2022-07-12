@@ -16,6 +16,27 @@ class RestedErrors {
         },
         "file_not_found": {
             "message": "The requested file was not found on the server."
+        },
+        "resource_not_found": {
+            "message": "The requested resource was not found on the server."
+        },
+        "duplicate_resource": {
+            "message": "Tried to add a resource to a path that is already in use."
+        },
+        "exception_new_session": {
+            "message": "Exception creating new session."
+        },
+        "exception_update_session": {
+            "message": "Exception updating session."
+        },
+        "exception_delete_session": {
+            "message": "Exception deleting session."
+        },
+        "exception_session_variables": {
+            "message": "Exception accessing session variables."
+        },
+        "exception_retrieve_session": {
+            "message": "Exception retrieveing session."
         }
     };
 

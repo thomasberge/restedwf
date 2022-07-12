@@ -12,7 +12,6 @@ import 'package:path/path.dart' as p;
 import 'package:rested_script/rested_script.dart';
 import 'package:string_tools/string_tools.dart';
 
-import 'consolemessages.dart';
 import 'pathparser.dart';
 import 'restedsession.dart';
 import 'restedsettings.dart';
@@ -114,7 +113,6 @@ class RestedRequestHandler {
       }
     }
 
-    console.debug("Rested rootDirectory:" + rootDirectory);
     _custom_JWT_verification = custom_JWT_verification;
 
     if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
@@ -188,8 +186,7 @@ class RestedRequestHandler {
 
     try {
       if (unverified_access_token == null) {
-        unverified_access_token =
-            incomingRequest.headers.value(HttpHeaders.authorizationHeader);
+        unverified_access_token = incomingRequest.headers.value(HttpHeaders.authorizationHeader);
 
         // Checks that the authorization header is formatted correctly.
         if (unverified_access_token != null) {
@@ -205,23 +202,19 @@ class RestedRequestHandler {
       }
 
       if (unverified_access_token != null) {
-        // Verify that the token is valid. Raise exception if it is not.
         RestedJWT jwt_handler = new RestedJWT();
         int verify_result = jwt_handler.verify_token(unverified_access_token);
-        if (verify_result == 401) {
-          //error_handler.raise(request, 401);
-          //return;
-          // REFACTORING: instead of returning 401, let the user pass until it
-          // gets handled by the resource token requirement instead
-        } else {
+        if (verify_result != 401) {
           access_token = unverified_access_token;
           request.claims = RestedJWT.getClaims(access_token);
+        } else {
+          Errors.raise(request, 401);
+          return;
         }
       }
 
-    } on Exception catch (e) {
-      console.error(e.toString());
-      Errors.raise(request, 400);
+    } catch(e) {
+      Errors.raise(request, 501);
       return;
     }
 
@@ -281,12 +274,12 @@ class RestedRequestHandler {
           RestedResponse resp = new RestedResponse(request);
           resp.respond();
         } else {
-          console.debug("Resource not found at endpoint " + request.path);
-          request.response(data: "404 error somethingsomething");
+          error.raise("file_not_found", details: request.path);
+          request.response(status: 404);
         }
       } else {
-        console.debug("Resource not found at endpoint " + request.path);
-        request.response(data: "404 error somethingsomething");
+        error.raise("resource_not_found", details: request.path);
+        request.response(status: 404);
       }
     }
   }
@@ -296,21 +289,8 @@ class RestedRequestHandler {
     if (File(path).existsSync()) {
       return path;
     } else {
-      console.error("Requested path " + path.toString() + " does not exist.");
+      error.raise("file_not_found", details: path);
       return null;
-    }
-  }
-
-  // Predefines resource with supported HTTP verbs, schemas etc. from OAS3
-  void defineResource(String path) {
-    RestedResource resource = new RestedResource();
-    int exists = getResourceIndex(path);
-    if (exists == null) {
-      resource.setPath(path);
-      resources.add(resource);
-    } else {
-      console.error(
-          "Attempt to add duplicate resource: " + resource.path.toString());
     }
   }
 
@@ -325,8 +305,7 @@ class RestedRequestHandler {
       }
       resources.add(resource);
     } else
-      console.error(
-          "Attempt to add duplicate resource: " + resource.path.toString());
+      error.raise("duplicate_resource", details: resource.path);
   }
 
   // Returns the index of the argument path in the resources list if present. Returns null if not present.
@@ -447,8 +426,7 @@ class RestedResponse {
     switch (request.restedresponse['type']) {
       case "error":
       {
-        request.request.response.headers.contentType =
-            new ContentType("application", "json", charset: "utf-8");        
+        request.request.response.headers.contentType = new ContentType("application", "json", charset: "utf-8");        
         response(json.encode(Errors.getJson(request.request.response.statusCode)));
       }
       break;
@@ -459,10 +437,7 @@ class RestedResponse {
 
         // Overwrite if host is specified in the http header
         if(request.headers.containsKey('host')) {
-          print("Found in headers array");
           host = request.headers['host'];
-        } else {
-          print("Did not find in headers array, using " + host);
         }
         String path = request.restedresponse['data'];
 
@@ -478,27 +453,21 @@ class RestedResponse {
 
       case "text":
       {
-        console.debug(":: Textresponse()");
-        request.request.response.headers.contentType =
-            new ContentType("text", "plain", charset: "utf-8");
+        request.request.response.headers.contentType = new ContentType("text", "plain", charset: "utf-8");
         response(request.restedresponse['data']);
       }
       break;
 
       case "html":
       {
-        console.debug(":: Htmlresponse()");
-        request.request.response.headers.contentType =
-            new ContentType("text", "html", charset: "utf-8");
+        request.request.response.headers.contentType = new ContentType("text", "html", charset: "utf-8");
         response(request.restedresponse['data']);
       }
       break;
 
       case "json":
       {
-        console.debug(":: Jsonresponse()");
-        request.request.response.headers.contentType =
-            new ContentType("application", "json", charset: "utf-8");
+        request.request.response.headers.contentType = new ContentType("application", "json", charset: "utf-8");
         response(request.restedresponse['data']);
       }
       break;
@@ -506,27 +475,20 @@ class RestedResponse {
       case "file":
       {
         if (request.restedresponse['filepath'] != null) {
-          //String filepath = resourcesDirectory + request.restedresponse['filepath'];
           String filepath = request.restedresponse['filepath'];
-          console.debug(":: Fileresponse() using path " + filepath);
 
           bool fileExists = await File(filepath).exists();
           if (fileExists) {
             List<String> pathElements = filepath.split('.');
-            
-            //print("lastElem=" + pathElements[pathElements.length-1]);
             String filetype = "." + pathElements[pathElements.length-1];
 
             if(filetype == ".br") {
               request.request.response.headers.add("Content-Encoding", "br");
               filetype = "." + pathElements[pathElements.length-2];
             }
-            //String filetype = p.extension(filepath);
-            console.debug(":: Filetype is " + filetype);
 
             // Set headers
-            request.request.response.headers.contentType =
-                mimetypes.getContentType(filetype);
+            request.request.response.headers.contentType = mimetypes.getContentType(filetype);
 
             if (mimetypes.isBinary(filetype)) {
               File file = new File(filepath);
@@ -548,8 +510,9 @@ class RestedResponse {
               response(textdata);
             }
           } else {
-            console.error("error 404");
-            response("404 not found: " + filepath);
+            Errors.raise(request, 404);
+            error.raise("file_not_found", details: filepath );
+            return;
           }
         }
       }
@@ -891,7 +854,6 @@ class RestedResource {
       result = validateQueryParameters(method, request.query_parameters);
     }
     
-
     if(result != "OK") {
       request.response(data: "400 " + result.toString());
       RestedResponse response = RestedResponse(request);

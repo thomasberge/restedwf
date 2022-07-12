@@ -12,6 +12,8 @@ The source is being developed on a private repo. I will update this repo from ti
 
 - The "request-path-to-directory"-method was ditched in favor for a more flexible method. Each RestedResource now contains a FileCollection object that maps local files (and their absolute paths) to the endpoint. There is also a root FileCollection on the requesthandler. See documentation for details.
 - The settings code have been re-written. The config is now confined in a single JSON together with type and descriptions.
+- Developer error messages are now handled by the RestedErrors class. It is global and can be raised anywhere. It is used as an internal RestedWF error handling system and not ment for end-users.
+- The ConsoleMessages class has been removed and all messages refactored to use the new RestedError class.
 
 ### Features
 

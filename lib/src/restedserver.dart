@@ -5,7 +5,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
-import 'consolemessages.dart';
 import 'restedrequesthandler.dart';
 import 'restedsettings.dart';
 

@@ -7,19 +7,13 @@ import 'package:nanoid/nanoid.dart';
 import 'dart:convert';
 import 'restedsettings.dart';
 import 'dart:math';
-import 'consolemessages.dart';
+import 'restederrors.dart';
 
 // New, simpler manager. Easier to migrate to Redis later.
 class SessionManager {
   Map<String, Map<String, dynamic>> sessions = new Map();
 
   SessionManager();
-
-  void printSessions() {
-    console.debug("--- SESSIONS ---");
-    console.debug(sessions.toString());
-    console.debug("--- END ---");
-  }
 
   // Takes whatever is stored in RestedRequest.session and creates a new session.
   String newSession(Map<String, dynamic> data) {
@@ -28,7 +22,7 @@ class SessionManager {
       sessions[data['id']] = data;
       return data['id'];
     } catch(e) {
-      console.error(e.toString());
+      error.raise("exception_new_session", details: e.toString());
       return null;
     }
   }
@@ -39,7 +33,7 @@ class SessionManager {
         sessions[data['id']] = data;
       }
     } catch(e) {
-      console.error(e.toString());
+      error.raise("exception_update_session", details: e.toString());
     }
   }
 
@@ -49,7 +43,7 @@ class SessionManager {
         sessions.remove(sessionid);
       }
     } catch(e) {
-      console.error(e.toString());
+      error.raise("exception_delete_session", details: e.toString());
     }
   }
 
@@ -59,7 +53,7 @@ class SessionManager {
         sessions[sessionid][key] = value;
       }
     } catch(e) {
-      console.error(e.toString());
+      error.raise("exception_session_variables", details: e.toString());
     }
   }
 
@@ -71,7 +65,7 @@ class SessionManager {
         return null;
       }
     } catch(e) {
-      console.error(e.toString());
+      error.raise("exception_session_variables", details: e.toString());
       return null;
     }
   }
@@ -82,7 +76,7 @@ class SessionManager {
         sessions[sessionid].remove(key);
       }
     } catch(e) {
-      console.error(e.toString());
+      error.raise("exception_session_variables", details: e.toString());
     }
   }
 
@@ -92,7 +86,7 @@ class SessionManager {
         return sessions[sessionid];
       }
     } catch(e) {
-      console.error(e.toString());
+      error.raise("exception_retrieve_session", details: e.toString());
       return null;
     }
   }

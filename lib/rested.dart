@@ -12,7 +12,6 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 import 'package:string_tools/string_tools.dart';
 
-import 'src/consolemessages.dart';
 import 'src/pathparser.dart';
 
 import 'src/restedrequest.dart';
