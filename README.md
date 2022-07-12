@@ -1,6 +1,6 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.5.3
+# Alpha release 0.5.4
 
 A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and even Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
@@ -8,15 +8,10 @@ A word of caution: This framework is still very much in development. Structural 
 
 The source is being developed on a private repo. I will update this repo from time to time.
 
-### 0.5.3 Main changes
+### 0.5.4 Main changes
 
-- URI/Path/Query Parameter validation implementation now in place. See documentation for usage. Support made for Strings and Integers.
-- Both Global and Path URI parameters of type String and Integer are now imported from OpenAPI 3.1.
-- Both Global and Method Query parameters of type String and Integer are now imported from OpenAPI 3.1.
-- RestedRequest now has a handy check method for claims, session, header and URI Parameters. See documentation for details.
-- JWT tokens that are not valid will just be removed from the request instead of returning 401 directly. Now the request is sent to the resource (or stopped just before if there is a valid token required).
-- Bugfix: StackOverflow in RestedSchema pattern functions fixed.
-- Bugfix: Validation crash if _query_parameter_schemas were empty.
+- The "request-path-to-directory"-method was ditched in favor for a more flexible method. Each RestedResource now contains a FileCollection object that maps local files (and their absolute paths) to the endpoint. There is also a root FileCollection on the requesthandler. See documentation for details.
+- The settings code have been re-written. The config is now confined in a single JSON together with type and descriptions.
 
 ### Features
 

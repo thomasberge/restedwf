@@ -34,6 +34,18 @@ class TestServer extends RestedRequestHandler {
     this.addResource(SchemaTest(), "/validate");
     this.addResource(JWTClaims(), "/allclaims");
     this.addResource(GETJWTClaims(), "/getclaims");
+    this.addResource(Files(), "/files");
+  }
+}
+
+class Files extends RestedResource {
+  Files() {
+    addFiles("bin/files");
+  }
+
+  void get(RestedRequest request) async {
+    request.response(data: "filedir");
+    //print(getFiles("GET").toString());
   }
 }
 
@@ -65,8 +77,7 @@ class PathParam extends RestedResource {
 
 class SettingsTest extends RestedResource {
   void get(RestedRequest request) async {
-    RestedSettings testsettings = RestedSettings();
-    request.response(data: testsettings.getSettingsFile().toString());
+    request.response(data: rsettings.variables.toString());
   }
 }
 

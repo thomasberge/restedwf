@@ -6,7 +6,7 @@ library rested.console;
 
 import 'restedsettings.dart';
 
-ConsoleMessages console = ConsoleMessages(debug_level: rsettings.message_level);
+ConsoleMessages console = ConsoleMessages(debug_level: rsettings.getVariable('message_level'));
 
 class ConsoleMessages {
 

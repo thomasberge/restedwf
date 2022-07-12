@@ -1,6 +1,6 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2021 Thomas Sebastian Berge
+// © 2022 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'dart:async';
@@ -19,18 +19,18 @@ import 'restedsettings.dart';
 import 'restedrequest.dart';
 import 'responses.dart';
 import 'mimetypes.dart';
-import 'restedvirtualdisk.dart';
 import 'restedschema.dart';
 import 'errors.dart';
 import 'openapi3.dart';
 import 'external.dart';
 import 'contenttype.dart';
+import 'restedfiles.dart';
+import 'restederrors.dart';
 
 Function _custom_JWT_verification;
 SessionManager manager;
 String rootDirectory = null;
-String resourcesDirectory = null;
-//Errors error_handler = Errors();
+//String resourcesDirectory = null;
 
 void saveSession(RestedRequest request) {
   if (request.session.containsKey('id')) {
@@ -42,7 +42,7 @@ void saveSession(RestedRequest request) {
         "session=" +
             encrypted_sessionid +
             "; Path=/; Max-Age=" +
-            rsettings.cookies_max_age.toString() +
+            rsettings.getVariable('cookies_max_age').toString() +
             "; HttpOnly");
   }
 }
@@ -87,12 +87,15 @@ class RestedResourceCollection {
 }*/
 
 class RestedRequestHandler {
-  bool ignoreAuthorizationHeaders = false;
   String address = "127.0.0.1";
   int port = 8080;
   int threadid = 0;
+  FileCollection common = FileCollection();
 
   List<RestedResource> resources = new List();
+
+  // All RestedResources and their files. Only used for GETs to map file paths and their respective resource.
+  Map<String, RestedResource> files = {};
 
   // This function can be overridden by server implementation to add custom JWT verification
   bool custom_JWT_verification(String token) {
@@ -100,14 +103,21 @@ class RestedRequestHandler {
   }
 
   RestedRequestHandler() {
-    ignoreAuthorizationHeaders = rsettings.ignoreAuthorizationHeaders;
     rootDirectory = Directory.current.path;
+    common.resource_path = "/";
+
+    if(rsettings.getVariable('common_enabled')) {
+      if(Directory(rootDirectory + "/bin/common").existsSync()) {
+        common.addFiles(rootDirectory + "/bin/common");
+      } else {
+        error.raise('missing_common_directory');
+      }
+    }
+
     console.debug("Rested rootDirectory:" + rootDirectory);
-    resourcesDirectory = rootDirectory + ('/bin/resources/');
-    console.debug("Rested resourcesDirectory:" + resourcesDirectory);
     _custom_JWT_verification = custom_JWT_verification;
 
-    if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
+    if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
       manager = new SessionManager();
     }
 
@@ -135,7 +145,7 @@ class RestedRequestHandler {
     RestedRequest request = new RestedRequest(incomingRequest, address, port);
 
     // Decrypts the session id and sets the session data in the request
-    if (rsettings.cookies_enabled && rsettings.sessions_enabled) {
+    if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
       if (request.cookies.containsKey('session')) {
         var session = manager.getSession(request.cookies.getFirst('session').value);
         if (session != null) {
@@ -157,14 +167,14 @@ class RestedRequestHandler {
     // 2 --- Get access_token from either cookie or session, then verify it.
 
     // Get access_token from cookie. Gets overwritten by access_token from session if present.
-    if (rsettings.cookies_enabled) {
+    if (rsettings.getVariable('cookies_enabled')) {
       if (request.cookies.containsKey("access_token")) {
         unverified_access_token = request.cookies.getFirst("access_token").value;
       }
     }
 
     // Get access_token from session. Overwrites access_token from cookie if present.
-    if (rsettings.sessions_enabled) {
+    if (rsettings.getVariable('sessions_enabled')) {
       if (request.session.containsKey("access_token")) {
         unverified_access_token = request.session["access_token"];
       }
@@ -176,45 +186,43 @@ class RestedRequestHandler {
     // and passed to the RestedRequest object. If it fails it will set exception to true,
     // which in turn will trigger a 401 Unauthorized error response.
 
-    if (ignoreAuthorizationHeaders == false) {
-      try {
-        if (unverified_access_token == null) {
-          unverified_access_token =
-              incomingRequest.headers.value(HttpHeaders.authorizationHeader);
+    try {
+      if (unverified_access_token == null) {
+        unverified_access_token =
+            incomingRequest.headers.value(HttpHeaders.authorizationHeader);
 
-          // Checks that the authorization header is formatted correctly.
-          if (unverified_access_token != null) {
-            List<String> authtype = unverified_access_token.split(' ');
-            List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
-            if (valid_auths.contains(authtype[0].toUpperCase())) {
-              unverified_access_token = authtype[1];
-            } else {
-              Errors.raise(request, 400);
-              return;
-            }
-          }
-        }
-
+        // Checks that the authorization header is formatted correctly.
         if (unverified_access_token != null) {
-          // Verify that the token is valid. Raise exception if it is not.
-          RestedJWT jwt_handler = new RestedJWT();
-          int verify_result = jwt_handler.verify_token(unverified_access_token);
-          if (verify_result == 401) {
-            //error_handler.raise(request, 401);
-            //return;
-            // REFACTORING: instead of returning 401, let the user pass until it
-            // gets handled by the resource token requirement instead
+          List<String> authtype = unverified_access_token.split(' ');
+          List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
+          if (valid_auths.contains(authtype[0].toUpperCase())) {
+            unverified_access_token = authtype[1];
           } else {
-            access_token = unverified_access_token;
-            request.claims = RestedJWT.getClaims(access_token);
+            Errors.raise(request, 400);
+            return;
           }
         }
-
-      } on Exception catch (e) {
-        console.error(e.toString());
-        Errors.raise(request, 400);
-        return;
       }
+
+      if (unverified_access_token != null) {
+        // Verify that the token is valid. Raise exception if it is not.
+        RestedJWT jwt_handler = new RestedJWT();
+        int verify_result = jwt_handler.verify_token(unverified_access_token);
+        if (verify_result == 401) {
+          //error_handler.raise(request, 401);
+          //return;
+          // REFACTORING: instead of returning 401, let the user pass until it
+          // gets handled by the resource token requirement instead
+        } else {
+          access_token = unverified_access_token;
+          request.claims = RestedJWT.getClaims(access_token);
+        }
+      }
+
+    } on Exception catch (e) {
+      console.error(e.toString());
+      Errors.raise(request, 400);
+      return;
     }
 
     // 3 ---  Download whatever data is related to the Content-Type and parse it to their respective
@@ -246,19 +254,30 @@ class RestedRequestHandler {
       }
       resources[index].doMethod(request.method, request);
     } else {
-      if (rsettings.files_enabled) {
-        String path = request.path;
-        if (request.path.substring(0, 1) == '/') {
-          path = request.path.substring(1);
+      if (rsettings.getVariable('files_enabled')) {
+        String path;
+
+        // Find out if a RestedResource has this path as a file
+        if(files.containsKey(request.path)) {
+          path = files[request.path].getFile(request.path);
         }
-        //path = disk.getFile(resourcesDirectory + request.path);
+
+        // If not, check the common directory
+        if(common.containsKey(request.path)) {
+          path = common.getFile(request.path);
+        }
+
+        // If all else fails, create a path out of the url and try your luck with the
+        // file response
+        if(path == null) {
+          path = request.path;
+          if (request.path.substring(0, 1) == '/') {
+            path = request.path.substring(1);
+          }
+        }
+
         if (path != null) {
-          //request.fileResponse(path);
-          //path = resourcesDirectory + path;
-          request.response(
-              type: "file",
-              filepath:
-                  path); //-----------------------------------------------------------------------------------------------
+          request.response(type: "file", filepath: path);
           RestedResponse resp = new RestedResponse(request);
           resp.respond();
         } else {
@@ -299,6 +318,11 @@ class RestedRequestHandler {
     int exists = getResourceIndex(path);
     if (exists == null) {
       resource.setPath(path);
+      Map<String, String> resource_files = resource.getFiles();
+      for(MapEntry e in resource_files.entries) {
+        files[path + e.key] = resource;
+        print("added >" + path + e.key + "<");
+      }
       resources.add(resource);
     } else
       console.error(
@@ -333,29 +357,29 @@ class RestedJWT {
     final cleanMap = jsonDecode(jsonEncode(additional_claims));
 
     final claimSet = new JwtClaim(
-        issuer: rsettings.jwt_issuer,
+        issuer: rsettings.getVariable('jwt_issuer'),
         //subject: 'some_subject',
         //audience: ['client1.example.com', 'client2.example.com'],
         jwtId: _randomString(32),
         otherClaims: cleanMap,
-        maxAge: Duration(minutes: rsettings.jwt_duration));
+        maxAge: Duration(minutes: rsettings.getVariable('jwt_duration')));
     return claimSet;
   }
 
   Map generate_token({Map additional_claims}) {
     JwtClaim claim_set = _generateClaimset(additional_claims: additional_claims);
-    String token = issueJwtHS256(claim_set, rsettings.jwt_key);
+    String token = issueJwtHS256(claim_set, rsettings.getVariable('jwt_key'));
     Map tokenmap = { "access_token": token };
     return tokenmap;
   }
 
   int verify_token(String token) {
     try {
-      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.jwt_key);
+      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.getVariable('jwt_key'));
       DateTime issued_at = DateTime.parse(decClaimSet['iat'].toString());
       DateTime expires = DateTime.parse(decClaimSet['exp'].toString());
       Duration duration = DateTime.now().difference(issued_at);
-      if (duration.inMinutes >= rsettings.jwt_duration) {
+      if (duration.inMinutes >= rsettings.getVariable('jwt_duration')) {
         return (401);
       } else {
         if (_custom_JWT_verification(token)) {
@@ -371,7 +395,7 @@ class RestedJWT {
 
   static String getClaim(String token, String key) {
     try {
-      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.jwt_key);
+      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.getVariable('jwt_key'));
       if(decClaimSet.containsKey(key)) {
         return decClaimSet[key];
       } else {
@@ -386,7 +410,7 @@ class RestedJWT {
   static Map<String, dynamic> getClaims(String token) {
     Map<String, dynamic> claims = {};
     try {
-      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.jwt_key);        
+      final JwtClaim decClaimSet = verifyJwtHS256Signature(token, rsettings.getVariable('jwt_key'));        
         for(String name in decClaimSet.claimNames(includeRegisteredClaims: false)) {
           claims[name] = decClaimSet[name];
         }
@@ -482,8 +506,8 @@ class RestedResponse {
       case "file":
       {
         if (request.restedresponse['filepath'] != null) {
-          String filepath =
-              resourcesDirectory + request.restedresponse['filepath'];
+          //String filepath = resourcesDirectory + request.restedresponse['filepath'];
+          String filepath = request.restedresponse['filepath'];
           console.debug(":: Fileresponse() using path " + filepath);
 
           bool fileExists = await File(filepath).exists();
@@ -571,6 +595,7 @@ class RestedResource {
 
   Map<String, dynamic> _uri_parameters_schemas = {};
   Map<String, Map<String, dynamic>> _query_parameters_schemas = {};
+  FileCollection _files = FileCollection();
 
   // Stores schemas for each HTTP method.
   Map schemas = Map<String, RestedSchema>();
@@ -605,6 +630,18 @@ class RestedResource {
       }
     }
     return "OK";
+  }
+
+  addFiles(String directory) {
+    _files.addFiles(directory);
+  }
+
+  String getFile(String requestpath) {
+    return _files.getFile(requestpath);
+  }
+
+  Map<String, String> getFiles() {
+    return _files.getFiles();
   }
 
   String validateQueryParameters(String method, Map<String, String> params) {
@@ -659,13 +696,10 @@ class RestedResource {
 
   void setPath(String resourcepath) {
     path = resourcepath;
+    _files.resource_path = resourcepath;
     if (resourcepath.contains('{')) {
       uri_parameters = PathParser.get_uri_parameters(path);
     }
-    /*console.debug("uri_parameters for path '" +
-        path.toString() +
-        "' is " +
-        uri_parameters.toString());*/
   }
 
   bool pathMatch(String requested_path) {
@@ -734,7 +768,7 @@ class RestedResource {
     schemas['propfind'] = null;
     schemas['view'] = null;
 
-    for (String value in rsettings.allowedMethods) {
+    for (String value in rsettings.getVariable('allowed_methods')) {
       _token_required[value] = false;
     }
 

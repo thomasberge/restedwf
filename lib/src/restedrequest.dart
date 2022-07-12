@@ -238,7 +238,7 @@ class RestedRequest {
 
   RestedRequest(HttpRequest this.request, this.hostAddress, this.hostPort) {
 
-    if (rsettings.cookies_enabled) {
+    if (rsettings.getVariable('cookies_enabled')) {
       cookies = new CookieCollection(request.cookies);
     }
 

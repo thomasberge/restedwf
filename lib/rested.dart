@@ -1,5 +1,5 @@
 // Rested Web Framework
-// Version: 0.5.2-alpha
+// Version: 0.5.4-alpha
 // www.restedwf.com
 // © 2022 Thomas Sebastian Berge
 
@@ -28,15 +28,10 @@ import 'src/restedrequesthandler.dart';
 export 'src/restedrequesthandler.dart';
 import 'src/restedrequests.dart';
 export 'src/restedrequests.dart';
-import 'src/restedschema.dart';
 export 'src/restedschema.dart';
 import 'src/external.dart';
 export 'src/external.dart';
-import 'src/resteddatabase.dart';
 export 'src/resteddatabase.dart';
-
-RestedSettings rsettings = new RestedSettings();
-ConsoleMessages console =
-    new ConsoleMessages(debug_level: rsettings.message_level);
+export 'src/restedfiles.dart';
 
 Map responses = new Map();

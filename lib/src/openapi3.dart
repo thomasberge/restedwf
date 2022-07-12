@@ -24,6 +24,8 @@ class OAPI3 {
             print(e.toString());
         }
 
+        print(":: OpenAPI 3.1 import of " + filepath);
+
         import(text);
     }
 
@@ -86,7 +88,7 @@ class OAPI3 {
     }
 
     void importPath(String path, Map value) {
-        print("- Importing " + path);
+        print("Imported path " + path);
 
         // Created the Resource
         RestedResource resource = RestedResource();
@@ -99,7 +101,7 @@ class OAPI3 {
         }
 
         for(MapEntry e in yaml['paths'][path].entries) {
-            if(rsettings.allowedMethods.contains(e.key.toLowerCase())) {
+            if(rsettings.getVariable('allowed_methods').contains(e.key.toLowerCase())) {
 
                 if(yaml['paths'][path][e.key].containsKey('parameters')) {
                     Map<String,dynamic> queryparams = importQueryParameters(yaml['paths'][path][e.key]['parameters']);
