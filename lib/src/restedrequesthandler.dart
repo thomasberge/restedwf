@@ -300,7 +300,7 @@ class RestedRequestHandler {
       resource.setPath(path);
       Map<String, String> resource_files = resource.getFiles();
       for(MapEntry e in resource_files.entries) {
-        files[path + e.key] = resource;
+        files[path + "/" + e.key] = resource;
         print("added >" + path + e.key + "<");
       }
       resources.add(resource);
