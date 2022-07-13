@@ -306,13 +306,14 @@ class RestedRequestHandler {
       resource.setPath(path);
       if(path.contains('{')) {
         List<String> elements = path.split('/');
-        String new_pattern = "/";
+        String new_pattern = "";
         for(String element in elements) {
           if(element.contains('{')) {
             element = '*';
           }
           new_pattern = new_pattern + element + '/';
         }
+        new_pattern = new_pattern.substring(0, new_pattern-1);
         print("Adding path >" + path + "< as uri_pattern  >" + new_pattern + "<");
         uri_patterns.add(new_pattern);
       }
