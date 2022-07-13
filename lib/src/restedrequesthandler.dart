@@ -102,15 +102,6 @@ class RestedRequestHandler {
     return true;
   }
 
-  /*  1. /users/{username}
-   *  2. /users/{username}/storage/{storage}
-   *  3. /worderdata
-   */
-
-  String generalizeUri(String uri) {
-    
-  }
-
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
     common.resource_path = "/";
@@ -313,20 +304,6 @@ class RestedRequestHandler {
     int exists = getResourceIndex(path);
     if (exists == null) {
       resource.setPath(path);
-
-/*      if(path.contains('{')) {
-        List<String> elements = path.split('/');
-        String new_pattern = "";
-        for(String element in elements) {
-          if(element.contains('{')) {
-            element = '*';
-          }
-          new_pattern = new_pattern + element + '/';
-        }
-        new_pattern = new_pattern.substring(0, new_pattern.length-1);
-        print("Adding path >" + path + "< as uri_pattern  >" + new_pattern + "<");
-        uri_patterns.add(new_pattern);
-      }*/
 
       if(path.contains('{')) {
         List<String> elements = path.split('/');
