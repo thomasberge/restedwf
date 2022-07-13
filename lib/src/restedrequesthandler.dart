@@ -27,10 +27,9 @@ import 'restedfiles.dart';
 import 'restederrors.dart';
 import 'restedauth.dart';
 
-Function _custom_JWT_verification;
 SessionManager manager;
 String rootDirectory = null;
-//String resourcesDirectory = null;
+Function _custom_JWT_verification;
 
 void saveSession(RestedRequest request) {
   if (request.session.containsKey('id')) {
@@ -166,6 +165,7 @@ class RestedRequestHandler {
 
       if (unverified_access_token != null) {
         RestedJWT jwt_handler = new RestedJWT();
+        jwt_handler.setCustomVerificationMethod(_custom_JWT_verification);
         int verify_result = jwt_handler.verify_token(unverified_access_token);
         if (verify_result != 401) {
           access_token = unverified_access_token;

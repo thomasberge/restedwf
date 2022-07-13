@@ -1,5 +1,23 @@
+import 'package:jaguar_jwt/jaguar_jwt.dart';
+import 'dart:math';
+import 'dart:convert';
+
+import 'restedsettings.dart';
+
 class RestedJWT {
-  RestedJWT();
+  Function _custom_JWT_verification;
+  
+  RestedJWT() {
+    _custom_JWT_verification = custom_JWT_verification;
+  }
+
+  void setCustomVerificationMethod(Function _method) {
+    _custom_JWT_verification = _method;
+  }
+
+  bool custom_JWT_verification(String token) {
+    return true;
+  }
 
   String _randomString(int length) {
     var rand = new Random();
