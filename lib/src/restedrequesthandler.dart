@@ -90,6 +90,7 @@ class RestedRequestHandler {
   int port = 8080;
   int threadid = 0;
   FileCollection common = FileCollection();
+  List<String> uri_patterns = [];
 
   List<RestedResource> resources = new List();
 
@@ -253,6 +254,9 @@ class RestedRequestHandler {
         print("files=" + files.toString());
 
         // Find out if a RestedResource has this path as a file
+
+        //String filepath = resource_path + filepath.substring(resource_path.length);
+
         if(files.containsKey(request.path)) {
           path = files[request.path].getFile(request.path);
         }
@@ -300,6 +304,18 @@ class RestedRequestHandler {
     int exists = getResourceIndex(path);
     if (exists == null) {
       resource.setPath(path);
+      if(path.contains('{')) {
+        List<String> elements = path.split('/');
+        String new_pattern = "/";
+        for(String element in elements) {
+          if(element.contains('{')) {
+            element = '*';
+          }
+          new_pattern = new_pattern + element + '/';
+        }
+        print("Adding path >" + path + "< as uri_pattern  >" + new_pattern + "<");
+        uri_patterns.add(new_pattern);
+      }
       Map<String, String> resource_files = resource.getFiles();
       for(MapEntry e in resource_files.entries) {
         files[path + "/" + e.key] = resource;
