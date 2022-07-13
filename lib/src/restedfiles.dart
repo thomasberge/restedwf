@@ -14,11 +14,15 @@ class FileCollection {
   FileCollection();
 
   String getFile(String filepath) {
-    /*if(filepath != '/') {
+
+    // The following if replaces for example uri param value 'myuser' with the param
+    // definition {username} in order to get a match. That means that any files added
+    // are global, and not tied to a specific user.
+    if(resource_path != '/') {
       print("Filepath is not root /, trimming from " + filepath + " to ...");
-      filepath = filepath.substring(resource_path.length);
+      filepath = resource_path + filepath.substring(resource_path.length);
       print("... this " + filepath);
-    }*/
+    }
     print("looking for >" + filepath + "< in " + files.toString());
 
     if(files.containsKey(filepath)) {
