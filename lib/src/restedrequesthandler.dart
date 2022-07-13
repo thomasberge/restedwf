@@ -313,7 +313,7 @@ class RestedRequestHandler {
           }
           new_pattern = new_pattern + element + '/';
         }
-        new_pattern = new_pattern.substring(0, new_pattern-1);
+        new_pattern = new_pattern.substring(0, new_pattern.length-1);
         print("Adding path >" + path + "< as uri_pattern  >" + new_pattern + "<");
         uri_patterns.add(new_pattern);
       }
