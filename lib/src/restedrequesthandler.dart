@@ -27,24 +27,8 @@ import 'restedfiles.dart';
 import 'restederrors.dart';
 import 'restedauth.dart';
 
-SessionManager manager;
 String rootDirectory = null;
 Function _custom_JWT_verification;
-
-void saveSession(RestedRequest request) {
-  if (request.session.containsKey('id')) {
-    manager.updateSession(request.session);
-  } else {
-    String encrypted_sessionid = manager.newSession(request.session);
-    request.request.response.headers.add(
-        "Set-Cookie",
-        "session=" +
-            encrypted_sessionid +
-            "; Path=/; Max-Age=" +
-            rsettings.getVariable('cookies_max_age').toString() +
-            "; HttpOnly");
-  }
-}
 
 class RestedRequestHandler {
   String address = "127.0.0.1";
@@ -76,10 +60,10 @@ class RestedRequestHandler {
     }
 
     _custom_JWT_verification = custom_JWT_verification;
-
+/*
     if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
       manager = new SessionManager();
-    }
+    }*/
 
     Map<String, String> _envVars = Platform.environment;
     if (_envVars.containsKey("yaml_import_file")) {
@@ -743,7 +727,7 @@ class RestedResource {
       }
     } else {
       if (request.session.length > 0) {
-        saveSession(request);
+        manager.saveSession(request);
       }
     }
   }

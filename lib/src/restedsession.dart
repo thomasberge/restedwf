@@ -1,19 +1,42 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2021 Thomas Sebastian Berge
+// © 2022 Thomas Sebastian Berge
+
+library rested.sessions;
 
 import 'dart:io';
-import 'package:nanoid/nanoid.dart';
 import 'dart:convert';
 import 'restedsettings.dart';
 import 'dart:math';
+
+import 'package:nanoid/nanoid.dart';
+
 import 'restederrors.dart';
+import 'restedrequest.dart';
+
+
+SessionManager manager = SessionManager();
 
 // New, simpler manager. Easier to migrate to Redis later.
 class SessionManager {
   Map<String, Map<String, dynamic>> sessions = new Map();
 
   SessionManager();
+
+  void saveSession(RestedRequest request) {
+    if (request.session.containsKey('id')) {
+      updateSession(request.session);
+    } else {
+      String encrypted_sessionid = newSession(request.session);
+      request.request.response.headers.add(
+          "Set-Cookie",
+          "session=" +
+              encrypted_sessionid +
+              "; Path=/; Max-Age=" +
+              rsettings.getVariable('cookies_max_age').toString() +
+              "; HttpOnly");
+    }
+  }
 
   // Takes whatever is stored in RestedRequest.session and creates a new session.
   String newSession(Map<String, dynamic> data) {
