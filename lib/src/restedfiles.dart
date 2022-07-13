@@ -14,11 +14,11 @@ class FileCollection {
   FileCollection();
 
   String getFile(String filepath) {
-    if(filepath != '/') {
+    /*if(filepath != '/') {
       print("Filepath is not root /, trimming from " + filepath + " to ...");
       filepath = filepath.substring(resource_path.length);
       print("... this " + filepath);
-    }
+    }*/
     print("looking for >" + filepath + "< in " + files.toString());
 
     if(files.containsKey(filepath)) {
