@@ -90,7 +90,7 @@ class RestedRequestHandler {
   int port = 8080;
   int threadid = 0;
   FileCollection common = FileCollection();
-  List<String> uri_patterns = [];
+  Map<String, List<String>> uri_patterns = {};
 
   List<RestedResource> resources = new List();
 
@@ -100,6 +100,15 @@ class RestedRequestHandler {
   // This function can be overridden by server implementation to add custom JWT verification
   bool custom_JWT_verification(String token) {
     return true;
+  }
+
+  /*  1. /users/{username}
+   *  2. /users/{username}/storage/{storage}
+   *  3. /worderdata
+   */
+
+  String generalizeUri(String uri) {
+    
   }
 
   RestedRequestHandler() {
@@ -304,7 +313,8 @@ class RestedRequestHandler {
     int exists = getResourceIndex(path);
     if (exists == null) {
       resource.setPath(path);
-      if(path.contains('{')) {
+
+/*      if(path.contains('{')) {
         List<String> elements = path.split('/');
         String new_pattern = "";
         for(String element in elements) {
@@ -316,7 +326,27 @@ class RestedRequestHandler {
         new_pattern = new_pattern.substring(0, new_pattern.length-1);
         print("Adding path >" + path + "< as uri_pattern  >" + new_pattern + "<");
         uri_patterns.add(new_pattern);
+      }*/
+
+      if(path.contains('{')) {
+        List<String> elements = path.split('/');
+
+        String new_pattern = "";
+        List<String> uri_params = [];
+
+        for(String element in elements) {
+          if(element.contains('{')) {
+            uri_params.add(element.substring(1, element.length-1));
+            element = '*';
+          }
+          new_pattern = new_pattern + element + '/';
+        }
+        new_pattern = new_pattern.substring(0, new_pattern.length-1);
+        print("Adding path >" + path + "< as uri_pattern  >" + new_pattern + "< with uri_params " + uri_params.toString());
+
+        uri_patterns[new_pattern] = uri_params;
       }
+
       Map<String, String> resource_files = resource.getFiles();
       for(MapEntry e in resource_files.entries) {
         files[path + "/" + e.key] = resource;
