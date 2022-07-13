@@ -3,7 +3,7 @@ version: 0.5.0
 description: >-
   Rested Web Framework
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: '>=2.15.0 <3.0.0'
 dependencies:
   ansicolor: 1.0.2
   path: ^1.6.2

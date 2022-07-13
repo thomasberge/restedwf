@@ -1,4 +1,5 @@
-FROM thomasberge/dart-base:2.14.4-amd64
+#FROM thomasberge/dart-base:2.14.4-amd64
+FROM thomasberge/dart-base:2.17.0-amd64
 
 WORKDIR /app
 
