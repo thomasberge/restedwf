@@ -13,16 +13,19 @@ class FileCollection {
 
   FileCollection();
 
-  String getFile(String requestpath) {
-    String filepath = requestpath;
-    if(resource_path != '/') {
-      filepath = requestpath.substring(resource_path.length);  
+  String getFile(String filepath) {
+    if(filepath != '/') {
+      print("Filepath is not root /, trimming from " + filepath + " to ...");
+      filepath = filepath.substring(resource_path.length);
+      print("... this " + filepath);
     }
     print("looking for >" + filepath + "< in " + files.toString());
+
     if(files.containsKey(filepath)) {
+      print("found file, returning path " + filepath);
       return files[filepath];
     } else {
-      error.raise("file_not_found", details: requestpath);
+      error.raise("file_not_found", details: filepath);
       return null;
     }
   }

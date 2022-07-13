@@ -250,6 +250,8 @@ class RestedRequestHandler {
       if (rsettings.getVariable('files_enabled')) {
         String path;
 
+        print("files=" + files.toString());
+
         // Find out if a RestedResource has this path as a file
         if(files.containsKey(request.path)) {
           path = files[request.path].getFile(request.path);
