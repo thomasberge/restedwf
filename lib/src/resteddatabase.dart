@@ -4,14 +4,6 @@ import 'package:postgres/postgres.dart';
 import 'dart:convert';
 import 'dart:io';
 
-/*
-Future<QueryResults> qr_query(String querystring) async {
-    await connection.open();
-    List<Map<String, Map<String, dynamic>>> result = await connection.mappedResultsQuery(querystring);
-    return QueryResults(result);
-}
-*/
-
 DatabaseManager rdb = DatabaseManager();
 
 class DatabaseManager {
@@ -160,18 +152,3 @@ class RestedTable {
         return result;
     }
 }
-/*
-class QueryResults {
-    List<Map<String, Map<String, dynamic>>> result = [];
-
-    QueryResults(this.result);
-
-    String toString() {
-        return result.toString();
-    }
-
-    dynamic toJson() {
-        //return 
-    }
-}
-*/

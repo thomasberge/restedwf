@@ -60,10 +60,6 @@ class RestedRequestHandler {
     }
 
     _custom_JWT_verification = custom_JWT_verification;
-/*
-    if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
-      manager = new SessionManager();
-    }*/
 
     Map<String, String> _envVars = Platform.environment;
     if (_envVars.containsKey("yaml_import_file")) {
@@ -104,8 +100,8 @@ class RestedRequestHandler {
       }
     }
 
-    String access_token = null;
-    String unverified_access_token = null;
+    String access_token = "";
+    String unverified_access_token = "";
     bool expired_token = false;
 
     // 2 --- Get access_token from either cookie or session, then verify it.
@@ -131,11 +127,11 @@ class RestedRequestHandler {
     // which in turn will trigger a 401 Unauthorized error response.
 
     try {
-      if (unverified_access_token == null) {
+      if (unverified_access_token == "") {
         unverified_access_token = incomingRequest.headers.value(HttpHeaders.authorizationHeader);
 
         // Checks that the authorization header is formatted correctly.
-        if (unverified_access_token != null) {
+        if (unverified_access_token != "") {
           List<String> authtype = unverified_access_token.split(' ');
           List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
           if (valid_auths.contains(authtype[0].toUpperCase())) {
@@ -147,7 +143,7 @@ class RestedRequestHandler {
         }
       }
 
-      if (unverified_access_token != null) {
+      if (unverified_access_token != "") {
         RestedJWT jwt_handler = new RestedJWT();
         jwt_handler.setCustomVerificationMethod(_custom_JWT_verification);
         int verify_result = jwt_handler.verify_token(unverified_access_token);
@@ -181,7 +177,7 @@ class RestedRequestHandler {
     // we reset error code and makes sure access_token is blank before we continue. After that,
     // if the error code is still not 0 we return an error response.
       
-    if(access_token != null) {
+    if(access_token != "") {
       request.access_token = access_token;
     }
 

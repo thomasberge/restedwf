@@ -197,8 +197,7 @@ class RestedRequest {
     print("Content: " + body.toString());
   }
 
-  void createCookie(String name, String value,
-      {String domain = "", String path = "/", int maxAge = null}) {
+  void createCookie(String name, String value, {String domain = "", String path = "/", int maxAge = -1}) {
     Cookie newcookie = new Cookie(name, value);
     if (domain != "") {
       newcookie.domain = domain;
@@ -206,7 +205,7 @@ class RestedRequest {
     if (path != "") {
       newcookie.path = path;
     }
-    if (maxAge != null) {
+    if (maxAge > -1) {
       newcookie.maxAge = maxAge;
     }
     print("Adding new cookie: " + newcookie.toString());
