@@ -32,5 +32,7 @@ export 'src/resteddatabase.dart';
 export 'src/restedfiles.dart';
 import 'src/restedauth.dart';
 export 'src/restedauth.dart';
+import 'src/restedresource.dart';
+export 'src/restedresource.dart';
 
 Map responses = new Map();
