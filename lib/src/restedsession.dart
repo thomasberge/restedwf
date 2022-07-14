@@ -15,7 +15,7 @@ import 'restederrors.dart';
 import 'restedrequest.dart';
 
 
-SessionManager manager = SessionManager();
+SessionManager sessions = SessionManager();
 
 // New, simpler manager. Easier to migrate to Redis later.
 class SessionManager {

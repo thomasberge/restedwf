@@ -292,13 +292,13 @@ class RestedResource {
 
     if (request.session.containsKey('delete')) {
       if (request.session['delete']) {
-        manager.deleteSession(request.session['id']);
+        sessions.deleteSession(request.session['id']);
         request.request.response.headers
             .add("Set-Cookie", "session=; Path=/; Max-Age=0; HttpOnly");
       }
     } else {
       if (request.session.length > 0) {
-        manager.saveSession(request);
+        sessions.saveSession(request);
       }
     }
   }

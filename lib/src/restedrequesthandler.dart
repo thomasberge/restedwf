@@ -89,10 +89,10 @@ class RestedRequestHandler {
     // Decrypts the session id and sets the session data in the request
     if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
       if (request.cookies.containsKey('session')) {
-        var session = manager.getSession(request.cookies.getFirst('session').value);
+        var session = sessions.getSession(request.cookies.getFirst('session').value);
         if (session != null) {
           if (request.deleteSession) {
-            manager.deleteSession(request.cookies.getFirst('session').value);
+            sessions.deleteSession(request.cookies.getFirst('session').value);
           } else {
             request.session = session;
           }
