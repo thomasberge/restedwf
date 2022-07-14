@@ -11,7 +11,11 @@ class FileCollection {
   String root;
   Map<String, String> files = new Map();
 
-  FileCollection();
+  FileCollection({String path = ""}) {
+    if(path != "") {
+      resource_path = path;
+    }
+  }
 
   String getFile(String filepath) {
 

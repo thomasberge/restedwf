@@ -17,44 +17,10 @@ import 'responses.dart';
 import 'restedsettings.dart';
 import 'restedsession.dart';
 import 'mimetypes.dart';
+import 'cookiecollection.dart';
 
 Responses error_responses = new Responses();
 Mimetypes mimetypes = new Mimetypes();
-
-class CookieCollection {
-  List<Cookie> cookies = null;
-
-  CookieCollection(this.cookies);
-
-  List<Cookie> get(String name) {
-    List<Cookie> returnlist = new List();
-    for (Cookie cookie in cookies) {
-      if (cookie.name == name) {
-        returnlist.add(cookie);
-      }
-    }
-    return returnlist;
-  }
-
-  Cookie getFirst(String name) {
-    for (Cookie cookie in cookies) {
-      if (cookie.name == name) {
-        return cookie;
-      }
-    }
-    return null;
-  }
-
-  bool containsKey(String name) {
-    bool containskey = false;
-    for (Cookie cookie in cookies) {
-      if (cookie.name == name) {
-        containskey = true;
-      }
-    }
-    return containskey;
-  }
-}
 
 class RestedRequest {
   String hostAddress;

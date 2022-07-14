@@ -7,10 +7,10 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:convert';
 
-import 'package:jaguar_jwt/jaguar_jwt.dart';
-import 'package:path/path.dart' as p;
-import 'package:rested_script/rested_script.dart';
-import 'package:string_tools/string_tools.dart';
+//import 'package:jaguar_jwt/jaguar_jwt.dart';
+//import 'package:path/path.dart' as p;
+//import 'package:rested_script/rested_script.dart';
+//import 'package:string_tools/string_tools.dart';
 
 import 'pathparser.dart';
 import 'restedsession.dart';
@@ -29,14 +29,14 @@ import 'restedauth.dart';
 import 'restedresponse.dart';
 import 'restedresource.dart';
 
-String rootDirectory = null;
-Function _custom_JWT_verification;
-
 class RestedRequestHandler {
+  String rootDirectory;
+  Function _custom_JWT_verification;
+
   String address = "127.0.0.1";
   int port = 8080;
   int threadid = 0;
-  FileCollection common = FileCollection();
+  FileCollection common = FileCollection(path: "/");
   Map<String, List<String>> uri_patterns = {};
 
   List<RestedResource> resources = new List();
@@ -44,14 +44,8 @@ class RestedRequestHandler {
   // All RestedResources and their files. Only used for GETs to map file paths and their respective resource.
   Map<String, RestedResource> files = {};
 
-  // This function can be overridden by server implementation to add custom JWT verification
-  bool custom_JWT_verification(String token) {
-    return true;
-  }
-
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
-    common.resource_path = "/";
 
     if(rsettings.getVariable('common_enabled')) {
       if(Directory(rootDirectory + "/bin/common").existsSync()) {
@@ -71,16 +65,13 @@ class RestedRequestHandler {
         _res.setExternalFunctions();
       }
     }    
-    
   }
 
-  // Validates the incoming request and passes it to the proper RestedResource object
-  //
-  // IMPORTANT: If body contains a first element called "body" then the contents of that
-  //            element will become the entire body contents. Some applications seems to
-  //            wrap the content like this { "body": { <actual content> }}. This means that
-  //            if there is information outside the body tag that is part of the actual
-  //            body then they will be dropped when body = body['body']; is performed.
+  // This function can be overridden by server implementation to add custom JWT verification
+  bool custom_JWT_verification(String token) {
+    return true;
+  }
+
   void handle(HttpRequest incomingRequest) async {
 
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
