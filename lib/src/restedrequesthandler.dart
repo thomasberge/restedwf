@@ -73,7 +73,6 @@ class RestedRequestHandler {
   }
 
   void handle(HttpRequest incomingRequest) async {
-
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
     RestedRequest request = new RestedRequest(incomingRequest, address, port);
 
@@ -94,7 +93,7 @@ class RestedRequestHandler {
     }
 
     String access_token = "";
-    String unverified_access_token = "";
+    String unverified_access_token = null;
     bool expired_token = false;
 
     // 2 --- Get access_token from either cookie or session, then verify it.
@@ -120,11 +119,11 @@ class RestedRequestHandler {
     // which in turn will trigger a 401 Unauthorized error response.
 
     try {
-      if (unverified_access_token == "") {
+      if (unverified_access_token == null) {
         unverified_access_token = incomingRequest.headers.value(HttpHeaders.authorizationHeader);
 
         // Checks that the authorization header is formatted correctly.
-        if (unverified_access_token != "") {
+        if (unverified_access_token != null) {
           List<String> authtype = unverified_access_token.split(' ');
           List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
           if (valid_auths.contains(authtype[0].toUpperCase())) {
@@ -136,7 +135,7 @@ class RestedRequestHandler {
         }
       }
 
-      if (unverified_access_token != "") {
+      if (unverified_access_token != null) {
         RestedJWT jwt_handler = new RestedJWT();
         jwt_handler.setCustomVerificationMethod(_custom_JWT_verification);
         int verify_result = jwt_handler.verify_token(unverified_access_token);
@@ -150,7 +149,8 @@ class RestedRequestHandler {
       }
 
     } catch(e) {
-      Errors.raise(request, 501);
+      print(e.toString());
+      Errors.raise(request, 500);
       return;
     }
 
@@ -173,7 +173,6 @@ class RestedRequestHandler {
     if(access_token != "") {
       request.access_token = access_token;
     }
-
     int index = getResourceIndex(request.path);
 
     if (index != null) {

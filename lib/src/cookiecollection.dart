@@ -5,16 +5,6 @@ class CookieCollection {
 
   CookieCollection(this.cookies);
 
-  List<Cookie> get(String name) {
-    List<Cookie> returnlist = new List();
-    for (Cookie cookie in cookies) {
-      if (cookie.name == name) {
-        returnlist.add(cookie);
-      }
-    }
-    return returnlist;
-  }
-
   Cookie getFirst(String name) {
     for (Cookie cookie in cookies) {
       if (cookie.name == name) {

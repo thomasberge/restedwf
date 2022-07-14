@@ -9,7 +9,7 @@ class IntegerParameter {
     int maximum;
     bool exclusiveMin = false;
     bool exclusiveMax = false;
-
+    
     List<String> _implemented_formats = ["none"];
     List<String> _implemented_styles = ["none"];
 

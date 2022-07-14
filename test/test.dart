@@ -1,5 +1,5 @@
 /* 
-    Rested Web Framework test script
+    Rested Web Framework testing playground
 */
 
 import 'dart:io';
@@ -148,6 +148,16 @@ class Root extends RestedResource {
 }
 
 class Login extends RestedResource {
+
+  Login() {
+    RestedSchema userlogin = RestedSchema();
+    userlogin.addField(StringParameter("username"), requiredField: true);
+    StringParameter password = StringParameter("password");
+    password.minLength = 12;
+    userlogin.addField(password, requiredField: true);
+    setSchema("POST", userlogin);
+  }
+
   void get(RestedRequest request) async {
       String loginpage = '<html><form action="/login" method="POST"><label for="username">Username:</label><br><input type="text" id="username" name="username"><br><label for="password">Password:</label><br><input type="password" id="password" name="password"><br><br><input type="submit" value="Submit"></form></html>';
       request.response(type: "html", data: loginpage);

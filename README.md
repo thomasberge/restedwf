@@ -11,9 +11,12 @@ The source is being developed on a private repo. I will update this repo from ti
 ### 0.5.4 Main changes
 
 - The "request-path-to-directory"-method was ditched in favor for a more flexible method. Each RestedResource now contains a FileCollection object that maps local files (and their absolute paths) to the endpoint. There is also a root FileCollection on the requesthandler. See documentation for details.
+- Schema validations. You can now build a RestedSchema using StringParameter and IntegerParameter (still only ones supported) and validate a Map/Json against that schema. Supports Required Field parameter (part of the schema, not the parameter itself). See documentation for info.
+- RestedResource methods now validate against schemas defined on their respective methods.
 - The settings code have been re-written. The config is now confined in a single JSON together with type and descriptions.
 - Developer error messages are now handled by the RestedErrors class. It is global and can be raised anywhere. It is used as an internal RestedWF error handling system and not ment for end-users.
 - The ConsoleMessages class has been removed and all messages refactored to use the new RestedError class.
+- Lots and lots of cleanup and code restructure.
 
 ### Features
 
@@ -169,6 +172,44 @@ For information on how to specify the parameters, look at the `URI/Path/Query Pa
 get(RestedRequest request) {
   if(request.query_parameters['genre'] == 'action') {
     // do something
+  }
+}
+```
+
+#### Schemas and Resource validation
+You can define schemas and add fields. The field can optionally be set to required, otherwise it is false by default. The fields need to be of typeParameter such as StringParameter or IntegerParameter (currently the only ones supported). Read more about these typeParameters in this documentation. Once a schema has been created you can validate against it by using the `bool validate(Map<String, dynamic> json)` method. In the example below a simple username/password schema is created where both fields are required and the password needs to be of minimum 12 characters. Note that the StringParameter for username is directly created in the addField method since no method calls or parameter changes to it were necessary.
+
+```dart
+RestedSchema userlogin = RestedSchema();
+userlogin.addField(StringParameter("username"), requiredField: true);
+StringParameter password = StringParameter("password");
+password.minLength = 12;
+userlogin.addField(password, requiredField: true);
+```
+
+The schema can be validated as such:
+
+```dart
+Map<String, dynamic> this_will_validate = { "username": "admin", "password": "password1234" };
+Map<String, dynamic> this_will_fail_validation = { "username": "admin", "password": "g%43dc_1Fa" };
+
+bool result1 = userlogin.validate(this_will_validate); // returns true
+bool result2 = userlogin.validate(this_will_fail_validation); // returns false
+
+```
+
+Each RestedResource has a schema for its respective method. Any form or body sent to that resource will automatically be validated towards that schema. You can add that with the setSchema method inside the RestedResource constructor. That is also where the RestedSchema itself needs to be created.
+
+```dart
+class Login extends RestedResource {
+
+  Login() {
+    RestedSchema userlogin = RestedSchema();
+    userlogin.addField(StringParameter("username"), requiredField: true);
+    StringParameter password = StringParameter("password");
+    password.minLength = 12;
+    userlogin.addField(password, requiredField: true);
+    setSchema("POST", userlogin);
   }
 }
 ```

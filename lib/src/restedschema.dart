@@ -2,15 +2,79 @@ import 'schema/stringparameter.dart';
 export 'schema/stringparameter.dart';
 import 'schema/integerparameter.dart';
 export 'schema/integerparameter.dart';
+import 'schema/booleanparameter.dart';
+export 'schema/booleanparameter.dart';
 import 'schema/patterns.dart' as patterns;
 
-//Map<String, dynamic> pathparams = {};
+void testSchema() {
+    RestedSchema userlogin = RestedSchema();
+    StringParameter username = StringParameter("username");
+    userlogin.addField(username);
+    userlogin.addField(StringParameter("password"));
+    print(userlogin.toString());
+}
 
 class RestedSchema {
     
     bool active = false;
     Map<String, dynamic> _fields = {};
+    List<String> _required_fields = [];
     
+    bool isSupported(dynamic parameter) {
+        bool result = false;
+        if(parameter is StringParameter) {
+            result = true;
+        } else if (parameter is IntegerParameter) {
+            result = true;
+        }
+        return result;
+    }
+
+    void addField(dynamic parameter, {bool requiredField = false}) {
+        if(isSupported(parameter)) {
+            String name = parameter.name;
+            _fields[name] = parameter;
+            if(requiredField) {
+                _required_fields.add(parameter.name);
+            }
+        } else {
+            print("Error, tried to add an unsupported field to schema: " + parameter.toString());
+        }
+    }
+
+    String toString() {
+        return _fields.toString();
+    }
+
+    bool validate(Map<String, dynamic> data) {
+        bool result = true;
+        String errorMessage = "";
+
+        for(String field in _required_fields) {
+            if(data.containsKey(field) == false) {
+                errorMessage = errorMessage + "Required field '" + field + "' is missing.\r\n";
+                result = false;
+            }
+        }
+
+        for(MapEntry field in data.entries) {
+            if(_fields.containsKey(field.key)) {
+                String fieldValidation = _fields[field.key].validate(field.value);
+                if(fieldValidation != 'OK') {
+                    errorMessage = errorMessage + fieldValidation + "\r\n";
+                    result = false;
+                } else {
+                    print("Validated OK.");
+                }
+            }
+        }
+
+        if(result == false) {
+            print("Error validating schema:\r\n" + errorMessage);
+        }
+        return result;
+    }
+
     RestedSchema();
 
     static bool isUUID(String _inc) {
@@ -29,6 +93,7 @@ class RestedSchema {
         return patterns.isNumeric(_inc);
     }
 
+    /*
     void setFields(Map<String, dynamic> _incomingFields) {
         if(active) {
             print("Error setting schema fields, ignoring. Schema already set. Incoming data: " + _incomingFields.toString());
@@ -36,7 +101,7 @@ class RestedSchema {
             _fields = _incomingFields;
             active = true;
         }
-    }
+    }*/
 
     //Map<String, String> _fields = {};
     //Map<String, String> _requiredFields = {};

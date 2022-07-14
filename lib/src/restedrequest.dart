@@ -27,7 +27,7 @@ class RestedRequest {
   int hostPort;
   String content_type = "text";   // text, json, xml, form, binary
   int status = 0;
-  String error = "";
+  //String error = "";
   bool deleteSession = false;
   HttpRequest request;
   String method;
@@ -35,7 +35,7 @@ class RestedRequest {
   String access_token;
   Map body = Map<String, dynamic>();
   String text = "";
-  CookieCollection cookies = null;
+  CookieCollection cookies = CookieCollection([]);
   Map<String, dynamic> session = {};
   Map<String, String> headers = {};
   Map<String, dynamic> claims = {};
@@ -50,7 +50,7 @@ class RestedRequest {
     print("hostPort:" + hostPort.toString());
     print("content_type:" + content_type.toString());
     print("status:" + status.toString());
-    print("error:" + error.toString());
+    //print("error:" + error.toString());
     print("deleteSession:" + deleteSession.toString());
     print("request:" + request.toString());
     print("method:" + method.toString());

@@ -8,6 +8,7 @@ import 'restedsettings.dart';
 import 'external.dart';
 import 'restedresponse.dart';
 import 'restedsession.dart';
+import 'errors.dart';
 
 class RestedResource {
   bool validateAllQueryParameters = false;
@@ -42,6 +43,17 @@ class RestedResource {
 
   Map<String, Map<String, dynamic>> getQueryParams() {
     return _query_parameters_schemas;
+  }
+
+  bool validateSchema(String method, RestedRequest request) {
+    if(request.form != {}) {
+        return schemas[method.toLowerCase()].validate(request.form);
+    } else if(request.body != {}) {
+        return schemas[method.toLowerCase()].validate(request.body);
+    } else {
+        Errors.raise(request, 400);
+        return false;
+    }
   }
 
   String validateUriParameters(Map<String, String> params) {
@@ -92,6 +104,10 @@ class RestedResource {
 
   void require_token(String _method, {String redirect_url = null}) {
     _token_required[_method] = true;
+  }
+
+  String toString() {
+    return path;
   }
 
   // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
@@ -242,7 +258,8 @@ class RestedResource {
   }
 
   void setSchema(String method, RestedSchema schema) {
-    if(schemas.containsKey(method.toLowerCase())) {
+    method = method.toLowerCase();
+    if(schemas.containsKey(method)) {
       schemas[method.toLowerCase()] = schema;
     }
   }
@@ -316,10 +333,17 @@ class RestedResource {
     }
     
     if(result != "OK") {
-      request.response(data: "400 " + result.toString());
-      RestedResponse response = RestedResponse(request);
-      response.respond();
-      return;
+        Errors.raise(request, 400);
+        return;
+    }
+
+    if(schemas.containsKey(method.toLowerCase())) {
+        if(schemas[method.toLowerCase()] != null) {
+            if(validateSchema(method, request) == false) {
+                Errors.raise(request, 400);
+                return;
+            }
+        }
     }
 
     method = method.toLowerCase();
