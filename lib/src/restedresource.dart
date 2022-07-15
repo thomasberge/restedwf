@@ -287,7 +287,7 @@ class RestedResource {
     if(request == null) {
       print("Error in wrapper(): request is null");
     }
-
+/*
     // If the resource method has a schema requirement
     if(schemas[method] != null) {
       if(schemas[method].validate(request.body)) {
@@ -298,14 +298,14 @@ class RestedResource {
       }
     } 
     // If the resource method does NOT have a schema requirement
-    else {
+    else {*/
       if(functions[method] == null) {
         request.response(status: 501);
       } else {
         await functions[method](request);
       }
       await callback(request);
-    }
+    //}
 
     if (request.session.containsKey('delete')) {
       if (request.session['delete']) {

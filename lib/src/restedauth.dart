@@ -25,31 +25,32 @@ class RestedJWT {
 
     Future<RestedRequest> validateAuth(RestedRequest request) async {
         try {
-        if (request.unverified_access_token == null) {
-            request.unverified_access_token = request.request.headers.value(HttpHeaders.authorizationHeader);
+            if (request.unverified_access_token == null) {
+                request.unverified_access_token = request.request.headers.value(HttpHeaders.authorizationHeader);
 
-            // Checks that the authorization header is formatted correctly.
+                // Checks that the authorization header is formatted correctly.
+                if (request.unverified_access_token != null) {
+                    List<String> authtype = request.unverified_access_token.split(' ');
+                    List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
+                    if (valid_auths.contains(authtype[0].toUpperCase())) {
+                        request.unverified_access_token = authtype[1];
+                    } else {
+                        return await Errors.raise(request, 400);
+                    }
+                }
+            } 
+
             if (request.unverified_access_token != null) {
-                List<String> authtype = request.unverified_access_token.split(' ');
-                List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
-                if (valid_auths.contains(authtype[0].toUpperCase())) {
-                    request.unverified_access_token = authtype[1];
+                int verify_result = verify_token(request.unverified_access_token);
+                if (verify_result != 401) {
+                    request.access_token = request.unverified_access_token;
+                    request.claims = RestedJWT.getClaims(request.access_token);
                 } else {
-                    return await Errors.raise(request, 400);
+                    return await Errors.raise(request, 401);
                 }
             }
-        } 
 
-        if (request.unverified_access_token != null) {
-            int verify_result = verify_token(request.unverified_access_token);
-            if (verify_result != 401) {
-                request.access_token = request.unverified_access_token;
-                request.claims = RestedJWT.getClaims(request.access_token);
-                return request;
-            } else {
-            return await Errors.raise(request, 401);
-            }
-        }
+            return request;
 
         } catch(e) {
             return await Errors.raise(request, 500);

@@ -64,7 +64,7 @@ class RestedSchema {
                     errorMessage = errorMessage + fieldValidation + "\r\n";
                     result = false;
                 } else {
-                    print("Validated OK.");
+                    print("Validated OK.(" + field.key.toString() + ":" + field.value.toString() + ")");
                 }
             }
         }

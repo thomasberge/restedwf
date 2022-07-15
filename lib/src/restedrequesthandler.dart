@@ -31,15 +31,12 @@ import 'restedresource.dart';
 
 class RestedRequestHandler {
   String rootDirectory;
-  //Function _custom_JWT_verification;
-
   String address = "127.0.0.1";
   int port = 8080;
   int threadid = 0;
   FileCollection common = FileCollection(path: "/");
   Map<String, List<String>> uri_patterns = {};
   RestedJWT jwt_handler = new RestedJWT();
-
   List<RestedResource> resources = new List();
 
   // All RestedResources and their files. Only used for GETs to map file paths and their respective resource.
@@ -56,8 +53,6 @@ class RestedRequestHandler {
       }
     }
 
-    //_custom_JWT_verification = custom_JWT_verification;
-
     Map<String, String> _envVars = Platform.environment;
     if (_envVars.containsKey("yaml_import_file")) {
       OAPI3 oapi = OAPI3(_envVars["yaml_import_file"]);
@@ -66,6 +61,18 @@ class RestedRequestHandler {
         _res.setExternalFunctions();
       }
     }    
+  }
+
+
+  void findFile(String path) {
+    print(":: FIND FILE " + path);
+    for(MapEntry file in files.entries) {
+      if(path.length >= file.key.length) {
+        print(":: TESTING ON " + file.key);
+        String testvalue = path.substring(path.length - file.key.length);
+        print(":: TESTVALUE IS " + testvalue);
+      }
+    }
   }
 
   void set custom_JWT_verification(Function _custom_JWT_verification) {
@@ -93,8 +100,7 @@ class RestedRequestHandler {
       }
     }
 
-    // 2 --- Get access_token from either cookie or session, then verify it.
-
+    // 2 --- Get access_token from either cookie or session
     // Get access_token from cookie. Gets overwritten by access_token from session if present.
     if (rsettings.getVariable('cookies_enabled')) {
       if (request.cookies.containsKey("access_token")) {
@@ -109,14 +115,10 @@ class RestedRequestHandler {
       }
     }
 
-    request = await jwt_handler.validateAuth(request);
+    request = await jwt_handler.validateAuth(request);    //  Do the auth
+    request = await receive_content(request);             //  Download body content
 
-    // 3 ---  Download whatever data is related to the Content-Type and parse it to their respective
-    //        request data fields. If an error was raised (meaning the response has already been sent)
-    //        then we simply return.
-    //request.dump();
-    request = await receive_content(request);
-    if(request.status > 399) {
+    if(request.status > 399) {  // this should in reality check request.request.response.statusCode instead
       return;
     }
 
@@ -139,10 +141,7 @@ class RestedRequestHandler {
       if (rsettings.getVariable('files_enabled')) {
         String path;
 
-        print("files=" + files.toString());
-
         // Find out if a RestedResource has this path as a file
-
         //String filepath = resource_path + filepath.substring(resource_path.length);
 
         if(files.containsKey(request.path)) {

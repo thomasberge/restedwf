@@ -34,7 +34,7 @@ class TestServer extends RestedRequestHandler {
     this.addResource(SchemaTest(), "/validate");
     this.addResource(JWTClaims(), "/allclaims");
     this.addResource(GETJWTClaims(), "/getclaims");
-    this.addResource(Files(), "/files");
+    this.addResource(Files(), "/{user}/files");
   }
 }
 
@@ -164,7 +164,6 @@ class Login extends RestedResource {
   }
 
   void post(RestedRequest request) async {
-    print(request.form.toString());
     request.redirect('/login');
   }
 }
