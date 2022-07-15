@@ -31,13 +31,14 @@ import 'restedresource.dart';
 
 class RestedRequestHandler {
   String rootDirectory;
-  Function _custom_JWT_verification;
+  //Function _custom_JWT_verification;
 
   String address = "127.0.0.1";
   int port = 8080;
   int threadid = 0;
   FileCollection common = FileCollection(path: "/");
   Map<String, List<String>> uri_patterns = {};
+  RestedJWT jwt_handler = new RestedJWT();
 
   List<RestedResource> resources = new List();
 
@@ -55,7 +56,7 @@ class RestedRequestHandler {
       }
     }
 
-    _custom_JWT_verification = custom_JWT_verification;
+    //_custom_JWT_verification = custom_JWT_verification;
 
     Map<String, String> _envVars = Platform.environment;
     if (_envVars.containsKey("yaml_import_file")) {
@@ -67,10 +68,10 @@ class RestedRequestHandler {
     }    
   }
 
-  // This function can be overridden by server implementation to add custom JWT verification
-  bool custom_JWT_verification(String token) {
-    return true;
+  void set custom_JWT_verification(Function _custom_JWT_verification) {
+    jwt_handler.setCustomVerificationMethod(_custom_JWT_verification);
   }
+
 
   void handle(HttpRequest incomingRequest) async {
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
@@ -92,10 +93,6 @@ class RestedRequestHandler {
       }
     }
 
-    //String access_token = "";
-    //String unverified_access_token = null;
-    //bool expired_token = false;
-
     // 2 --- Get access_token from either cookie or session, then verify it.
 
     // Get access_token from cookie. Gets overwritten by access_token from session if present.
@@ -112,47 +109,7 @@ class RestedRequestHandler {
       }
     }
 
-    // If there is an Authorization header, the token will be extracted if it is prefixed
-    // in the header either as Bearer, access_token, token or jwt followed by a space and
-    // the jwt token itself. The extracted token will be stored in the access_token variable
-    // and passed to the RestedRequest object. If it fails it will set exception to true,
-    // which in turn will trigger a 401 Unauthorized error response.
-
-    try {
-      if (request.unverified_access_token == null) {
-        request.unverified_access_token = incomingRequest.headers.value(HttpHeaders.authorizationHeader);
-
-        // Checks that the authorization header is formatted correctly.
-        if (request.unverified_access_token != null) {
-          List<String> authtype = request.unverified_access_token.split(' ');
-          List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
-          if (valid_auths.contains(authtype[0].toUpperCase())) {
-            request.unverified_access_token = authtype[1];
-          } else {
-            Errors.raise(request, 400);
-            return;
-          }
-        }
-      }
-
-      if (request.unverified_access_token != null) {
-        RestedJWT jwt_handler = new RestedJWT();
-        jwt_handler.setCustomVerificationMethod(_custom_JWT_verification);
-        int verify_result = jwt_handler.verify_token(request.unverified_access_token);
-        if (verify_result != 401) {
-          request.access_token = request.unverified_access_token;
-          request.claims = RestedJWT.getClaims(request.access_token);
-        } else {
-          Errors.raise(request, 401);
-          return;
-        }
-      }
-
-    } catch(e) {
-      print(e.toString());
-      Errors.raise(request, 500);
-      return;
-    }
+    request = await jwt_handler.validateAuth(request);
 
     // 3 ---  Download whatever data is related to the Content-Type and parse it to their respective
     //        request data fields. If an error was raised (meaning the response has already been sent)
@@ -169,10 +126,7 @@ class RestedRequestHandler {
     // an "error" in rscript_args is added along with error description.
     // we reset error code and makes sure access_token is blank before we continue. After that,
     // if the error code is still not 0 we return an error response.
-      
-    //if(access_token != "") {
-    //  request.access_token = access_token;
-    //}
+
     int index = getResourceIndex(request.path);
 
     if (index != null) {

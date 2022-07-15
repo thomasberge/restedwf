@@ -1,14 +1,18 @@
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'dart:math';
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 
 import 'restedsettings.dart';
+import 'restedrequest.dart';
+import 'errors.dart';
 
 class RestedJWT {
   Function _custom_JWT_verification;
-  
+
   RestedJWT() {
-    _custom_JWT_verification = custom_JWT_verification;
+    //_custom_JWT_verification = custom_JWT_verification;
   }
 
   void setCustomVerificationMethod(Function _method) {
@@ -18,6 +22,39 @@ class RestedJWT {
   bool custom_JWT_verification(String token) {
     return true;
   }
+
+    Future<RestedRequest> validateAuth(RestedRequest request) async {
+        try {
+        if (request.unverified_access_token == null) {
+            request.unverified_access_token = request.request.headers.value(HttpHeaders.authorizationHeader);
+
+            // Checks that the authorization header is formatted correctly.
+            if (request.unverified_access_token != null) {
+                List<String> authtype = request.unverified_access_token.split(' ');
+                List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
+                if (valid_auths.contains(authtype[0].toUpperCase())) {
+                    request.unverified_access_token = authtype[1];
+                } else {
+                    return await Errors.raise(request, 400);
+                }
+            }
+        } 
+
+        if (request.unverified_access_token != null) {
+            int verify_result = verify_token(request.unverified_access_token);
+            if (verify_result != 401) {
+                request.access_token = request.unverified_access_token;
+                request.claims = RestedJWT.getClaims(request.access_token);
+                return request;
+            } else {
+            return await Errors.raise(request, 401);
+            }
+        }
+
+        } catch(e) {
+            return await Errors.raise(request, 500);
+        }
+    }
 
   String _randomString(int length) {
     var rand = new Random();

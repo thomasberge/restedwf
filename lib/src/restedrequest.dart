@@ -32,8 +32,10 @@ class RestedRequest {
   HttpRequest request;
   String method;
   String path;
+
   String access_token;
   String unverified_access_token = null;
+
   Map body = Map<String, dynamic>();
   String text = "";
   CookieCollection cookies = CookieCollection([]);
