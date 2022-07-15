@@ -92,23 +92,23 @@ class RestedRequestHandler {
       }
     }
 
-    String access_token = "";
-    String unverified_access_token = null;
-    bool expired_token = false;
+    //String access_token = "";
+    //String unverified_access_token = null;
+    //bool expired_token = false;
 
     // 2 --- Get access_token from either cookie or session, then verify it.
 
     // Get access_token from cookie. Gets overwritten by access_token from session if present.
     if (rsettings.getVariable('cookies_enabled')) {
       if (request.cookies.containsKey("access_token")) {
-        unverified_access_token = request.cookies.getFirst("access_token").value;
+        request.unverified_access_token = request.cookies.getFirst("access_token").value;
       }
     }
 
     // Get access_token from session. Overwrites access_token from cookie if present.
     if (rsettings.getVariable('sessions_enabled')) {
       if (request.session.containsKey("access_token")) {
-        unverified_access_token = request.session["access_token"];
+        request.unverified_access_token = request.session["access_token"];
       }
     }
 
@@ -119,15 +119,15 @@ class RestedRequestHandler {
     // which in turn will trigger a 401 Unauthorized error response.
 
     try {
-      if (unverified_access_token == null) {
-        unverified_access_token = incomingRequest.headers.value(HttpHeaders.authorizationHeader);
+      if (request.unverified_access_token == null) {
+        request.unverified_access_token = incomingRequest.headers.value(HttpHeaders.authorizationHeader);
 
         // Checks that the authorization header is formatted correctly.
-        if (unverified_access_token != null) {
-          List<String> authtype = unverified_access_token.split(' ');
+        if (request.unverified_access_token != null) {
+          List<String> authtype = request.unverified_access_token.split(' ');
           List<String> valid_auths = ['BEARER', 'ACCESS_TOKEN', 'TOKEN', 'REFRESH_TOKEN', 'JWT'];
           if (valid_auths.contains(authtype[0].toUpperCase())) {
-            unverified_access_token = authtype[1];
+            request.unverified_access_token = authtype[1];
           } else {
             Errors.raise(request, 400);
             return;
@@ -135,13 +135,13 @@ class RestedRequestHandler {
         }
       }
 
-      if (unverified_access_token != null) {
+      if (request.unverified_access_token != null) {
         RestedJWT jwt_handler = new RestedJWT();
         jwt_handler.setCustomVerificationMethod(_custom_JWT_verification);
-        int verify_result = jwt_handler.verify_token(unverified_access_token);
+        int verify_result = jwt_handler.verify_token(request.unverified_access_token);
         if (verify_result != 401) {
-          access_token = unverified_access_token;
-          request.claims = RestedJWT.getClaims(access_token);
+          request.access_token = request.unverified_access_token;
+          request.claims = RestedJWT.getClaims(request.access_token);
         } else {
           Errors.raise(request, 401);
           return;
@@ -170,9 +170,9 @@ class RestedRequestHandler {
     // we reset error code and makes sure access_token is blank before we continue. After that,
     // if the error code is still not 0 we return an error response.
       
-    if(access_token != "") {
-      request.access_token = access_token;
-    }
+    //if(access_token != "") {
+    //  request.access_token = access_token;
+    //}
     int index = getResourceIndex(request.path);
 
     if (index != null) {

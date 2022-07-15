@@ -14,4 +14,3 @@ export 'src/resteddatabase.dart';
 export 'src/restedfiles.dart';
 export 'src/restedauth.dart';
 export 'src/restedresource.dart';
-
