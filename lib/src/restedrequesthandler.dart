@@ -7,11 +7,6 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:convert';
 
-//import 'package:jaguar_jwt/jaguar_jwt.dart';
-//import 'package:path/path.dart' as p;
-//import 'package:rested_script/rested_script.dart';
-//import 'package:string_tools/string_tools.dart';
-
 import 'pathparser.dart';
 import 'restedsession.dart';
 import 'restedsettings.dart';
@@ -38,9 +33,6 @@ class RestedRequestHandler {
   RestedJWT jwt_handler = new RestedJWT();
   List<RestedResource> resources = new List();
   List<RestedResource> file_resources = new List(); // Resources that contain files
-
-  // All RestedResources and their files. Only used for GETs to map file paths and their respective resource.
-  //Map<String, RestedResource> files = {};
 
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
@@ -70,7 +62,7 @@ class RestedRequestHandler {
 
   void handle(HttpRequest incomingRequest) async {
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
-    RestedRequest request = new RestedRequest(incomingRequest, address, port);
+    RestedRequest request = new RestedRequest(incomingRequest);
 
     // Decrypts the session id and sets the session data in the request
     if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
@@ -165,7 +157,7 @@ class RestedRequestHandler {
     }
   }
 
-  String getFilePath(String path) {
+  /*String getFilePath(String path) {
     path = 'bin/resources' + path;
     if (File(path).existsSync()) {
       return path;
@@ -173,7 +165,7 @@ class RestedRequestHandler {
       error.raise("file_not_found", details: path);
       return null;
     }
-  }
+  }*/
 
   void addResource(RestedResource resource, String path) {
     int exists = getResourceIndex(path);

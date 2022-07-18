@@ -22,14 +22,11 @@ class FileCollection {
   }
 
   String getFile(String filepath) {
-    String found_path = null;
-    for(MapEntry file in files.entries) {
-      print("comparing >" + file.key + "< to >" + filepath + "<");
-      if(file.key == filepath) {
-        found_path = file.value;
-      }
+    if(files.containsKey(filepath)) {
+      return files[filepath];
+    } else {
+      return null;
     }
-    return found_path;
   }
 
   bool containsKey(String key) {
@@ -61,7 +58,7 @@ class FileCollection {
     } catch(e) {
       print("FileCollection.addFiles error:\n" + e.toString());
     }
-    print(path + " added to FileCollection (recursive=" + recursive.toString() + ")");
+    //print(path + " added to FileCollection (recursive=" + recursive.toString() + ")");
   }
 
   void addFile(String resource_path, String absolute_path) {

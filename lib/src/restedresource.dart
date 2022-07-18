@@ -22,7 +22,6 @@ class RestedResource {
     int i = 0;
     for(String element in pathElements) {
       if(element.contains('{') == false) {
-        //print("pathElemt:" + pathElements[i] + " filepath:" + filepath[i]);
         if(pathElements[i] != filepath[i]) {
           match = false;
           break;
@@ -37,18 +36,13 @@ class RestedResource {
       for(i; i < filepath.length; i++) {
         file = file + '/' + filepath[i];
       }
-      print("URL matched. Now looking for file " + file);
-      print("Available files in FileCollection:" + _files.toString());
       String temp = _files.getFile(file);
-      print("temp = " + temp.toString());
       if(temp != null) {
-        return _files.getFile(file);
+        return temp;
       } else {
         return null;
       }
-      
     } else {
-      print("no match on " + path);
       return null;
     }
   }

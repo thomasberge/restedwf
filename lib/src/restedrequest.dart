@@ -23,11 +23,8 @@ Responses error_responses = new Responses();
 Mimetypes mimetypes = new Mimetypes();
 
 class RestedRequest {
-  String hostAddress;
-  int hostPort;
   String content_type = "text";   // text, json, xml, form, binary
   int status = 0;
-  //String error = "";
   bool deleteSession = false;
   HttpRequest request;
   String method;
@@ -49,11 +46,8 @@ class RestedRequest {
   String raw = "";
 
   void dump() {
-    print("hostAddress:" + hostAddress.toString());
-    print("hostPort:" + hostPort.toString());
     print("content_type:" + content_type.toString());
     print("status:" + status.toString());
-    //print("error:" + error.toString());
     print("deleteSession:" + deleteSession.toString());
     print("request:" + request.toString());
     print("method:" + method.toString());
@@ -204,7 +198,7 @@ class RestedRequest {
     }
   }
 
-  RestedRequest(HttpRequest this.request, this.hostAddress, this.hostPort) {
+  RestedRequest(HttpRequest this.request) {
 
     if (rsettings.getVariable('cookies_enabled')) {
       cookies = new CookieCollection(request.cookies);
