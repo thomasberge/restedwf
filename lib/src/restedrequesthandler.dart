@@ -35,12 +35,12 @@ class RestedRequestHandler {
   int port = 8080;
   int threadid = 0;
   FileCollection common = FileCollection(path: "/");
-  Map<String, List<String>> uri_patterns = {};
   RestedJWT jwt_handler = new RestedJWT();
   List<RestedResource> resources = new List();
+  List<RestedResource> file_resources = new List(); // Resources that contain files
 
   // All RestedResources and their files. Only used for GETs to map file paths and their respective resource.
-  Map<String, RestedResource> files = {};
+  //Map<String, RestedResource> files = {};
 
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
@@ -61,18 +61,6 @@ class RestedRequestHandler {
         _res.setExternalFunctions();
       }
     }    
-  }
-
-
-  void findFile(String path) {
-    print(":: FIND FILE " + path);
-    for(MapEntry file in files.entries) {
-      if(path.length >= file.key.length) {
-        print(":: TESTING ON " + file.key);
-        String testvalue = path.substring(path.length - file.key.length);
-        print(":: TESTVALUE IS " + testvalue);
-      }
-    }
   }
 
   void set custom_JWT_verification(Function _custom_JWT_verification) {
@@ -141,15 +129,15 @@ class RestedRequestHandler {
       if (rsettings.getVariable('files_enabled')) {
         String path;
 
-        // Find out if a RestedResource has this path as a file
-        //String filepath = resource_path + filepath.substring(resource_path.length);
-
-        if(files.containsKey(request.path)) {
-          path = files[request.path].getFile(request.path);
+        for(RestedResource res in file_resources) {
+          path = res.testforfile(request.path.split('/'));
+          if(path != null) {
+            break;
+          }
         }
 
         // If not, check the common directory
-        if(common.containsKey(request.path)) {
+        if(path == null && common.containsKey(request.path)) {
           path = common.getFile(request.path);
         }
 
@@ -191,30 +179,8 @@ class RestedRequestHandler {
     int exists = getResourceIndex(path);
     if (exists == null) {
       resource.setPath(path);
-
-      if(path.contains('{')) {
-        List<String> elements = path.split('/');
-
-        String new_pattern = "";
-        List<String> uri_params = [];
-
-        for(String element in elements) {
-          if(element.contains('{')) {
-            uri_params.add(element.substring(1, element.length-1));
-            element = '*';
-          }
-          new_pattern = new_pattern + element + '/';
-        }
-        new_pattern = new_pattern.substring(0, new_pattern.length-1);
-        print("Adding path >" + path + "< as uri_pattern  >" + new_pattern + "< with uri_params " + uri_params.toString());
-
-        uri_patterns[new_pattern] = uri_params;
-      }
-
-      Map<String, String> resource_files = resource.getFiles();
-      for(MapEntry e in resource_files.entries) {
-        files[path + "/" + e.key] = resource;
-        print("added >" + path + e.key + "<");
+      if(resource.hasFiles()) {
+        file_resources.add(resource);
       }
       resources.add(resource);
     } else

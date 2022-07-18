@@ -34,7 +34,7 @@ class TestServer extends RestedRequestHandler {
     this.addResource(SchemaTest(), "/validate");
     this.addResource(JWTClaims(), "/allclaims");
     this.addResource(GETJWTClaims(), "/getclaims");
-    this.addResource(Files(), "/{user}/files");
+    this.addResource(Files(), "/{param}/test");
   }
 }
 

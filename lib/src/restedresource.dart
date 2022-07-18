@@ -14,6 +14,44 @@ class RestedResource {
   bool validateAllQueryParameters = false;
 
   String path = null;
+  List<String> pathElements = [];
+
+  String testforfile(List<String> filepath) {
+    bool match = true;
+
+    int i = 0;
+    for(String element in pathElements) {
+      if(element.contains('{') == false) {
+        //print("pathElemt:" + pathElements[i] + " filepath:" + filepath[i]);
+        if(pathElements[i] != filepath[i]) {
+          match = false;
+          break;
+        }
+      }
+      i++;
+    }
+
+    // The URL matches, now check if it contains the actual filepath
+    if(match) {
+      String file = "";
+      for(i; i < filepath.length; i++) {
+        file = file + '/' + filepath[i];
+      }
+      print("URL matched. Now looking for file " + file);
+      print("Available files in FileCollection:" + _files.toString());
+      String temp = _files.getFile(file);
+      print("temp = " + temp.toString());
+      if(temp != null) {
+        return _files.getFile(file);
+      } else {
+        return null;
+      }
+      
+    } else {
+      print("no match on " + path);
+      return null;
+    }
+  }
 
   // Only used for pattern matching in pathMatch function
   String uri_parameters = null;
@@ -70,6 +108,14 @@ class RestedResource {
 
   addFiles(String directory) {
     _files.addFiles(directory);
+  }
+
+  bool hasFiles() {
+    if(_files.files.length > 0) {
+        return true;
+    } else {
+        return false;
+    }
   }
 
   String getFile(String requestpath) {
@@ -137,6 +183,7 @@ class RestedResource {
   void setPath(String resourcepath) {
     path = resourcepath;
     _files.resource_path = resourcepath;
+    pathElements = resourcepath.split('/');
     if (resourcepath.contains('{')) {
       uri_parameters = PathParser.get_uri_parameters(path);
     }
@@ -287,25 +334,13 @@ class RestedResource {
     if(request == null) {
       print("Error in wrapper(): request is null");
     }
-/*
-    // If the resource method has a schema requirement
-    if(schemas[method] != null) {
-      if(schemas[method].validate(request.body)) {
-        await functions[method](request);
-        await callback(request);
-      } else {
-        request.response(type: "error", status: 400);
-      }
-    } 
-    // If the resource method does NOT have a schema requirement
-    else {*/
-      if(functions[method] == null) {
-        request.response(status: 501);
-      } else {
-        await functions[method](request);
-      }
-      await callback(request);
-    //}
+
+    if(functions[method] == null) {
+    request.response(status: 501);
+    } else {
+    await functions[method](request);
+    }
+    await callback(request);
 
     if (request.session.containsKey('delete')) {
       if (request.session['delete']) {
