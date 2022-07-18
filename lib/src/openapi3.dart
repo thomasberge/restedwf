@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:yaml/yaml.dart';
-import 'restedrequesthandler.dart' show RestedResource;
 import 'restedsettings.dart';
 import 'restedschema.dart';
 import 'restedresource.dart';

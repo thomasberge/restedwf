@@ -23,6 +23,7 @@ import 'restederrors.dart';
 import 'restedauth.dart';
 import 'restedresponse.dart';
 import 'restedresource.dart';
+import 'openapi3export.dart';
 
 class RestedRequestHandler {
   String rootDirectory;
@@ -52,7 +53,9 @@ class RestedRequestHandler {
       for(RestedResource _res in resources) {
         _res.setExternalFunctions();
       }
-    }    
+    }
+
+    OAPI3Export('/app/bin/files/export.yaml', resources);
   }
 
   void set custom_JWT_verification(Function _custom_JWT_verification) {
@@ -156,16 +159,6 @@ class RestedRequestHandler {
       }
     }
   }
-
-  /*String getFilePath(String path) {
-    path = 'bin/resources' + path;
-    if (File(path).existsSync()) {
-      return path;
-    } else {
-      error.raise("file_not_found", details: path);
-      return null;
-    }
-  }*/
 
   void addResource(RestedResource resource, String path) {
     int exists = getResourceIndex(path);

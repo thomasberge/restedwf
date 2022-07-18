@@ -11,6 +11,7 @@ import 'restedsession.dart';
 import 'errors.dart';
 
 class RestedResource {
+  List<String> implementedMethods = [];
   bool validateAllQueryParameters = false;
 
   String path = null;
