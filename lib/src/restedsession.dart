@@ -11,7 +11,8 @@ import 'dart:math';
 
 import 'package:nanoid/nanoid.dart';
 
-import 'restederrors.dart';
+//import 'restederrors.dart';
+import 'restedglobals.dart';
 import 'restedrequest.dart';
 
 

@@ -1,10 +1,8 @@
-library rested.database;
+//library rested.database;
 
 import 'package:postgres/postgres.dart';
 import 'dart:convert';
 import 'dart:io';
-
-DatabaseManager rdb = DatabaseManager();
 
 class DatabaseManager {
 

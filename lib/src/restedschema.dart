@@ -4,7 +4,22 @@ import 'schema/integerparameter.dart';
 export 'schema/integerparameter.dart';
 import 'schema/booleanparameter.dart';
 export 'schema/booleanparameter.dart';
+import 'restedglobals.dart';
 import 'schema/patterns.dart' as patterns;
+
+class GlobalSchemas {
+    Map<String, RestedSchema> global_schemas = {};
+
+    GlobalSchemas();
+
+    RestedSchema getGlobalSchema(String name) {
+        if(global_schemas.containsKey(name)) {
+            return global_schemas[name];
+        } else {
+            error.raise("global_schema_not_found", details: name);
+        }
+    }
+}
 
 class RestedSchema {
 

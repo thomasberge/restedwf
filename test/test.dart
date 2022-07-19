@@ -22,6 +22,13 @@ void listusers(RestedRequest request) async {
 
 class TestServer extends RestedRequestHandler {
   TestServer() {
+    RestedSchema userschema = RestedSchema();
+    userschema.addField(StringParameter("username"), requiredField: true);
+    StringParameter email = StringParameter("email");
+    email.minLength = 12;
+    userschema.addField(email);
+    setGlobalSchema("User", userschema);
+
     this.addResource(Root(), "/");
     this.addResource(Login(), "/login");
     this.addResource(Redirect(), "/g");
@@ -52,6 +59,20 @@ class SchemaTest extends RestedResource {
   void post(RestedRequest request) async {
     print(RestedSchema.isEmail('test@test.no').toString());
     request.response(data: "TEST");
+  }
+}
+
+class User extends RestedResource {
+  void get(RestedRequest request) async {
+    request.response(data: "get user");
+  }
+
+  void put(RestedRequest request) async {
+    request.response(data: "update user");
+  }
+
+  void delete(RestedRequest request) async {
+    request.response(data: "delete user");
   }
 }
 

@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'mimetypes.dart';
 import 'restedrequest.dart';
 import 'errors.dart';
-import 'restederrors.dart';
+//import 'restederrors.dart';
+import 'restedglobals.dart';
 
 class RestedResponse {
  

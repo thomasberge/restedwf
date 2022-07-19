@@ -3,7 +3,8 @@
 // © 2022 Thomas Sebastian Berge
 
 import 'dart:io';
-import 'restederrors.dart';
+//import 'restederrors.dart';
+import 'restedglobals.dart';
 
 class FileCollection {
 

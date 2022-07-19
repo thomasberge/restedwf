@@ -19,11 +19,11 @@ import 'openapi3.dart';
 import 'external.dart';
 import 'contenttype.dart';
 import 'restedfiles.dart';
-import 'restederrors.dart';
 import 'restedauth.dart';
 import 'restedresponse.dart';
 import 'restedresource.dart';
 import 'openapi3export.dart';
+import 'restedglobals.dart';
 
 class RestedRequestHandler {
   String rootDirectory;
@@ -34,6 +34,7 @@ class RestedRequestHandler {
   RestedJWT jwt_handler = new RestedJWT();
   List<RestedResource> resources = new List();
   List<RestedResource> file_resources = new List(); // Resources that contain files
+  Map<String, RestedSchema> global_schemas = {};
 
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
@@ -62,6 +63,13 @@ class RestedRequestHandler {
     jwt_handler.setCustomVerificationMethod(_custom_JWT_verification);
   }
 
+  void setGlobalSchema(String name, RestedSchema schema) {
+    if(global_schemas.containsKey(name)) {
+      error.raise("global_schema_already_exists", details: name);
+    } else {
+      global_schemas[name] = schema;
+    }
+  }
 
   void handle(HttpRequest incomingRequest) async {
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.

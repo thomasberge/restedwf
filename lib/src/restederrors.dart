@@ -1,6 +1,6 @@
 library rested.errors;
 
-RestedErrors error = RestedErrors();
+//RestedErrors error = RestedErrors();
 
 class RestedErrors {
 
@@ -37,6 +37,12 @@ class RestedErrors {
         },
         "exception_retrieve_session": {
             "message": "Exception retrieveing session."
+        },
+        "global_schema_already_exists": {
+            "message": "The Global Schema already exists."
+        },
+        "global_schema_not_found": {
+            "message": "The Global Schema was not found."
         }
     };
 
