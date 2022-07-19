@@ -15,3 +15,4 @@ export 'src/restedfiles.dart';
 export 'src/restedauth.dart';
 export 'src/restedresource.dart';
 export 'src/restedglobals.dart';
+export 'src/openapi3export.dart';

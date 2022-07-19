@@ -3,7 +3,6 @@
 // © 2022 Thomas Sebastian Berge
 
 import 'dart:io';
-//import 'restederrors.dart';
 import 'restedglobals.dart';
 
 class FileCollection {
@@ -20,6 +19,12 @@ class FileCollection {
 
   String toString() {
     return files.toString();
+  }
+
+  void refreshFiles() {
+    files = {};
+    print("root=" + root.toString());
+    addFiles(root);
   }
 
   String getFile(String filepath) {
@@ -40,6 +45,7 @@ class FileCollection {
 
   // Adds all files in path (recursively by default)
   void addFiles(String path, {recursive: true}) async {
+    root = path;
     Directory dir = new Directory(path);
     try {
       List<FileSystemEntity> files = dir.listSync(recursive: recursive, followLinks: false);

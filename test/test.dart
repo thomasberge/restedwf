@@ -27,7 +27,7 @@ class TestServer extends RestedRequestHandler {
     StringParameter email = StringParameter("email");
     email.minLength = 12;
     userschema.addField(email);
-    setGlobalSchema("User", userschema);
+    this.setGlobalSchema("User", userschema);
 
     this.addResource(Root(), "/");
     this.addResource(Login(), "/login");

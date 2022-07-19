@@ -6,6 +6,7 @@ import 'package:yaml/yaml.dart';
 import 'restedsettings.dart';
 import 'restedschema.dart';
 import 'restedresource.dart';
+import 'restedglobals.dart';
 
 class OAPI3Export {
     List<String> document = [];
@@ -46,5 +47,6 @@ class OAPI3Export {
 
     void addComponents() {
         document.add("components:");
+        print("Global Schemas = " + global_schemas.toString());
     }
 }

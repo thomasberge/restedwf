@@ -8,7 +8,7 @@ import 'restedglobals.dart';
 import 'schema/patterns.dart' as patterns;
 
 class GlobalSchemas {
-    Map<String, RestedSchema> global_schemas = {};
+    Map<String, RestedSchema> schemas = {};
 
     GlobalSchemas();
 
@@ -18,6 +18,10 @@ class GlobalSchemas {
         } else {
             error.raise("global_schema_not_found", details: name);
         }
+    }
+
+    String toString() {
+        return schemas.toString();
     }
 }
 

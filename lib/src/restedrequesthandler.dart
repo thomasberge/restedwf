@@ -34,7 +34,7 @@ class RestedRequestHandler {
   RestedJWT jwt_handler = new RestedJWT();
   List<RestedResource> resources = new List();
   List<RestedResource> file_resources = new List(); // Resources that contain files
-  Map<String, RestedSchema> global_schemas = {};
+  Map<String, RestedSchema> _global_schemas = {};
 
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
@@ -56,7 +56,18 @@ class RestedRequestHandler {
       }
     }
 
+    for(MapEntry schema in _global_schemas.entries) {
+      if(global_schemas.containsKey(schema.key)){
+        error.raise("global_schema_already_exists", details: schema.key);
+      } else {
+        global_schemas[schema.key] = schema.value;
+      }
+    }
+  }
+
+  void export() {
     OAPI3Export('/app/bin/files/export.yaml', resources);
+    common.refreshFiles();
   }
 
   void set custom_JWT_verification(Function _custom_JWT_verification) {
@@ -64,11 +75,8 @@ class RestedRequestHandler {
   }
 
   void setGlobalSchema(String name, RestedSchema schema) {
-    if(global_schemas.containsKey(name)) {
-      error.raise("global_schema_already_exists", details: name);
-    } else {
-      global_schemas[name] = schema;
-    }
+    print("setGlobalSchema()");
+    _global_schemas[name] = schema;
   }
 
   void handle(HttpRequest incomingRequest) async {

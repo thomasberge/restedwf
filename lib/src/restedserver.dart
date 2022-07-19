@@ -11,9 +11,11 @@ import 'restedsettings.dart';
 class RestedServer {
   RestedRequestHandler request_handler;
 
-  RestedServer(this.request_handler);
+  RestedServer(this.request_handler) {
+  }
 
   void start(String _address, int _port) async {
+    request_handler.export();
     request_handler.address = _address;
     request_handler.port = _port;
     var server = await HttpServer.bind(_address, _port);

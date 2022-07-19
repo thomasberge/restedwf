@@ -20,6 +20,10 @@ class RestedResource {
   String testforfile(List<String> filepath) {
     bool match = true;
 
+    if(filepath.length < 3) {
+      return null;
+    }
+
     int i = 0;
     for(String element in pathElements) {
       if(element.contains('{') == false) {
