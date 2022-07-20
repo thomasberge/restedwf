@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:mirrors';
 
 import 'package:yaml/yaml.dart';
 import 'restedsettings.dart';
@@ -34,14 +35,39 @@ class OAPI3Export {
 
     void addPaths(List<RestedResource> resources) {
         document.add("paths:");
+
         for(RestedResource resource in resources) {
-            document.add("  " + resource.path + ":");
-            for(MapEntry e in resource.functions.entries) {
+            if(resource.exportMethods.length > 0) {
+                document.add("  " + resource.path + ":");
+
+                for(String method in resource.exportMethods) {
+                    document.add("    " + method.toLowerCase() + ":");
+                }
+            }
+
+            //int defaultHash = resource.getHashForDefaultMethod();
+            //document.add("  " + resource.path + ":");
+
+           /* for(MapEntry e in resource.functions.entries) {
+
+                // Imported endpoints have null value
                 if(e.value == null) {
                     document.add("    " + e.key + ":");
                 }
-                //document.add(e.key + ":" + e.value.toString());
-            }
+
+                // Non-overridden functions have default hashCode
+                else if(e.value.hashCode != resource.functionsHash[e.key]) {
+                    document.add("    " + e.key + ":");
+                }*/
+
+                //var reflectedFunction = reflect(e.value);
+                //print(reflectedFunction.type.toString());
+                //print(reflectedFunction.reflectee.toString());
+                //print(reflectedFunction.reflectee.getField(#testing));
+                //document.add(e.key + ":" + e.value.toString() + "  >>> " + e.value.hashCode.toString() + ">>>" + resource.functionsHash[e.key].toString());
+                
+                //print(e.key + ":" + e.value.toString());
+            //}
         }
     }
 

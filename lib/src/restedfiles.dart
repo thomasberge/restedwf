@@ -25,6 +25,7 @@ class FileCollection {
     files = {};
     print("root=" + root.toString());
     addFiles(root);
+    print("files=" + files.toString());
   }
 
   String getFile(String filepath) {

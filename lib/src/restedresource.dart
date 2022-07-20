@@ -9,8 +9,26 @@ import 'external.dart';
 import 'restedresponse.dart';
 import 'restedsession.dart';
 import 'errors.dart';
+import 'dart:mirrors';
+
+class Test extends Function {
+  Test();
+}
 
 class RestedResource {
+
+  // OpenAPI Export related
+  List<String> _exportMethods = [];
+
+  void set exportMethods(List<String> methods) {
+    _exportMethods = methods;
+  }
+
+  List<String> get exportMethods {
+    return _exportMethods;
+  }
+  // End OpenAPI Export related
+
   List<String> implementedMethods = [];
   bool validateAllQueryParameters = false;
 
@@ -26,7 +44,7 @@ class RestedResource {
 
     int i = 0;
     for(String element in pathElements) {
-      if(element.contains('{') == false) {
+      if(element.contains('{') == false && element != null) {
         if(pathElements[i] != filepath[i]) {
           match = false;
           break;
@@ -52,6 +70,11 @@ class RestedResource {
     }
   }
 
+  /*void printTest() {
+    var reflectedFunction = reflect(e.value);
+    print(reflectedFunction.type.toString());
+  }*/
+
   // Only used for pattern matching in pathMatch function
   String uri_parameters = null;
 
@@ -64,6 +87,7 @@ class RestedResource {
 
   // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
   Map functions = Map<String, Function>();
+  Map functionsHash = Map<String, int>();
 
   // Stored function for each HTTP error code. Returns standard error if not overridden with a function
   Map onError = Map<int, Function>();
@@ -155,6 +179,10 @@ class RestedResource {
     return path;
   }
 
+  int getHashForDefaultMethod() {
+    return functions['defaultResponse'].hashCode;
+  }
+
   // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
   // possible to return a redirect instead by setting the URL in this variable.
   String protected_redirect = null;
@@ -238,6 +266,22 @@ class RestedResource {
     functions['propfind'] = propfind;
     functions['view'] = view;
 
+    functionsHash['get'] = get.hashCode;
+    functionsHash['post'] = post.hashCode;
+    functionsHash['put'] = put.hashCode;
+    functionsHash['patch'] = patch.hashCode;
+    functionsHash['delete'] = delete.hashCode;
+    functionsHash['copy'] = copy.hashCode;
+    functionsHash['head'] = head.hashCode;
+    functionsHash['options'] = options.hashCode;
+    functionsHash['link'] = link.hashCode;
+    functionsHash['unlink'] = unlink.hashCode;
+    functionsHash['purge'] = purge.hashCode;
+    functionsHash['lock'] = lock.hashCode;
+    functionsHash['unlock'] = unlock.hashCode;
+    functionsHash['propfind'] = propfind.hashCode;
+    functionsHash['view'] = view.hashCode;
+
     schemas['get'] = null;
     schemas['post'] = null;
     schemas['put'] = null;
@@ -310,7 +354,7 @@ class RestedResource {
     }
   }
 
-  void get(RestedRequest request) { request.response(status: 501); }
+  void get(RestedRequest request) { int testing = 123; request.response(status: 501); }
   void post(RestedRequest request) { request.response(status: 501); }
   void put(RestedRequest request) { request.response(status: 501); }
   void patch(RestedRequest request) { request.response(status: 501); }
@@ -328,32 +372,6 @@ class RestedResource {
 
   void callback(RestedRequest request) {}
 
-  void wrapper(String method, RestedRequest request) async {
-
-    if(request == null) {
-      print("Error in wrapper(): request is null");
-    }
-
-    if(functions[method] == null) {
-    request.response(status: 501);
-    } else {
-    await functions[method](request);
-    }
-    await callback(request);
-
-    if (request.session.containsKey('delete')) {
-      if (request.session['delete']) {
-        sessions.deleteSession(request.session['id']);
-        request.request.response.headers
-            .add("Set-Cookie", "session=; Path=/; Max-Age=0; HttpOnly");
-      }
-    } else {
-      if (request.session.length > 0) {
-        sessions.saveSession(request);
-      }
-    }
-  }
-
   // If the request contains an access_token then it has already been verified before this function
   // is executed. If the corresponding http method protection variable is set to true then this
   // function will check if access_token is set (and hence verified). If it is then it will allow
@@ -364,11 +382,9 @@ class RestedResource {
     String result = validateUriParameters(request.uri_parameters);
     if(result == "OK") {
       result = validateQueryParameters(method, request.query_parameters);
-    }
-    
-    if(result != "OK") {
-        Errors.raise(request, 400);
-        return;
+    } else {
+      Errors.raise(request, 400);
+      return;
     }
 
     if(schemas.containsKey(method.toLowerCase())) {
@@ -381,26 +397,40 @@ class RestedResource {
     }
 
     method = method.toLowerCase();
+
     if (_token_required[method]) {
-      if (request.access_token != null) {
-        await wrapper(method, request);
-        RestedResponse response = RestedResponse(request);
-        response.respond();
-      } else {
+      if (request.access_token == null) {
         if (protected_redirect != null) {
           request.response(type: "redirect", data: protected_redirect);
           RestedResponse response = RestedResponse(request);
           response.respond();
+          return;
         } else {
           request.response(data: "401 error somethingsomething");
           RestedResponse response = RestedResponse(request);
           response.respond();
+          return;
         }
       }
-    } else {
-      await wrapper(method, request);
-      RestedResponse response = RestedResponse(request);
-      response.respond();
     }
+
+    if (request.access_token != null) {
+      if (request.session.containsKey('delete')) {
+        if (request.session['delete']) {
+          sessions.deleteSession(request.session['id']);
+          request.request.response.headers
+              .add("Set-Cookie", "session=; Path=/; Max-Age=0; HttpOnly");
+        }
+      } else {
+        if (request.session.length > 0) {
+          sessions.saveSession(request);
+        }
+      }
+    }
+
+    await functions[method](request);
+    await callback(request);
+    RestedResponse response = RestedResponse(request);
+    response.respond();
   }
 }

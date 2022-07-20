@@ -66,7 +66,7 @@ class RestedRequestHandler {
   }
 
   void export() {
-    OAPI3Export('/app/bin/files/export.yaml', resources);
+    OAPI3Export('/app/bin/common/export.yaml', resources);
     common.refreshFiles();
   }
 
@@ -148,6 +148,8 @@ class RestedRequestHandler {
         }
 
         // If not, check the common directory
+        print("common=" + common.toString());
+        print("request.path=" + request.path);
         if(path == null && common.containsKey(request.path)) {
           path = common.getFile(request.path);
         }

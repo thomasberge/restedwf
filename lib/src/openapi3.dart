@@ -100,6 +100,8 @@ class OAPI3 {
         }
 
         for(MapEntry e in yaml['paths'][path].entries) {
+            resource.exportMethods.add(e.key.toLowerCase());
+
             if(rsettings.getVariable('allowed_methods').contains(e.key.toLowerCase())) {
 
                 if(yaml['paths'][path][e.key].containsKey('parameters')) {

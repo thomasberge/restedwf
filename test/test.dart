@@ -177,6 +177,7 @@ class Login extends RestedResource {
     password.minLength = 12;
     userlogin.addField(password, requiredField: true);
     setSchema("POST", userlogin);
+    exportMethods = ["GET", "POST"];
   }
 
   void get(RestedRequest request) async {

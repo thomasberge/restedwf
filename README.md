@@ -1,18 +1,17 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.5.4
+# Alpha release 0.6.0
 
-A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and even Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
+A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
 A word of caution: This framework is still very much in development. Structural and functional changes can and most likely will occur. Not all aspects are fully implemented yet. Important and perhaps even basic features may not be implemented at all. Please only use this for testing - and use it at your own risk. If you would like to throw me a comment or two then by all means contact me at restedwf@gmail.com. If there is anything in particular that you would like me to work on then by all means ask.
 
-The source is being developed on a private repo. I will update this repo from time to time.
+### 0.6.0 Main changes
 
-### 0.5.4 Main changes
-
-- The "request-path-to-directory"-method was ditched in favor for a more flexible method. Each RestedResource now contains a FileCollection object that maps local files (and their absolute paths) to the endpoint. There is also a root FileCollection on the requesthandler. See documentation for details.
+- The "request-path-to-directory"-method was ditched in favor for a more flexible method. Each RestedResource now contains a FileCollection object that maps local files (and their absolute paths) to the endpoint. There is also a root FileCollection on the requesthandler called "common". Anything put in the directory "common" will be available at root level. See documentation for details.
 - Schema validations. You can now build a RestedSchema using StringParameter and IntegerParameter (still only ones supported) and validate a Map/Json against that schema. Supports Required Field parameter (part of the schema, not the parameter itself). See documentation for info.
 - RestedResource methods now validate against schemas defined on their respective methods.
+- OpenAPI 3.1 Export implementation is now partially in place. See documentation for more information.
 - The settings code have been re-written. The config is now confined in a single JSON together with type and descriptions.
 - Developer error messages are now handled by the RestedErrors class. It is global and can be raised anywhere. It is used as an internal RestedWF error handling system and not ment for end-users.
 - The ConsoleMessages class has been removed and all messages refactored to use the new RestedError class.
@@ -22,7 +21,7 @@ The source is being developed on a private repo. I will update this repo from ti
 
 This is the core module that adds the basic functionality. Add-ons will give optional functionality. The main features in this module are:
 - Class-oriented code pattern. Each /resource is its own class with each HTTP method being a function.
-- OpenAPI 3.1 yaml import to create server endpoints. Supports external function calls based on operationId.
+- OpenAPI 3.1 yaml import and export. Imported endpoints supports external function calls based on operationId.
 - Sessions & Cookies. Who doesn't like cookies?
 - Automatic JSON Web Token implementation, seemlessly integrated with Session & Cookie support. JWT requirement per method in a /resource. Optional redirect if token doesn't validate.
 - Easy implementation to database.
@@ -30,6 +29,12 @@ This is the core module that adds the basic functionality. Add-ons will give opt
 - Text/binary file server support, although with limited streaming capabilities.
 - Settings from either code, environment or json file.
 - Test development server server.
+
+### Circular Flow
+
+Code-first or API-first? That is a question many dev teams have to ask themselves. Most often they end up with a hybrid, or something else all-together. With Circular Flow, Rested WF will enable developers to do both. That is achieved by the import/export OpenAPI features. The specific flow is still being worked on and will exist in an unfinished form for many iterations.
+
+
 
 ### Add-ons
 
@@ -438,6 +443,27 @@ void yourfunction(RestedRequest request) {
 ```
 
 This way you can group related functions in their own files.
+
+#### Exporting code to OpenAPI 3.1 yaml
+
+Until better methods are implemented, an OpenAPI 3.1 yaml file called "export.yaml" is placed in the common directory every time a server starts. All imported data will automatically get exported. Data created by code will have to be tagged for export, unless its global (schemas, parameters). RestedResource methods are tagged by adding the method to the exportMethods parameter in the RestedResource constructor. Any data (schema, parameters) that belongs to that resource or method will then be exported.
+
+```dart
+class Login extends RestedResource {
+
+  Login() {
+    exportMethods = ["GET", "POST"];
+  }
+
+  get(RestedRequest request) {
+
+  }
+
+  post(RestedRequest request) {
+
+  }
+}
+```
 
 #### JWT-protecting path method
 
