@@ -5,7 +5,6 @@ import 'restedschema.dart';
 import 'restedrequest.dart';
 import 'pathparser.dart';
 import 'restedsettings.dart';
-import 'external.dart';
 import 'restedresponse.dart';
 import 'restedsession.dart';
 import 'dart:mirrors';

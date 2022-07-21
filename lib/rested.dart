@@ -9,7 +9,6 @@ export 'src/restedserver.dart';
 export 'src/restedrequesthandler.dart';
 export 'src/restedrequests.dart';
 export 'src/restedschema.dart';
-export 'src/external.dart';
 export 'src/resteddatabase.dart';
 export 'src/restedfiles.dart';
 export 'src/restedauth.dart';
