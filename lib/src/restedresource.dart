@@ -8,8 +8,8 @@ import 'restedsettings.dart';
 import 'external.dart';
 import 'restedresponse.dart';
 import 'restedsession.dart';
-import 'errors.dart';
 import 'dart:mirrors';
+import 'restedglobals.dart';
 
 class RestedResource {
 

@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'restedsettings.dart';
 import 'restedrequest.dart';
-import 'errors.dart';
+import 'restedglobals.dart';
 
 class RestedJWT {
   Function _custom_JWT_verification;

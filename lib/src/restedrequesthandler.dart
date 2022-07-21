@@ -14,7 +14,6 @@ import 'restedrequest.dart';
 import 'responses.dart';
 import 'mimetypes.dart';
 import 'restedschema.dart';
-import 'errors.dart';
 import 'openapi3.dart';
 import 'external.dart';
 import 'contenttype.dart';

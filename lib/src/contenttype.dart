@@ -4,7 +4,7 @@ import 'dart:math';
 import 'dart:convert';
 
 import 'restedrequest.dart';
-import 'errors.dart';
+import 'restedglobals.dart';
 
 Map<String, Function> content_types = {
     "application/json": receive_application_json,
