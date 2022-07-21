@@ -37,11 +37,25 @@ class OAPI3Export {
         document.add("paths:");
 
         for(RestedResource resource in resources) {
+
+            // PATH
             if(resource.exportMethods.length > 0) {
                 document.add("  " + resource.path + ":");
 
+                // METHOD
                 for(String method in resource.exportMethods) {
                     document.add("    " + method.toLowerCase() + ":");
+
+                    // SUMMARY
+                    if(resource.summary.containsKey(method.toLowerCase()) == false) {
+                        resource.summary[method.toLowerCase()] = method[0].toUpperCase() + method.toLowerCase().substring(1) + " " + resource.class_name;
+                    }
+                    document.add("      summary: " + resource.summary[method.toLowerCase()]);
+
+                    // OPERATIONID
+                    if(resource.operationId.containsKey(method.toLowerCase())) {
+                        document.add("      operationId: " + resource.operationId[method.toLowerCase()]);
+                    }
                 }
             }
 

@@ -100,9 +100,13 @@ class OAPI3 {
         }
 
         for(MapEntry e in yaml['paths'][path].entries) {
-            resource.exportMethods.add(e.key.toLowerCase());
 
             if(rsettings.getVariable('allowed_methods').contains(e.key.toLowerCase())) {
+                resource.exportMethods.add(e.key.toLowerCase());
+
+                if(yaml['paths'][path][e.key].containsKey('summary')) {
+                    resource.summary[e.key.toLowerCase()] = yaml['paths'][path][e.key]['summary'];
+                }
 
                 if(yaml['paths'][path][e.key].containsKey('parameters')) {
                     Map<String,dynamic> queryparams = importQueryParameters(yaml['paths'][path][e.key]['parameters']);

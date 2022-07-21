@@ -11,14 +11,12 @@ import 'restedsession.dart';
 import 'errors.dart';
 import 'dart:mirrors';
 
-class Test extends Function {
-  Test();
-}
-
 class RestedResource {
 
   // OpenAPI Export related
   List<String> _exportMethods = [];
+
+  String class_name;
 
   void set exportMethods(List<String> methods) {
     _exportMethods = methods;
@@ -27,6 +25,9 @@ class RestedResource {
   List<String> get exportMethods {
     return _exportMethods;
   }
+
+  Map<String, String> summary = {};
+  
   // End OpenAPI Export related
 
   List<String> implementedMethods = [];
@@ -70,11 +71,6 @@ class RestedResource {
     }
   }
 
-  /*void printTest() {
-    var reflectedFunction = reflect(e.value);
-    print(reflectedFunction.type.toString());
-  }*/
-
   // Only used for pattern matching in pathMatch function
   String uri_parameters = null;
 
@@ -87,7 +83,6 @@ class RestedResource {
 
   // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
   Map functions = Map<String, Function>();
-  Map functionsHash = Map<String, int>();
 
   // Stored function for each HTTP error code. Returns standard error if not overridden with a function
   Map onError = Map<int, Function>();
@@ -179,10 +174,6 @@ class RestedResource {
     return path;
   }
 
-  int getHashForDefaultMethod() {
-    return functions['defaultResponse'].hashCode;
-  }
-
   // If access to method is protected by an access_token then instead of retuning 401 Unauthorized it is
   // possible to return a redirect instead by setting the URL in this variable.
   String protected_redirect = null;
@@ -249,7 +240,8 @@ class RestedResource {
   }
 
   RestedResource() {
-    //disk = new RestedVirtualDisk();
+    class_name = reflect(this).type.toString().split("'")[1];
+
     functions['get'] = get;
     functions['post'] = post;
     functions['put'] = put;
@@ -265,22 +257,6 @@ class RestedResource {
     functions['unlock'] = unlock;
     functions['propfind'] = propfind;
     functions['view'] = view;
-
-    functionsHash['get'] = get.hashCode;
-    functionsHash['post'] = post.hashCode;
-    functionsHash['put'] = put.hashCode;
-    functionsHash['patch'] = patch.hashCode;
-    functionsHash['delete'] = delete.hashCode;
-    functionsHash['copy'] = copy.hashCode;
-    functionsHash['head'] = head.hashCode;
-    functionsHash['options'] = options.hashCode;
-    functionsHash['link'] = link.hashCode;
-    functionsHash['unlink'] = unlink.hashCode;
-    functionsHash['purge'] = purge.hashCode;
-    functionsHash['lock'] = lock.hashCode;
-    functionsHash['unlock'] = unlock.hashCode;
-    functionsHash['propfind'] = propfind.hashCode;
-    functionsHash['view'] = view.hashCode;
 
     schemas['get'] = null;
     schemas['post'] = null;
