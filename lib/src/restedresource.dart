@@ -12,28 +12,91 @@ import 'restedglobals.dart';
 
 class RestedResource {
 
-  // OpenAPI Export related
-  List<String> _exportMethods = [];
-
   String class_name;
 
-  void set exportMethods(List<String> methods) {
-    _exportMethods = methods;
-  }
-
-  List<String> get exportMethods {
-    return _exportMethods;
-  }
+  List<String> _exportMethods = [];
 
   Map<String, String> summary = {};
-  
-  // End OpenAPI Export related
 
   List<String> implementedMethods = [];
   bool validateAllQueryParameters = false;
 
   String path = null;
   List<String> pathElements = [];
+
+  // Only used for pattern matching in pathMatch function
+  String uri_parameters = null;
+
+  Map<String, dynamic> uri_parameters_schemas = {};
+  Map<String, Map<String, dynamic>> _query_parameters_schemas = {};
+  FileCollection _files = FileCollection();
+
+  // Stores schemas for each HTTP method.
+  Map schemas = Map<String, RestedSchema>();
+
+  // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
+  Map functions = Map<String, Function>();
+
+  // Stored function for each HTTP error code. Returns standard error if not overridden with a function
+  Map onError = Map<int, Function>();
+
+  // Storage of bool determining if access_token is required for the http method (_functions). Use method
+  // instead of setting the variable directly.
+  Map _token_required = Map<String, bool>();
+
+  // Stores operationId on resources imported from YAML. This is in order to link it to an external function.
+  Map operationId = Map<String, String>();
+
+
+  Map<String, dynamic> getRequestSchema = null;
+
+RestedResource() {
+
+    class_name = reflect(this).type.toString().split("'")[1];
+
+    functions['get'] = get;
+    functions['post'] = post;
+    functions['put'] = put;
+    functions['patch'] = patch;
+    functions['delete'] = delete;
+    functions['copy'] = copy;
+    functions['head'] = head;
+    functions['options'] = options;
+    functions['link'] = link;
+    functions['unlink'] = unlink;
+    functions['purge'] = purge;
+    functions['lock'] = lock;
+    functions['unlock'] = unlock;
+    functions['propfind'] = propfind;
+    functions['view'] = view;
+
+    schemas['get'] = null;
+    schemas['post'] = null;
+    schemas['put'] = null;
+    schemas['patch'] = null;
+    schemas['delete'] = null;
+    schemas['copy'] = null;
+    schemas['head'] = null;
+    schemas['options'] = null;
+    schemas['link'] = null;
+    schemas['unlink'] = null;
+    schemas['purge'] = null;
+    schemas['lock'] = null;
+    schemas['unlock'] = null;
+    schemas['propfind'] = null;
+    schemas['view'] = null;
+
+    for (String value in rsettings.getVariable('allowed_methods')) {
+      _token_required[value] = false;
+    }
+
+    Map<String, String> _envVars = Platform.environment;
+    if(_envVars.containsKey('VALIDATE_ALL_QUERY_PARAMETERS')) {
+      if(_envVars['VALIDATE_ALL_QUERY_PARAMETERS'].toUpperCase() == 'TRUE') {
+        validateAllQueryParameters = true;
+      }
+    }
+  }
 
   String testforfile(List<String> filepath) {
     bool match = true;
@@ -70,31 +133,13 @@ class RestedResource {
     }
   }
 
-  // Only used for pattern matching in pathMatch function
-  String uri_parameters = null;
+  void set exportMethods(List<String> methods) {
+    _exportMethods = methods;
+  }
 
-  Map<String, dynamic> _uri_parameters_schemas = {};
-  Map<String, Map<String, dynamic>> _query_parameters_schemas = {};
-  FileCollection _files = FileCollection();
-
-  // Stores schemas for each HTTP method.
-  Map schemas = Map<String, RestedSchema>();
-
-  // Stored functions for each HTTP method. Example <'Get', get> can be used as _functions['get](request);
-  Map functions = Map<String, Function>();
-
-  // Stored function for each HTTP error code. Returns standard error if not overridden with a function
-  Map onError = Map<int, Function>();
-
-  // Storage of bool determining if access_token is required for the http method (_functions). Use method
-  // instead of setting the variable directly.
-  Map _token_required = Map<String, bool>();
-
-  // Stores operationId on resources imported from YAML. This is in order to link it to an external function.
-  Map operationId = Map<String, String>();
-
-
-  Map<String, dynamic> getRequestSchema = null;
+  List<String> get exportMethods {
+    return _exportMethods;
+  }
 
   Map<String, Map<String, dynamic>> getQueryParams() {
     return _query_parameters_schemas;
@@ -113,8 +158,8 @@ class RestedResource {
 
   String validateUriParameters(Map<String, String> params) {
     for(MapEntry e in params.entries) {
-      if(_uri_parameters_schemas.containsKey(e.key)) {
-        String result = _uri_parameters_schemas[e.key].validate(e.value);
+      if(uri_parameters_schemas.containsKey(e.key)) {
+        String result = uri_parameters_schemas[e.key].validate(e.value);
         if(result != "OK") {
           return result;
         }
@@ -178,11 +223,11 @@ class RestedResource {
   String protected_redirect = null;
 
   void addUriParameters(Map<String, dynamic> new_schemas) {
-    _uri_parameters_schemas = new_schemas;
+    uri_parameters_schemas = new_schemas;
   }
 
   void addUriParameterSchema(dynamic schema) {
-    _uri_parameters_schemas[schema.name] = schema;
+    uri_parameters_schemas[schema.name] = schema;
   }
 
   void addQueryParameters(String method, Map<String, dynamic> new_schemas) {
@@ -234,53 +279,6 @@ class RestedResource {
         }
       } else {
         return false; // returning false because paths are null
-      }
-    }
-  }
-
-  RestedResource() {
-    class_name = reflect(this).type.toString().split("'")[1];
-
-    functions['get'] = get;
-    functions['post'] = post;
-    functions['put'] = put;
-    functions['patch'] = patch;
-    functions['delete'] = delete;
-    functions['copy'] = copy;
-    functions['head'] = head;
-    functions['options'] = options;
-    functions['link'] = link;
-    functions['unlink'] = unlink;
-    functions['purge'] = purge;
-    functions['lock'] = lock;
-    functions['unlock'] = unlock;
-    functions['propfind'] = propfind;
-    functions['view'] = view;
-
-    schemas['get'] = null;
-    schemas['post'] = null;
-    schemas['put'] = null;
-    schemas['patch'] = null;
-    schemas['delete'] = null;
-    schemas['copy'] = null;
-    schemas['head'] = null;
-    schemas['options'] = null;
-    schemas['link'] = null;
-    schemas['unlink'] = null;
-    schemas['purge'] = null;
-    schemas['lock'] = null;
-    schemas['unlock'] = null;
-    schemas['propfind'] = null;
-    schemas['view'] = null;
-
-    for (String value in rsettings.getVariable('allowed_methods')) {
-      _token_required[value] = false;
-    }
-
-    Map<String, String> _envVars = Platform.environment;
-    if(_envVars.containsKey('VALIDATE_ALL_QUERY_PARAMETERS')) {
-      if(_envVars['VALIDATE_ALL_QUERY_PARAMETERS'].toUpperCase() == 'TRUE') {
-        validateAllQueryParameters = true;
       }
     }
   }
