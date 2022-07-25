@@ -39,7 +39,7 @@ class RestedRequestHandler {
 
     if(rsettings.getVariable('common_enabled')) {
       if(Directory(rootDirectory + "/bin/common").existsSync()) {
-        common.addFiles(rootDirectory + "/bin/common");
+        common.addDirectory(rootDirectory + "/bin/common");
       } else {
         error.raise('missing_common_directory');
       }
@@ -65,7 +65,7 @@ class RestedRequestHandler {
 
   void export() {
     OAPI3Export('/app/bin/common/export.yaml', resources);
-    common.refreshFiles();
+    common.refresh();
   }
 
   void set custom_JWT_verification(Function _custom_JWT_verification) {

@@ -1,21 +1,14 @@
 ![GitHub Logo](images/logo_small.png)
 
-# Alpha release 0.6.0
+# Alpha release 0.6.1
 
 A work-in-progress web framework written in dart. The aim is to create a one-stop-shop for just about anything web app related, such as websites, webapps and Restful APIs. Rested Web Framework comes with its own serverside scripting language, RestedScript. Although it is in its infancy and only supports a handful of features it already has some unique capabilities that can prove quite powerful in a html/css development setting.
 
 A word of caution: This framework is still very much in development. Structural and functional changes can and most likely will occur. Not all aspects are fully implemented yet. Important and perhaps even basic features may not be implemented at all. Please only use this for testing - and use it at your own risk. If you would like to throw me a comment or two then by all means contact me at restedwf@gmail.com. If there is anything in particular that you would like me to work on then by all means ask.
 
-### 0.6.0 Main changes
+### 0.6.1 Main changes
 
-- The "request-path-to-directory"-method was ditched in favor for a more flexible method. Each RestedResource now contains a FileCollection object that maps local files (and their absolute paths) to the endpoint. There is also a root FileCollection on the requesthandler called "common". Anything put in the directory "common" will be available at root level. See documentation for details.
-- Schema validations. You can now build a RestedSchema using StringParameter and IntegerParameter (still only ones supported) and validate a Map/Json against that schema. Supports Required Field parameter (part of the schema, not the parameter itself). See documentation for info.
-- RestedResource methods now validate against schemas defined on their respective methods.
-- OpenAPI 3.1 Export implementation is now partially in place. See documentation for more information.
-- The settings code have been re-written. The config is now confined in a single JSON together with type and descriptions.
-- Developer error messages are now handled by the RestedErrors class. It is global and can be raised anywhere. It is used as an internal RestedWF error handling system and not ment for end-users.
-- The ConsoleMessages class has been removed and all messages refactored to use the new RestedError class.
-- Lots and lots of cleanup and code restructure.
+- Slight refactor for adding directories instead of files.
 
 ### Features
 

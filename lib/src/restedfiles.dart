@@ -8,7 +8,7 @@ import 'restedglobals.dart';
 class FileCollection {
 
   String resource_path;
-  String root;
+  List<String> directories = [];
   Map<String, String> files = {};
 
   FileCollection({String path = ""}) {
@@ -21,11 +21,11 @@ class FileCollection {
     return files.toString();
   }
 
-  void refreshFiles() {
+  void refresh() {
     files = {};
-    print("root=" + root.toString());
-    addFiles(root);
-    print("files=" + files.toString());
+    for(String directory in directories) {
+      _addFiles(directory);
+    }
   }
 
   String getFile(String filepath) {
@@ -44,12 +44,17 @@ class FileCollection {
     return files;
   }
 
+  void addDirectory(String directory) async {
+    directories.add(directory);
+    _addFiles(directory);
+  }
+
   // Adds all files in path (recursively by default)
-  void addFiles(String path, {recursive: true}) async {
-    root = path;
+  void _addFiles(String path) async {
+    //root = path;
     Directory dir = new Directory(path);
     try {
-      List<FileSystemEntity> files = dir.listSync(recursive: recursive, followLinks: false);
+      List<FileSystemEntity> files = dir.listSync(recursive: true, followLinks: false);
       for(FileSystemEntity file in files) {
         FileSystemEntity file_with_absolute_path = file.absolute;
 

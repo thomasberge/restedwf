@@ -169,7 +169,7 @@ RestedResource() {
   }
 
   addFiles(String directory) {
-    _files.addFiles(directory);
+    _files.addDirectory(directory);
   }
 
   bool hasFiles() {
