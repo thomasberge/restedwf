@@ -6,6 +6,7 @@ import 'package:yaml/yaml.dart';
 import 'restedsettings.dart';
 import 'restedschema.dart';
 import 'restedresource.dart';
+import 'restedglobals.dart';
 
 class OAPI3 {
 

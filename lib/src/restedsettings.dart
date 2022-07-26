@@ -2,13 +2,9 @@
 // www.restedwf.com
 // © 2020 Thomas Sebastian Berge
 
-library rested.rsettings;
-
 import 'dart:io';
 import 'dart:convert';
 import 'package:nanoid/nanoid.dart';
-
-RestedSettings rsettings = RestedSettings();
 
 class RestedSettings {
 
@@ -82,6 +78,11 @@ class RestedSettings {
       "type": "Boolean",
       "value": true,
       "description": "Creates a root common RestedResource that includes all files in the common directory and makes the available on the root path of the server."
+    },
+    "module_web_enabled": {
+      "type": "Boolean",
+      "value": true,
+      "description": "Core feature that enables checks related to cookies, sessions, file collections etc."
     }
   };
 

@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'restedrequesthandler.dart';
 import 'restedsettings.dart';
+import 'restedglobals.dart';
 
 class RestedServer {
   RestedRequestHandler request_handler;

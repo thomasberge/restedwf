@@ -18,6 +18,7 @@ import 'restedsettings.dart';
 import 'restedsession.dart';
 import 'mimetypes.dart';
 import 'cookiecollection.dart';
+import 'restedglobals.dart';
 
 Responses error_responses = new Responses();
 Mimetypes mimetypes = new Mimetypes();

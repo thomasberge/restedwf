@@ -81,36 +81,37 @@ class RestedRequestHandler {
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
     RestedRequest request = new RestedRequest(incomingRequest);
 
-    // Decrypts the session id and sets the session data in the request
-    if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
-      if (request.cookies.containsKey('session')) {
-        var session = sessions.getSession(request.cookies.getFirst('session').value);
-        if (session != null) {
-          if (request.deleteSession) {
-            sessions.deleteSession(request.cookies.getFirst('session').value);
-          } else {
-            request.session = session;
+    // WEB
+        // Decrypts the session id and sets the session data in the request
+        if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
+          if (request.cookies.containsKey('session')) {
+            var session = sessions.getSession(request.cookies.getFirst('session').value);
+            if (session != null) {
+              if (request.deleteSession) {
+                sessions.deleteSession(request.cookies.getFirst('session').value);
+              } else {
+                request.session = session;
+              }
+            } else {
+              request.removeCookie("session"); // remove session cookie on client if there is no equivalent on server
+            }
           }
-        } else {
-          request.removeCookie("session"); // remove session cookie on client if there is no equivalent on server
         }
-      }
-    }
 
-    // 2 --- Get access_token from either cookie or session
-    // Get access_token from cookie. Gets overwritten by access_token from session if present.
-    if (rsettings.getVariable('cookies_enabled')) {
-      if (request.cookies.containsKey("access_token")) {
-        request.unverified_access_token = request.cookies.getFirst("access_token").value;
-      }
-    }
+        // 2 --- Get access_token from either cookie or session
+        // Get access_token from cookie. Gets overwritten by access_token from session if present.
+        if (rsettings.getVariable('cookies_enabled')) {
+          if (request.cookies.containsKey("access_token")) {
+            request.unverified_access_token = request.cookies.getFirst("access_token").value;
+          }
+        }
 
-    // Get access_token from session. Overwrites access_token from cookie if present.
-    if (rsettings.getVariable('sessions_enabled')) {
-      if (request.session.containsKey("access_token")) {
-        request.unverified_access_token = request.session["access_token"];
-      }
-    }
+        // Get access_token from session. Overwrites access_token from cookie if present.
+        if (rsettings.getVariable('sessions_enabled')) {
+          if (request.session.containsKey("access_token")) {
+            request.unverified_access_token = request.session["access_token"];
+          }
+        }
 
     request = await jwt_handler.validateAuth(request);    //  Do the auth
     request = await receive_content(request);             //  Download body content
@@ -134,46 +135,49 @@ class RestedRequestHandler {
             PathParser.get_uri_keys(resources[index].path));
       }
       resources[index].doMethod(request.method, request);
-    } else {
-      if (rsettings.getVariable('files_enabled')) {
-        String path;
-
-        for(RestedResource res in file_resources) {
-          path = res.testforfile(request.path.split('/'));
-          if(path != null) {
-            break;
-          }
-        }
-
-        // If not, check the common directory
-        print("common=" + common.toString());
-        print("request.path=" + request.path);
-        if(path == null && common.containsKey(request.path)) {
-          path = common.getFile(request.path);
-        }
-
-        // If all else fails, create a path out of the url and try your luck with the
-        // file response
-        if(path == null) {
-          path = request.path;
-          if (request.path.substring(0, 1) == '/') {
-            path = request.path.substring(1);
-          }
-        }
-
-        if (path != null) {
-          request.response(type: "file", filepath: path);
-          RestedResponse resp = new RestedResponse(request);
-          resp.respond();
-        } else {
-          error.raise("file_not_found", details: request.path);
-          request.response(status: 404);
-        }
-      } else {
-        error.raise("resource_not_found", details: request.path);
-        request.response(status: 404);
-      }
     }
+    
+    // WEB
+        else {
+          if (rsettings.getVariable('files_enabled')) {
+            String path;
+
+            for(RestedResource res in file_resources) {
+              path = res.testforfile(request.path.split('/'));
+              if(path != null) {
+                break;
+              }
+            }
+
+            // If not, check the common directory
+            print("common=" + common.toString());
+            print("request.path=" + request.path);
+            if(path == null && common.containsKey(request.path)) {
+              path = common.getFile(request.path);
+            }
+
+            // If all else fails, create a path out of the url and try your luck with the
+            // file response
+            if(path == null) {
+              path = request.path;
+              if (request.path.substring(0, 1) == '/') {
+                path = request.path.substring(1);
+              }
+            }
+
+            if (path != null) {
+              request.response(type: "file", filepath: path);
+              RestedResponse resp = new RestedResponse(request);
+              resp.respond();
+            } else {
+              error.raise("file_not_found", details: request.path);
+              request.response(status: 404);
+            }
+          } else {
+            error.raise("resource_not_found", details: request.path);
+            request.response(status: 404);
+          }
+        }
   }
 
   void addResource(RestedResource resource, String path) {
