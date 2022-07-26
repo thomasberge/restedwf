@@ -8,26 +8,35 @@ A word of caution: This framework is still very much in development. Structural 
 
 ### 0.6.1 Main changes
 
-- Slight refactor for adding directories instead of files.
+- First version of the RestedServer in place. Now supports multiple threads.
+- Slight refactor for adding directories instead of files. Resolves some unwanted issues.
 
-### Features
+### Development goals (potential features)
 
-This is the core module that adds the basic functionality. Add-ons will give optional functionality. The main features in this module are:
-- Class-oriented code pattern. Each /resource is its own class with each HTTP method being a function.
-- OpenAPI 3.1 yaml import and export. Imported endpoints supports external function calls based on operationId.
-- Sessions & Cookies. Who doesn't like cookies?
-- Automatic JSON Web Token implementation, seemlessly integrated with Session & Cookie support. JWT requirement per method in a /resource. Optional redirect if token doesn't validate.
-- Easy implementation to database.
-- Automatic parsing of incoming body for JSON and webforms.
-- Text/binary file server support, although with limited streaming capabilities.
-- Settings from either code, environment or json file.
-- Test development server server.
+The core of Rested Web Framework is a restful API built on Minimal API principles. It aims to provide all standard features in an intuitive way with little code. It then builds upon this core by adding a plethora of optional modules. Please keep in mind that these are very much still work-in-progress. The list below are goals, although much is already implemented.
+
+Feature goals of Rested Web Framework core:
+- Framework which supports all standard rest methods built specifically with OpenAPI 3.1 in mind.
+- Automatic parsing of incoming data so you don't have to.
+- Configurable Schema validation with all OpenAPI 3.1 features, such as validating with regular expressions and min/max values. Validate not only request bodies, but also path and query parameters.
+- Automatic JSON Web Token implementation. JWT requirement per method per path.
+- Import of OpenAPI 3.1 yaml document in order to specify paths, parameters, schemas and so on. Linking for instance a paths GET method is as easy as setting its operationId to the name of a dart function. No code generation required and fully flexible!
+- Export of OpenAPI 3.1 yaml document in order to properly document your API dynamically. Don't want API-first? Let the documentation always be up to date with what is actually coded. Supports the export of imported data.
+
+The optional modules and features adds extended functionality. The goal is to deliver:
+- Multi-threaded server with support for both amd86 and armv7.
+- Webserver with standard features such as files and cookies.
+- Integrated templating and scripting language RestedScript.
+- Admin web interface.
+- OpenAPI 3.1 documentation page made automatically by reading the exported yaml document.
+- Separate session server when main server is running on more than one thread.
+- Automatic JSON Web Token seemlessly integrated with Session & Cookie. Optional redirect if token doesn't validate.
+- Easy implementation to database through abstraction layer which supports several layers of abstraction.
+- Highly customizable.
 
 ### Circular Flow
 
 Code-first or API-first? That is a question many dev teams have to ask themselves. Most often they end up with a hybrid, or something else all-together. With Circular Flow, Rested WF will enable developers to do both. That is achieved by the import/export OpenAPI features. The specific flow is still being worked on and will exist in an unfinished form for many iterations.
-
-
 
 ### Add-ons
 

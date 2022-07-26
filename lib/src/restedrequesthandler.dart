@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:math';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'pathparser.dart';
 import 'restedsession.dart';
@@ -33,6 +34,7 @@ class RestedRequestHandler {
   List<RestedResource> resources = new List();
   List<RestedResource> file_resources = new List(); // Resources that contain files
   Map<String, RestedSchema> _global_schemas = {};
+  SendPort sendPort;
 
   RestedRequestHandler() {
     rootDirectory = Directory.current.path;
@@ -81,7 +83,7 @@ class RestedRequestHandler {
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
     RestedRequest request = new RestedRequest(incomingRequest);
 
-    // WEB
+    if(rsettings.getVariable('module_web_enabled')) {
         // Decrypts the session id and sets the session data in the request
         if (rsettings.getVariable('cookies_enabled') && rsettings.getVariable('sessions_enabled')) {
           if (request.cookies.containsKey('session')) {
@@ -112,6 +114,7 @@ class RestedRequestHandler {
             request.unverified_access_token = request.session["access_token"];
           }
         }
+    }
 
     request = await jwt_handler.validateAuth(request);    //  Do the auth
     request = await receive_content(request);             //  Download body content
@@ -135,49 +138,48 @@ class RestedRequestHandler {
             PathParser.get_uri_keys(resources[index].path));
       }
       resources[index].doMethod(request.method, request);
-    }
-    
-    // WEB
-        else {
-          if (rsettings.getVariable('files_enabled')) {
-            String path;
+    } else {
+      if(rsettings.getVariable('module_web_enabled')) {
+        if (rsettings.getVariable('files_enabled')) {
+          String path;
 
-            for(RestedResource res in file_resources) {
-              path = res.testforfile(request.path.split('/'));
-              if(path != null) {
-                break;
-              }
+          for(RestedResource res in file_resources) {
+            path = res.testforfile(request.path.split('/'));
+            if(path != null) {
+              break;
             }
+          }
 
-            // If not, check the common directory
-            print("common=" + common.toString());
-            print("request.path=" + request.path);
-            if(path == null && common.containsKey(request.path)) {
-              path = common.getFile(request.path);
-            }
+          // If not, check the common directory
+          print("common=" + common.toString());
+          print("request.path=" + request.path);
+          if(path == null && common.containsKey(request.path)) {
+            path = common.getFile(request.path);
+          }
 
-            // If all else fails, create a path out of the url and try your luck with the
-            // file response
-            if(path == null) {
-              path = request.path;
-              if (request.path.substring(0, 1) == '/') {
-                path = request.path.substring(1);
-              }
+          // If all else fails, create a path out of the url and try your luck with the
+          // file response
+          if(path == null) {
+            path = request.path;
+            if (request.path.substring(0, 1) == '/') {
+              path = request.path.substring(1);
             }
+          }
 
-            if (path != null) {
-              request.response(type: "file", filepath: path);
-              RestedResponse resp = new RestedResponse(request);
-              resp.respond();
-            } else {
-              error.raise("file_not_found", details: request.path);
-              request.response(status: 404);
-            }
+          if (path != null) {
+            request.response(type: "file", filepath: path);
+            RestedResponse resp = new RestedResponse(request);
+            resp.respond();
           } else {
-            error.raise("resource_not_found", details: request.path);
+            error.raise("file_not_found", details: request.path);
             request.response(status: 404);
           }
+        } else {
+          error.raise("resource_not_found", details: request.path);
+          request.response(status: 404);
         }
+      }
+      }
   }
 
   void addResource(RestedResource resource, String path) {
