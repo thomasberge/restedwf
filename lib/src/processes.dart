@@ -1,5 +1,5 @@
 library rested.processes;
-
+/*
 ProcessManager pman = ProcessManager();
 
 class ProcessManager {
@@ -24,4 +24,4 @@ class Process {
     Process(this.request) {
         createdAt = DateTime.now();
     }
-}
+}*/

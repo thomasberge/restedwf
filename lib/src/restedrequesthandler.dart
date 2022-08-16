@@ -30,13 +30,15 @@ class RestedRequestHandler {
   int port = 8080;
   int threadid = 0;
   FileCollection common = FileCollection(path: "/");
-  RestedJWT jwt_handler = new RestedJWT();
   List<RestedResource> resources = new List();
   List<RestedResource> file_resources = new List(); // Resources that contain files
   Map<String, RestedSchema> _global_schemas = {};
   SendPort sendPort;
+  
+  String servertype = "GENERAL";  // GENERAL, API, WEB, ADMIN, SESSION
+  bool postSetupExecuted = false;
 
-  RestedRequestHandler() {
+  RestedRequestHandler({String type = "GENERAL"}) {
     rootDirectory = Directory.current.path;
 
     if(rsettings.getVariable('common_enabled')) {
@@ -46,9 +48,15 @@ class RestedRequestHandler {
         error.raise('missing_common_directory');
       }
     }
+  }
+
+  void postSetup() {
+    if(!postSetupExecuted) {
+      postSetupExecuted = true;
+    }
 
     Map<String, String> _envVars = Platform.environment;
-    if (_envVars.containsKey("yaml_import_file")) {
+    if (_envVars.containsKey("yaml_import_file") && servertype != "ADMIN") {
       OAPI3 oapi = OAPI3(_envVars["yaml_import_file"]);
       resources = oapi.getResources();
       for(RestedResource _res in resources) {
@@ -80,6 +88,8 @@ class RestedRequestHandler {
   }
 
   void handle(HttpRequest incomingRequest) async {
+    print("thread #" + threadid.toString());
+    
     // 1 --- Build rested request from incoming request. Add session data if there is a session cookie in the request.
     RestedRequest request = new RestedRequest(incomingRequest);
 

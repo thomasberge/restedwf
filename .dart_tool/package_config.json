@@ -1,0 +1,134 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "ansicolor",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/ansicolor-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.0"
+    },
+    {
+      "name": "auth_header",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/auth_header-3.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "buffer",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/buffer-1.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "collection",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/collection-1.16.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "crypto",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/crypto-3.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
+    },
+    {
+      "name": "jaguar_jwt",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/jaguar_jwt-3.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "nanoid",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/nanoid-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "path",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/path-1.8.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "pedantic",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/pedantic-1.11.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "postgres",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/postgres-2.4.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "rested_script",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/git/rested_script-8a0c9e48ba2a3f72f3a0e25fc21f8c49d64d91ee/",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "sasl_scram",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/sasl_scram-0.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "saslprep",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/saslprep-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "source_span",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/source_span-1.9.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
+    },
+    {
+      "name": "string_scanner",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "string_tools",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/git/string_tools-66d62957ba90daeeea7b484951ea3fc144fa7b15/",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "term_glyph",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/term_glyph-1.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "typed_data",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/typed_data-1.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "unorm_dart",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/unorm_dart-0.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "yaml",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/yaml-3.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "restedwf",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "2.0"
+    }
+  ],
+  "generated": "2022-08-16T08:22:27.255907Z",
+  "generator": "pub",
+  "generatorVersion": "2.14.1"
+}

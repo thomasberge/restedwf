@@ -100,7 +100,7 @@ class RestedSettings {
     },
     "module_admin_enabled": {
       "type:": "Boolean",
-      "value": true,
+      "value": false,
       "description": "Enables admin website interface.",
       "dependencies": {
         "module_web_enabled": true,
@@ -109,7 +109,7 @@ class RestedSettings {
     },
     "server_threads": {
       "type": "Integer",
-      "value": 1,
+      "value": 4,
       "description": "Warning: Experimental. Number of threads for each server instance. More than 1 thread will currently fail with for example sessions.",
       "dependencies": {}
     }

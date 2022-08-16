@@ -9,6 +9,8 @@ import 'restedrequesthandler.dart';
 import 'restedsettings.dart';
 import 'restedglobals.dart';
 import 'admin/restedadmin.dart';
+import 'dart:mirrors';
+import 'restedresource.dart';
 
 class RestedServer {
   dynamic request_handler;
@@ -65,11 +67,14 @@ class Server {
 
     // ADMIN WEB INTERFACE (currently not implemented, and just starts a standard server thead)
     if(rsettings.getVariable('module_admin_enabled')) {
-      Map<String, dynamic> settings = { "requesthandler": request_handler };
+      Map<String, dynamic> settings = { "requesthandler": AdminInterface() };
       settings['requesthandler'].address = _address;
       settings['requesthandler'].threadid = i;
-      settings['requesthandler'].port = _port;
+      //settings['requesthandler'].port = _port;
+      settings['requesthandler'].port = 8088;
       settings['requesthandler'].sendPort = receivePort.sendPort;
+      settings['requesthandler'].servertype = "ADMIN";
+      settings['requesthandler'].postSetup();
       workers.add(Thread(settings));
       await workers[i].start();
       i++;
@@ -83,15 +88,27 @@ class Server {
     }
 
     // MAIN SERVER THREADS
+    Map<String, dynamic> settings = {};
     while(i < _threads) {
-      Map<String, dynamic> settings = { "requesthandler": request_handler };
+      var instanceMirror = reflect(request_handler);
+      var classMirror = instanceMirror.type;
+      //var test = reflectClass(classMirror.reflectedType);
+      //var temp = test.newInstance(new Symbol(''), []).reflectee;
+      var requesthandler_instance = classMirror.newInstance(new Symbol(''), []).reflectee;
+
+      settings["requesthandler"] = requesthandler_instance;
       settings['requesthandler'].address = _address;
       settings['requesthandler'].threadid = i;
       settings['requesthandler'].port = _port;
+      settings['requesthandler'].postSetup();
       workers.add(Thread(settings));
       await workers[i].start();
       i++;
-      print("\n\u001b[31mServer thread #" + (settings["requesthandler"].threadid+1).toString() + " listening on " + settings['requesthandler'].address + ":" + settings['requesthandler'].port.toString() + "\u001b[0m\n");
+      //print("\n\u001b[31mServer thread #" + (settings["requesthandler"].threadid+1).toString() + " listening on " + settings['requesthandler'].address + ":" + settings['requesthandler'].port.toString() + "\u001b[0m\n");
+    }
+
+    for(RestedResource res in settings['requesthandler'].resources) {
+      print(res.toString());
     }
   }
 }
