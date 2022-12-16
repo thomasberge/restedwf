@@ -26,7 +26,7 @@ import 'restedglobals.dart';
 
 class RestedRequestHandler {
   String rootDirectory;
-  String address = "127.0.0.1";
+  String address = "0.0.0.0";
   int port = 8080;
   int threadid = 0;
   FileCollection common = FileCollection(path: "/");

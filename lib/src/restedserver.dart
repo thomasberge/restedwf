@@ -133,15 +133,10 @@ class Thread {
 
 class Thread {
   final int threadid;
-  Isolate _isolate;
-
   Thread(this.threadid);
 
   Future<void> start() async {
-      _isolate = await Isolate.spawn(
-        _thread,
-        threadid
-      );
+    await Isolate.spawn(_thread, threadid);
   }
 
   static _thread(int threadid) async {
@@ -153,10 +148,7 @@ class Thread {
     Map<String, String> envVars = Platform.environment;
     if(envVars.containsKey('BASE_URL')) {
       rested.address = envVars['BASE_URL'];
-    } else {
-      print("BASE_URL environment parameter missing, defaulting to '0.0.0.0'");
-      rested.address = "0.0.0.0";
-    }  
+    }
 
     var server = await HttpServer.bind(rested.address, rested.port, shared: true);
 
