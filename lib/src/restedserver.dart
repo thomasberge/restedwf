@@ -54,17 +54,6 @@ class RestedServer {
 }
 
 /*
-String getBaseUrl() {
-  Map<String, String> envVars = Platform.environment;
-  if(envVars.containsKey('BASE_URL')) {
-    return(envVars['BASE_URL']);
-  } else {
-    return("localhost");
-    print("BASE_URL environment parameter missing, defaulting to 'localhost'");
-  }  
-}*/
-
-/*
 class Server {
   List<Thread> workers = List();
 
@@ -121,6 +110,7 @@ class Server {
 }
 */
 
+/*
 class Thread {
   final Map<String, dynamic> settings;
   Isolate _isolate;
@@ -139,7 +129,7 @@ class Thread {
       settings['requesthandler'].handle(request);
     }
   }
-}
+}*/
 
 class Thread {
   final int threadid;
@@ -157,8 +147,17 @@ class Thread {
   static _thread(int threadid) async {
     print("Thread #" + (threadid+1).toString() + " started.");
 
-    Rested rested = new Rested();
+    RestedRequestHandler rested = RestedRequestHandler();
     rested.threadid = threadid;
+    
+    Map<String, String> envVars = Platform.environment;
+    if(envVars.containsKey('BASE_URL')) {
+      rested.address = envVars['BASE_URL'];
+    } else {
+      print("BASE_URL environment parameter missing, defaulting to '0.0.0.0'");
+      rested.address = "0.0.0.0";
+    }  
+
     var server = await HttpServer.bind(rested.address, rested.port, shared: true);
 
     await for (HttpRequest request in server) {
