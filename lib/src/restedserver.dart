@@ -12,6 +12,7 @@ import 'admin/restedadmin.dart';
 import 'dart:mirrors';
 import 'restedresource.dart';
 
+/*
 class RestedServer {
   dynamic request_handler;
 
@@ -30,8 +31,29 @@ class RestedServer {
     server.start(request_handler, _address, _port, receivePort);
   }
 
+}*/
+
+class RestedServer {
+  List<Thread> workers = [];
+
+  RestedServer();
+
+  void start() async {
+    int i = 0;
+    while(i < 1) {
+      print("Thread #" + (i+1).toString() + " starting ...");
+      workers.add(new Thread(i));
+      await workers[i].start();
+      i++;
+    }
+  }
+
+  void keepAlive() {
+    while(true){}
+  }
 }
 
+/*
 String getBaseUrl() {
   Map<String, String> envVars = Platform.environment;
   if(envVars.containsKey('BASE_URL')) {
@@ -40,24 +62,9 @@ String getBaseUrl() {
     return("localhost");
     print("BASE_URL environment parameter missing, defaulting to 'localhost'");
   }  
-}
-
-/*class MinimalServer {
-  void start(dynamic request_handler, String _address, int _port, ReceivePort receivePort) async {
-    if(rsettings.getVariable('common_enabled')) {
-      request_handler.export();
-    }
-    request_handler.address = _address;
-    request_handler.port = _port;
-    var server = await HttpServer.bind(_address, _port);
-    print("\n\u001b[31mServer listening on " + _address + ":" + _port.toString() + "\u001b[0m\n");
-
-    await for (HttpRequest request in server) {
-      request_handler.handle(request);
-    }    
-  }
 }*/
 
+/*
 class Server {
   List<Thread> workers = List();
 
@@ -112,6 +119,7 @@ class Server {
     }
   }
 }
+*/
 
 class Thread {
   final Map<String, dynamic> settings;
@@ -129,6 +137,32 @@ class Thread {
     var server = await HttpServer.bind("0.0.0.0", settings['requesthandler'].port, shared: true);
     await for (HttpRequest request in server) {
       settings['requesthandler'].handle(request);
+    }
+  }
+}
+
+class Thread {
+  final int threadid;
+  Isolate _isolate;
+
+  Thread(this.threadid);
+
+  Future<void> start() async {
+      _isolate = await Isolate.spawn(
+        _thread,
+        threadid
+      );
+  }
+
+  static _thread(int threadid) async {
+    print("Thread #" + (threadid+1).toString() + " started.");
+
+    Rested rested = new Rested();
+    rested.threadid = threadid;
+    var server = await HttpServer.bind(rested.address, rested.port, shared: true);
+
+    await for (HttpRequest request in server) {
+      rested.handle(request);
     }
   }
 }
