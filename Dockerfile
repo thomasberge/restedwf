@@ -8,7 +8,7 @@ RUN dart pub get
 ADD pubspec.yaml /app/pubspec.yaml
 RUN dart pub get --offline
 
-COPY ./lib/ /app/bin/
+COPY ./lib_core/ /app/bin/
 COPY ./test/test.yaml /app/bin/test.yaml
 COPY ./test/files /app/bin/files
 COPY ./test/common /app/bin/common

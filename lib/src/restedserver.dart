@@ -32,7 +32,7 @@ class RestedServer {
   }
 
 }*/
-
+/*
 class RestedServer {
   List<Thread> workers = [];
 
@@ -51,32 +51,15 @@ class RestedServer {
   void keepAlive() {
     while(true){}
   }
-}
+}*/
 
-/*
-class Server {
-  List<Thread> workers = List();
+
+class ServerCore {
+  List<Thread> workers = [];
 
   void start(dynamic request_handler, String _address, int _port, ReceivePort receivePort) async {
     int _threads = rsettings.getVariable('server_threads');
     int i = 0;
-
-    // ADMIN WEB INTERFACE (currently not implemented, and just starts a standard server thead)
-    if(rsettings.getVariable('module_admin_enabled')) {
-      Map<String, dynamic> settings = { "requesthandler": AdminInterface() };
-      settings['requesthandler'].address = _address;
-      settings['requesthandler'].threadid = i;
-      //settings['requesthandler'].port = _port;
-      settings['requesthandler'].port = 8088;
-      settings['requesthandler'].sendPort = receivePort.sendPort;
-      settings['requesthandler'].servertype = "ADMIN";
-      settings['requesthandler'].postSetup();
-      workers.add(Thread(settings));
-      await workers[i].start();
-      i++;
-      _threads++;
-      print("\n\u001b[31mAdmin listening on " + settings['requesthandler'].address + ":" + settings['requesthandler'].port.toString() + "\u001b[0m\n");
-    }
 
     // SESSION SERVER
     if(rsettings.getVariable('sessions_enabled') && rsettings.getVariable('server_threads') > 1) {
@@ -92,23 +75,23 @@ class Server {
       //var temp = test.newInstance(new Symbol(''), []).reflectee;
       var requesthandler_instance = classMirror.newInstance(new Symbol(''), []).reflectee;
 
-      settings["requesthandler"] = requesthandler_instance;
-      settings['requesthandler'].address = _address;
-      settings['requesthandler'].threadid = i;
-      settings['requesthandler'].port = _port;
-      settings['requesthandler'].postSetup();
+      settings["server"] = requesthandler_instance;
+      settings['server'].address = _address;
+      settings['server'].threadid = i;
+      settings['server'].port = _port;
+      settings['server'].postSetup();
       workers.add(Thread(settings));
       await workers[i].start();
       i++;
       //print("\n\u001b[31mServer thread #" + (settings["requesthandler"].threadid+1).toString() + " listening on " + settings['requesthandler'].address + ":" + settings['requesthandler'].port.toString() + "\u001b[0m\n");
     }
 
-    for(RestedResource res in settings['requesthandler'].resources) {
+    for(RestedResource res in settings['server'].resources) {
       print(res.toString());
     }
   }
 }
-*/
+
 
 /*
 class Thread {
@@ -132,28 +115,27 @@ class Thread {
 }*/
 
 class Thread {
-  final int threadid;
-  Thread(this.threadid);
+  final Map<String, dynamic> settings;
+  ReceivePort receivePort;
+
+  Thread(this.settings);
 
   Future<void> start() async {
-    await Isolate.spawn(_thread, threadid);
+    await Isolate.spawn(_thread, settings);
   }
 
-  static _thread(int threadid) async {
-    print("Thread #" + (threadid+1).toString() + " started.");
-
-    RestedRequestHandler rested = RestedRequestHandler();
-    rested.threadid = threadid;
-    
+  static _thread(Map<String, dynamic> settings) async {
     Map<String, String> envVars = Platform.environment;
+    
     if(envVars.containsKey('BASE_URL')) {
-      rested.address = envVars['BASE_URL'];
+      settings['server'].address = envVars['BASE_URL'] + settings['server'].address;
+    } else {
+      settings['server'].address = "0.0.0.0" + settings['server'].address;
     }
 
-    var server = await HttpServer.bind(rested.address, rested.port, shared: true);
-
+    var server = await HttpServer.bind(settings['server'].address, settings['server'].port, shared: true);
     await for (HttpRequest request in server) {
-      rested.handle(request);
+        settings['requesthandler'].handle(request);
     }
   }
 }

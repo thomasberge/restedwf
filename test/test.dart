@@ -4,16 +4,15 @@
 
 import 'dart:io';
 import 'dart:convert';
-import 'rested.dart';
-import 'package:jaguar_jwt/jaguar_jwt.dart';
-import 'src/restedsettings.dart';
+import 'core.dart';
+//import 'package:jaguar_jwt/jaguar_jwt.dart';
 
 
 main() async {
-    xfunctions['authenticate'] = testing;
-    xfunctions['list-users'] = listusers;
-    RestedServer admin_server = RestedServer(TestServer());
-    admin_server.start("0.0.0.0", 80);
+    //xfunctions['authenticate'] = testing;
+    //xfunctions['list-users'] = listusers;
+    ServerCore admin_server = ServerCore();
+    admin_server.start(TestServer(), '', 80, null);
 }
 
 void listusers(RestedRequest request) async {
@@ -22,25 +21,27 @@ void listusers(RestedRequest request) async {
 
 class TestServer extends RestedRequestHandler {
   TestServer() {
+    /*
     RestedSchema userschema = RestedSchema();
     userschema.addField(StringParameter("username"), requiredField: true);
     StringParameter email = StringParameter("email");
     email.minLength = 12;
     userschema.addField(email);
     this.setGlobalSchema("User", userschema);
+    */
 
     this.addResource(Root(), "/");
-    this.addResource(Login(), "/login");
+    //this.addResource(Login(), "/login");
     this.addResource(Redirect(), "/g");
     this.addResource(Dump(), "/dump");
-    this.addResource(GetPage(), "/get");
-    this.addResource(JsonTest(), "/json");
-    this.addResource(Claims(), "/claims");
+    //this.addResource(GetPage(), "/get");
+    //this.addResource(JsonTest(), "/json");
+    //this.addResource(Claims(), "/claims");
     this.addResource(SettingsTest(), "/settings");
-    this.addResource(PathParam(), "/t/{test}/{test2}");
-    this.addResource(SchemaTest(), "/validate");
-    this.addResource(JWTClaims(), "/allclaims");
-    this.addResource(GETJWTClaims(), "/getclaims");
+    //this.addResource(PathParam(), "/t/{test}/{test2}");
+    //this.addResource(SchemaTest(), "/validate");
+    //this.addResource(JWTClaims(), "/allclaims");
+    //this.addResource(GETJWTClaims(), "/getclaims");
     this.addResource(Files(), "/{param}/test");
   }
 }
@@ -55,12 +56,14 @@ class Files extends RestedResource {
   }
 }
 
+/*
 class SchemaTest extends RestedResource {
   void post(RestedRequest request) async {
     print(RestedSchema.isEmail('test@test.no').toString());
     request.response(data: "TEST");
   }
 }
+*/
 
 class User extends RestedResource {
   void get(RestedRequest request) async {
@@ -80,6 +83,7 @@ void testing(RestedRequest request) {
   request.response(data: "test");
 }
 
+/*
 class PathParam extends RestedResource {
   PathParam() {
     StringParameter test = StringParameter("test");
@@ -94,6 +98,7 @@ class PathParam extends RestedResource {
     request.response(data: request.uri_parameters["test"].toString());
   }
 }
+*/
 
 class SettingsTest extends RestedResource {
   void get(RestedRequest request) async {
@@ -101,6 +106,7 @@ class SettingsTest extends RestedResource {
   }
 }
 
+/*
 class Claims extends RestedResource {
   void get(RestedRequest request) async {
     RestedJWT jwthandler = RestedJWT();
@@ -112,7 +118,9 @@ class Claims extends RestedResource {
     request.response(data: somevariable);
   }
 }
+*/
 
+/*
 class GETJWTClaims extends RestedResource {
   void get(RestedRequest request) {
     RestedJWT jwthandler = RestedJWT();
@@ -128,14 +136,18 @@ class JWTClaims extends RestedResource {
     request.response(data: request.claims.toString());
   }
 }
+*/
 
+/*
 class GetPage extends RestedResource {
   void get(RestedRequest request) async {
     String temp = await RestedRequests.get("www.google.com");
     request.response(type: "html", data: temp);
   }
 }
+*/
 
+/*
 class JsonTest extends RestedResource {
   void get(RestedRequest request) async {
     Map<String, dynamic> _data = { "SomeKey": "SomeValue", "AnotherKey": 14, "YetAnotherKey": true };
@@ -149,6 +161,7 @@ class JsonTest extends RestedResource {
     request.response(type: "json", data: json.encode(map));
   }
 }
+*/
 
 class Dump extends RestedResource {
   void post(RestedRequest request) {
@@ -168,6 +181,7 @@ class Root extends RestedResource {
   }
 }
 
+/*
 class Login extends RestedResource {
 
   Login() {
@@ -189,6 +203,7 @@ class Login extends RestedResource {
     request.redirect('/login');
   }
 }
+*/
 
 class Redirect extends RestedResource {
   void get(RestedRequest request) async {
