@@ -3,8 +3,8 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:convert';
 
-import 'request.dart';
-import 'globals.dart';
+import 'restedrequest.dart';
+import 'restedglobals.dart';
 
 Map<String, Function> content_types = {
     "application/json": receive_application_json,
