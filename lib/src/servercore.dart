@@ -11,9 +11,17 @@ import 'resource.dart';
 
 class ServerCore {
   List<Thread> workers = [];
+  int _threads = 1;
+
+  ServerCore({threads: 0}) {
+    if(threads != 0) {
+      _threads = threads;
+    }
+  }
 
   void start(RestedRequestHandler requesthandler, String _address, int _port, ReceivePort receivePort) async {
-    int _threads = rsettings.getVariable('server_threads');
+    
+    //_threads = rsettings.getVariable('server_threads');
     int i = 0;
 
     Map<String, String> envVars = Platform.environment;

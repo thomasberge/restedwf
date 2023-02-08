@@ -11,7 +11,7 @@ import 'core.dart';
 main() async {
     //xfunctions['authenticate'] = testing;
     //xfunctions['list-users'] = listusers;
-    ServerCore admin_server = ServerCore();
+    ServerCore admin_server = ServerCore(threads: 2);
     admin_server.start(TestServer(), '', 80, null);
 }
 
