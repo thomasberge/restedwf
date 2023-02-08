@@ -60,6 +60,7 @@ class RestedRequestHandler {
 
           for(RestedResource res in file_resources) {
             path = res.testforfile(request.path.split('/'));
+            print("LOOKING FOR FILEPATH >>" + path.toString() + "<<");
             if(path != null) {
               break;
             }
