@@ -115,6 +115,7 @@ class RestedRequestHandler {
   // Returns the index of the argument path in the resources list if present. Returns null if not present.
   int getResourceIndex(String path) {
     for (int i = 0; i < resources.length; i++) {
+      print("looping resource index ...");
       if (resources[i].pathMatch(path)) {
         return i;
       }

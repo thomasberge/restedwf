@@ -271,6 +271,7 @@ RestedResource() {
   }
 
   bool pathMatch(String requested_path) {
+    print("patchMatching local >>" + path + "<<  requested >>" + requested_path + "<<");
     if (path == requested_path) {
       return true;
     } else {
