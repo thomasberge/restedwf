@@ -47,6 +47,8 @@ class RestedRequestHandler {
 
     int index = getResourceIndex(request.path);
 
+    print("request.path=" + request.path);
+
     if (index != null) {
       if (resources[index].path.contains('{')) {
         request.createPathArgumentMap(resources[index].uri_parameters,
@@ -60,7 +62,6 @@ class RestedRequestHandler {
 
           for(RestedResource res in file_resources) {
             path = res.testforfile(request.path.split('/'));
-            print("LOOKING FOR FILEPATH >>" + path.toString() + "<<");
             if(path != null) {
               break;
             }
