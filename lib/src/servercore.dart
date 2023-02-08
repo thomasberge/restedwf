@@ -1,6 +1,6 @@
 // Part of Rested Web Framework
 // www.restedwf.com
-// © 2022 Thomas Sebastian Berge
+// © 2023 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'dart:async';
@@ -13,7 +13,7 @@ class ServerCore {
   List<Thread> workers = [];
   int _threads = 1;
 
-  ServerCore(String test, {threads: 0}) {
+  ServerCore({threads: 0}) {
     if(threads != 0) {
       _threads = threads;
     }

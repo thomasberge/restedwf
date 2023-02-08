@@ -1,7 +1,7 @@
 // Rested Core
 // Version: 0.7.0-alpha
 // www.restedwf.com
-// © 2022 Thomas Sebastian Berge
+// © 2023 Thomas Sebastian Berge
 
 export 'src/request.dart';
 export 'src/servercore.dart';
