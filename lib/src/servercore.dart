@@ -55,7 +55,7 @@ class ServerCore {
     // Last thread started in the initialization thread, keeping the application from exiting.
     var server = await HttpServer.bind(settings['server'].address, settings['server'].port, shared: true);
     await for (HttpRequest request in server) {
-        settings['requesthandler'].handle(request);
+        settings['server'].handle(request);
     }
   }
 }
