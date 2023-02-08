@@ -13,7 +13,7 @@ class ServerCore {
   List<Thread> workers = [];
   int _threads = 1;
 
-  ServerCore({threads: 0}) {
+  ServerCore(String test, {threads: 0}) {
     if(threads != 0) {
       _threads = threads;
     }
