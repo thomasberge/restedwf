@@ -1,3 +1,2 @@
 #!/bin/bash
-#docker build -t restedwf_test . && docker run --init -e yaml_import_file=/app/bin/test.yaml -p 80:80 -p 8088:8088 restedwf_test
-docker build -t restedwf_test . && docker run --init -p 80:80 -p 8088:8088 restedwf_test
+docker build -t restedwf_test . && docker run --init -p 80:80 restedwf_test

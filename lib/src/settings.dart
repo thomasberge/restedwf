@@ -1,9 +1,6 @@
-// Part of Rested Web Framework
-// www.restedwf.com
-// © 2022 Thomas Sebastian Berge
-
 import 'dart:io';
 import 'dart:convert';
+
 import 'package:nanoid/nanoid.dart';
 
 class RestedSettings {
@@ -143,10 +140,10 @@ class RestedSettings {
     for(MapEntry variable in variables.entries) {
       if(_envVars.containsKey(variable.key)) {
         if(variables[variable.key]['type'] == "Boolean") {
-          variables[variable.key]['value'] = toBool(_envVars[variable.key]);
+          variables[variable.key]['value'] = toBool(_envVars[variable.key]!);
         } else if(variables[variable.key]['type'] == "Integer") {
           try {
-            variables[variable.key]['value'] = int.parse(_envVars[variable.key]);
+            variables[variable.key]['value'] = int.parse(_envVars[variable.key]!);
           } catch(e) {
             print("Error parsing environment variable " + variable.key + " to integer.");
           } 

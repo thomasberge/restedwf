@@ -38,7 +38,7 @@ class RestedResponse {
 
         // Overwrite if host is specified in the http header
         if(request.headers.containsKey('host')) {
-          host = request.headers['host'];
+            host = request.headers['host']!;
         }
         String path = request.restedresponse['data'];
 
@@ -99,7 +99,7 @@ class RestedResponse {
                 request.request.response.statusCode =
                     HttpStatus.partialContent;
               }
-              Future f = file.readAsBytes();
+              Future<List<int>> f = file.readAsBytes();
               request.request.response
                   .addStream(f.asStream())
                   .whenComplete(() {
@@ -122,28 +122,28 @@ class RestedResponse {
     }
   }
 
+  /*
   String filetypeFromPath(String path) {
     List<String> dirsplit = path.split('/');
-  }
+  }*/
 
   void fileResponse(File file) {
-    Future f = file.readAsBytes();
+    Future<List<int>> f = file.readAsBytes();
     request.request.response.addStream(f.asStream()).whenComplete(() {
       request.request.response.close();
     });
   }
 
-  void fileStream() {
-    /*
-    Future f = file.readAsBytes();
+  void fileStream(File file) {
+    Future<List<int>> f = file.readAsBytes();
     request.request.response.addStream(f.asStream()).whenComplete(() {
       request.request.response.close();
-    });    */
+    });
   }
 
   void response(String data) async {
     if (data != "") {
-      await request.request.response.write(data);
+      request.request.response.write(data);
     }
     request.request.response.close();
   }

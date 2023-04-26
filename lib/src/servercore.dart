@@ -1,12 +1,7 @@
-// Part of Rested Web Framework
-// www.restedwf.com
-// © 2023 Thomas Sebastian Berge
-
 import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
 import 'requesthandler.dart';
-import 'globals.dart';
 import 'resource.dart';
 
 class ServerCore {
@@ -19,7 +14,7 @@ class ServerCore {
     }
   }
 
-  void start(RestedRequestHandler requesthandler, String _address, int _port, ReceivePort receivePort) async {
+  void start(RestedRequestHandler requesthandler, String _address, int _port, { ReceivePort? receivePort = null}) async {
     
     //_threads = rsettings.getVariable('server_threads');
     int i = 0;
@@ -27,11 +22,12 @@ class ServerCore {
     Map<String, String> envVars = Platform.environment;
     Map<String, dynamic> settings = {};
     settings['server'] = requesthandler;
+    settings['receivePort'] = receivePort;
 
     while(i < _threads) {
       
       if(envVars.containsKey('BASE_URL')) {
-        settings['server'].address = envVars['BASE_URL'] + _address;
+        settings['server'].address = envVars['BASE_URL']! + _address;
       } else {
         settings['server'].address = "0.0.0.0" + _address;
       }
@@ -62,9 +58,13 @@ class ServerCore {
 
 class Thread {
   final Map<String, dynamic> settings;
-  ReceivePort receivePort;
+  late ReceivePort receivePort;
 
-  Thread(this.settings);
+  Thread(this.settings) {
+    if(settings["receivePort"] !=  null) {
+      receivePort = settings["receivePort"];
+    }
+  }
 
   Future<void> start() async {
     await Isolate.spawn(_thread, settings);

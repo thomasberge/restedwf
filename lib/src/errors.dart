@@ -1,7 +1,6 @@
-library rested.errors;
-
 import 'request.dart';
 
+// Runtime errors outputted to console
 class RestedErrors {
 
     Map<String, dynamic> _errors = {
@@ -65,6 +64,7 @@ class RestedErrors {
     }
 }
 
+// HTTP errors returned as a response.
 class Errors {
 
     static Map<String, dynamic> getJson(int code) {
@@ -122,7 +122,7 @@ class Errors {
     static Future<RestedRequest> raise(RestedRequest request, int statuscode) async {
         request.status = statuscode;
         request.request.response.statusCode = statuscode;
-        await request.request.response.write(errorjson[statuscode].toString());
+        request.request.response.write(errorjson[statuscode].toString());
         request.request.response.close();
         return request;
     }

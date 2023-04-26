@@ -1,35 +1,20 @@
-// Part of Rested Web Framework
-// www.restedwf.com
-// © 2020 Thomas Sebastian Berge
-
 import 'dart:io';
-import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
-import 'dart:isolate';
 
-import 'package:path/path.dart' as p;
 import 'package:rested_script/rested_script.dart';
 import 'package:string_tools/string_tools.dart';
 
-//import 'responses.dart';
-//import 'mimetypes.dart';
 import 'cookiecollection.dart';
 import 'globals.dart';
-
-//Responses error_responses = new Responses();
-//Mimetypes mimetypes = new Mimetypes();
 
 class RestedRequest {
   String content_type = "text";   // text, json, xml, form, binary
   int status = 0;
   bool deleteSession = false;
   HttpRequest request;
-  String method;
-  String path;
-
-  String access_token;
-  String unverified_access_token = null;
+  late String method;
+  late String path;
+  String access_token = "";
 
   Map body = Map<String, dynamic>();
   String text = "";
@@ -144,7 +129,11 @@ class RestedRequest {
       // If key is already present, append the value to existing value as comma separated string
       // IMPROVEMENT: Check each header type and append accordingly. See https://stackoverflow.com/questions/29549299/how-to-split-header-values
       if(headers.containsKey(key)) {
-        headers[key] = headers[key] + "," + cursor.getAllAfterPosition();
+        if(headers[key] == null || headers[key] == "") {
+          headers[key] = cursor.getAllAfterPosition();
+        } else {
+          headers[key] = headers[key]! + "," + cursor.getAllAfterPosition();
+        }
       } else {
         headers[key] = cursor.getAllAfterPosition();
       }
@@ -241,50 +230,14 @@ class RestedRequest {
   void response({
     String type = "text",
     String data = "",
-    File file = null,
     bool stream = false,
-    int status = 200,
-    String filepath = null,
+    int status = 200
   }) {
     restedresponse['type'] = type;
     restedresponse['data'] = data;
-    restedresponse['file'] = file;
     restedresponse['isStream'] = stream;
-    restedresponse['filepath'] = filepath;
     restedresponse['status'] = status;
   }
-/*
-  void oldresponse(
-      {String type = "text",
-      String data = "",
-      File file = null,
-      bool stream = false}) {
-    if (type == "redirect") {
-      request.response.redirect(Uri.http(request.requestedUri.host, data));
-    } else {
-      // Headers
-      print("Type=" + type.toString());
-      request.response.headers.contentType = mimetypes.getContentType(type);
-      request.response.statusCode = HttpStatus.ok;
-
-      if (stream) {
-        request.response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
-      }
-
-      // Writing data and closing
-      if (stream) {
-        Future f = file.readAsBytes();
-        request.response.addStream(f.asStream()).whenComplete(() {
-          request.response.close();
-        });
-      } else {
-        if (data != "") {
-          request.response.write(data);
-        }
-        request.response.close();
-      }
-    }
-  }*/
 
   void redirect(String resource) {
     restedresponse['type'] = "redirect";
@@ -292,18 +245,21 @@ class RestedRequest {
   }
 
   Map<String, int> getRanges(String rangeheader, int fileLength) {
-    Map<String, int> values = new Map();
+
+    Map<String, int> values = {};
     List<String> ranges = rangeheader.split(',');
+
     if (ranges.length > 1) {
       print("Multi-range request not supported!");
+      return values;
     } else {
       List<String> range = ranges[0].split('-');
       values["bytesFrom"] = int.parse(range[0]);
-      values["butesTotal"] = fileLength; //file.lengthSync();
+      values["bytesTotal"] = fileLength;
       try {
         values["bytesTo"] = int.parse(range[1]);
       } on Exception {
-        values["bytesTo"] = values["butesTotal"];
+        values["bytesTo"] = values["bytesTotal"]!;
       }
       return values;
     }

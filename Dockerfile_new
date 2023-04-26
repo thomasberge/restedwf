@@ -1,5 +1,0 @@
-FROM thomasberge/dart-base:2.14.4-amd64
-COPY ./lib/ /app/bin/
-COPY ./test/test.yaml /app/bin/test.yaml
-COPY ./test/external/ /app/bin/src/
-COPY ./test/test.dart /app/bin/server.dart

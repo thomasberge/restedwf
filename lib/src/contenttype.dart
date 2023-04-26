@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'dart:async';
-import 'dart:math';
 import 'dart:convert';
 
 import 'request.dart';
@@ -56,11 +54,11 @@ Future<RestedRequest> receive_content(RestedRequest request) async {
     List<String> temp = request.request.headers.contentType.toString().split(';');
     String type = temp[0].toString();
     if(content_types.containsKey(type)) {
-        return await content_types[type](request);
+        return await content_types[type]!(request);
     } else if(type == "null"){
-        return await content_types['text/plain'](request);
+        return await content_types['text/plain']!(request);
     } else {
-        return await content_types['not_implemented'](request);
+        return await content_types['not_implemented']!(request);
     }
 }
 

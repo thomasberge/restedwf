@@ -1,12 +1,8 @@
-// Part of Rested Web Framework
-// www.restedwf.com
-// © 2022 Thomas Sebastian Berge
-
 import 'dart:io';
 
 class FileCollection {
 
-  String resource_path;
+  late String resource_path;
   List<String> directories = [];
   Map<String, String> files = {};
 
@@ -27,9 +23,9 @@ class FileCollection {
     }
   }
 
-  String getFile(String filepath) {
+  String? getFile(String filepath) {
     if(files.containsKey(filepath)) {
-      return files[filepath];
+      return files[filepath]!;
     } else {
       return null;
     }

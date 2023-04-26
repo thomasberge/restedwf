@@ -1,7 +1,3 @@
-// Part of Rested Web Framework
-// www.restedwf.com
-// © 2020 Thomas Sebastian Berge
-
 import 'package:string_tools/string_tools.dart';
 
 class PathParser {
@@ -24,13 +20,13 @@ class PathParser {
       }
       return parser.data;
     } else {
-      return null;
+      return "null";
     }
   }
 
   static List<String> get_uri_keys(String path) {
     if (path.contains('{')) {
-      List<String> varlist = new List();
+      List<String> varlist = [];
       StringTools parser = new StringTools(path);
       int args = '{'.allMatches(path).length;
       while (args > 0) {
@@ -46,7 +42,7 @@ class PathParser {
       }
       return varlist;
     } else {
-      return null;
+      return [];
     }
   }
 }

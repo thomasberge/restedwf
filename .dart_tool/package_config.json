@@ -15,15 +15,15 @@
     },
     {
       "name": "buffer",
-      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/buffer-1.1.1",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/buffer-1.2.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
     {
       "name": "collection",
-      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/collection-1.16.0",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/collection-1.17.1",
       "packageUri": "lib/",
-      "languageVersion": "2.12"
+      "languageVersion": "2.18"
     },
     {
       "name": "crypto",
@@ -45,7 +45,7 @@
     },
     {
       "name": "path",
-      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/path-1.8.2",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/path-1.8.3",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -81,15 +81,15 @@
     },
     {
       "name": "source_span",
-      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/source_span-1.9.1",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/source_span-1.10.0",
       "packageUri": "lib/",
-      "languageVersion": "2.14"
+      "languageVersion": "2.18"
     },
     {
       "name": "string_scanner",
-      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.1",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.2.0",
       "packageUri": "lib/",
-      "languageVersion": "2.12"
+      "languageVersion": "2.18"
     },
     {
       "name": "string_tools",
@@ -125,10 +125,10 @@
       "name": "restedwf",
       "rootUri": "../",
       "packageUri": "lib/",
-      "languageVersion": "2.0"
+      "languageVersion": "2.12"
     }
   ],
-  "generated": "2022-12-31T06:44:18.292991Z",
+  "generated": "2023-04-24T05:19:09.478835Z",
   "generator": "pub",
-  "generatorVersion": "2.14.1"
+  "generatorVersion": "2.18.6"
 }

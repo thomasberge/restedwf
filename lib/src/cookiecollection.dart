@@ -1,11 +1,11 @@
 import 'dart:io';
 
 class CookieCollection {
-  List<Cookie> cookies = null;
+  List<Cookie> cookies = [];
 
   CookieCollection(this.cookies);
 
-  Cookie getFirst(String name) {
+  Cookie? getFirst(String name) {
     for (Cookie cookie in cookies) {
       if (cookie.name == name) {
         return cookie;

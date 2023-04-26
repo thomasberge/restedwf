@@ -1,7 +1,3 @@
-// Part of Rested Web Framework
-// www.restedwf.com
-// © 2022 Thomas Sebastian Berge
-
 import 'dart:io';
 
 class Mimetypes {
@@ -14,8 +10,7 @@ class Mimetypes {
     contentTypes['.css.br'] = new ContentType("text", "css", charset: "utf-8");
     contentTypes['.txt'] = new ContentType("text", "text", charset: "utf-8");
     contentTypes['.text'] = new ContentType("text", "text", charset: "utf-8");
-    contentTypes['.json'] =
-        new ContentType("application", "json", charset: "utf-8");
+    contentTypes['.json'] = new ContentType("application", "json", charset: "utf-8");
     contentTypes['.ico'] = new ContentType("image", "vnd.microsoft.icon");
     contentTypes['.mp4'] = new ContentType("video", "mp4");
     contentTypes['.mkv'] = new ContentType("video", "mkv");
@@ -45,13 +40,17 @@ class Mimetypes {
 
   bool isBinary(String type) {
     if (binary.containsKey(type)) {
-      return binary[type];
+      return binary[type]!;
     } else {
       return true;
     }
   }
 
   ContentType getContentType(String type) {
-    return contentTypes[type];
+    if(contentTypes.containsKey(type)) {
+      return contentTypes[type]!;
+    } else {
+      return contentTypes[".txt"]!;
+    }
   }
 }

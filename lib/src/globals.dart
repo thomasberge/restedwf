@@ -1,4 +1,4 @@
-library rested.globals;
+//library rested.globals;
 
 import 'errors.dart';
 export 'errors.dart' show Errors;
