@@ -12,6 +12,7 @@ class RestedRequestHandler {
   int port = 8080;
   int threadid = 0;
   List<RestedResource> resources = [];
+  Function? nopath = null;
 
   void handle(HttpRequest incomingRequest) async {
     print("thread #" + threadid.toString());
@@ -31,7 +32,11 @@ class RestedRequestHandler {
       }
       resources[index].doMethod(request.method, request);
     } else {
-      Errors.raise(request, 404);
+      if(nopath != null) {
+        nopath!(request);
+      } else {
+        Errors.raise(request, 404);
+      }
     }
   }
 
