@@ -22,10 +22,8 @@ class RestedRequestHandler {
     if(request.status > 399) { return; }
 
     int index = getResourceIndex(request.path);
-    print("request.path=" + request.path);
 
     if (index != -1) {
-      print("found at index " + index.toString());
       if (resources[index].path.contains('{')) {
         request.createPathArgumentMap(resources[index].uri_parameters,
             PathParser.get_uri_keys(resources[index].path));
