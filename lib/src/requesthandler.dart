@@ -29,7 +29,7 @@ class RestedRequestHandler {
             PathParser.get_uri_keys(resources[index].path));
       }
       resources[index].doMethod(request.method, request);
-      postResponse();
+      await resources[index].postResponse();
     } else {
       if(nopath != null) {
         nopath!(request);
@@ -57,8 +57,6 @@ class RestedRequestHandler {
     }
     return -1;
   }
-
-  void postResponse() {}
 }
 
 

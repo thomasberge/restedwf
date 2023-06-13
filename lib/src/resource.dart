@@ -137,4 +137,8 @@ class RestedResource {
     RestedResponse response = RestedResponse(request);
     response.respond();
   }
+
+  Future<void> postResponse() async {
+
+  }
 }
