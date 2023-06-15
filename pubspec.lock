@@ -28,7 +28,7 @@ packages:
       name: collection
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.17.1"
+    version: "1.17.2"
   crypto:
     dependency: transitive
     description:
@@ -113,10 +113,10 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "66d62957ba90daeeea7b484951ea3fc144fa7b15"
+      resolved-ref: "28370ac532ce0ff94ce3716705d8dfefb4f07afe"
       url: "https://github.com/thomasberge/string_tools"
     source: git
-    version: "1.0.0"
+    version: "2.0.0"
   term_glyph:
     dependency: transitive
     description:
@@ -130,7 +130,7 @@ packages:
       name: typed_data
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.3.1"
+    version: "1.3.2"
   unorm_dart:
     dependency: transitive
     description:

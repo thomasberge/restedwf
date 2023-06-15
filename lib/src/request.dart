@@ -120,10 +120,10 @@ class RestedRequest {
     List<String> lines = ls.convert(request.headers.toString());
     for(String line in lines) {
       StringTools cursor = new StringTools(line);
-      cursor.moveTo(':');
+      cursor.find(':');
       String key = cursor.getAllBeforePosition();
       if(cursor.getAfterPosition() == ' ') {
-        cursor.move();
+        cursor.next();
       }
 
       // If key is already present, append the value to existing value as comma separated string

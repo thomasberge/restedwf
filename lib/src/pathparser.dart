@@ -8,10 +8,10 @@ class PathParser {
       StringTools parser = new StringTools(path);
       int args = '{'.allMatches(path).length;
       while (args > 0) {
-        parser.moveTo('{');
-        parser.move(); // add one more to not select the {
+        parser.find('{');
+        parser.next(); // add one more to not select the {
         parser.startSelection();
-        parser.moveTo('}');
+        parser.find('}');
         parser.stopSelection();
         parser.position = parser.start_selection;
         parser.deleteSelection();
@@ -30,10 +30,10 @@ class PathParser {
       StringTools parser = new StringTools(path);
       int args = '{'.allMatches(path).length;
       while (args > 0) {
-        parser.moveTo('{');
-        parser.move(); // add one more to not select the {
+        parser.find('{');
+        parser.next(); // add one more to not select the {
         parser.startSelection();
-        parser.moveTo('}');
+        parser.find('}');
         parser.stopSelection();
         varlist.add(parser.getSelection());
         parser.position = parser.start_selection;
