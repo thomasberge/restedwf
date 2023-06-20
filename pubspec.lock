@@ -76,7 +76,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "1f41a3729e9c4f37be8e6325f10fa8c310d6864d"
+      resolved-ref: c25052d9ba62d4d0c231418663d6e179db3effc9
       url: "https://github.com/thomasberge/rested_script"
     source: git
     version: "0.1.1"
@@ -113,7 +113,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "64a191e15602d7a1db0a4e887cb290acf9bf4b20"
+      resolved-ref: "9211c38f5fc06159aacb0998853f174ee60afc43"
       url: "https://github.com/thomasberge/string_tools"
     source: git
     version: "2.0.0"
